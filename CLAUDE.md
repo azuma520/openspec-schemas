@@ -142,6 +142,13 @@ openspec schemas                              # smoke test:列得出來才算裝
 - **不能用 symlink / junction 取代複製**:實測 junction 過得了 `openspec schema validate`,但 `openspec schemas` 掃不到,schema 等於沒裝。
 - `.claude/commands/opsx/` 與 `.claude/skills/openspec-*/` 是 CLI 產生物,已 gitignore;新 clone 跑 `openspec init --tools claude` 重建。
 - 起手用 CLI 指定 schema:`openspec new change <name> --schema superpowers-bridge`(`--schema` 是 `openspec new change` 的參數)。
+- ⚠️ **archive 在 Windows 必定撞目錄鎖**(3/3 複現,穩定模式非偶發)。`mv` 進 `archive/` 一定回 `Permission denied`——git / 編輯器持有目錄 handle。正確做法:
+  1. `cp -r openspec/changes/X openspec/changes/archive/X`(複製,不搬)
+  2. `diff -r` 驗來源/目標 IDENTICAL
+  3. **委派使用者**跑 `rm -rf openspec/changes/X`(AI 的 rm 會被 deny)
+  
+  見 memory `feedback_opsx_archive_windows_dir_lock`。**別先試 `mv` 撞牆再想起來。**
+- **三軌制路由**(memory `feedback_no_opsx_for_evaluation`):opsx change 是**交付容器,不是評估容器**。對外合約 / **schema** / 跨系統介接 / 合規邊界 → 走 opsx;研究 / 評估 / 可逆探索 → 直接 commit + 觀察節點;typo / 文件 / config 微調 → 純直接 commit。每個 change 都要有「ship 了」的明確判準——**是 code 動作、是事件,不是時間軸**。
 - **全域 profile 依賴**:bridge 需要 `verify` / `continue` / `new` / `ff` workflow。OpenSpec 預設的 `core` profile 只給 propose / explore / apply / archive,缺 `openspec-verify-change` skill 與 `/opsx:verify`。
   本機已把全域設定(`%APPDATA%\openspec\config.json`)的 `workflows` 開到 11 個全集。**別的機器上要重做這步**,否則 verify artifact 只能走 schema 內建的手動 fallback。
   注意 `openspec config set workflows` 不吃陣列(會報 `expected array, received string`),要直接編 config.json,改完跑 `openspec update` 重生指令。
