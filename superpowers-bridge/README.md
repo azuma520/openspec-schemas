@@ -486,6 +486,27 @@ Current bundle release: **`1.0.0`** (git tag `v1.0.0`; see [VERSION](./VERSION))
 |---|---|---|---|
 | v1 | `1.3.1` | `v5.1.0` | 2026-05-11 |
 
+### Re-verification log
+
+The table above records what this schema was **authored** against; it is not bumped by a partial check. This log records interim re-verifications against newer upstream versions, so the gap between "we looked" and "we re-ran a full cycle" stays visible.
+
+**2026-08-26 — Superpowers `v6.3.0`** (partial re-verification, baseline NOT bumped)
+
+| Check | Result |
+|---|---|
+| All 8 skills this schema names still exist (`brainstorming`, `writing-plans`, `using-git-worktrees`, `subagent-driven-development`, `finishing-a-development-branch`, `test-driven-development`, `requesting-code-review`, `executing-plans`) | ✅ No renames — Layer 1 PRECHECK intact |
+| Design touch #4's claim that `executing-plans` mentions neither TDD nor code-review | ✅ Still true — 0 matches in its `SKILL.md` |
+| `brainstorming` behaves as the `brainstorm` artifact instruction describes | ❌ **Drift — see below** |
+| Apply step 2's claim that `subagent-driven-development` transitively enforces `test-driven-development` ("every task follows RED-GREEN-REFACTOR") | ❌ **False in v6.3.0 — see below** |
+| Apply step 2's claim that it transitively enforces `requesting-code-review` | ✅ Still true — a per-task reviewer plus a final `code-reviewer.md` dispatch are structural in its `SKILL.md` |
+| Full cycle re-run (`/opsx:new` → archive) against v6.3.0 | ⬜ Not done |
+
+**Open drift:** `brainstorming` v6.x opens by classifying the request into three paths — spike / bounded / architectural — and only the architectural path performs the five steps this schema's `brainstorm.instruction` describes. On the spike and bounded paths the skill produces a short in-chat answer and stops, which starves the `design` artifact's Context / Goals / Decisions / Risks / Migration reorganization. Separately, the v6.x skill states that after the architectural path the only skill to invoke next is `writing-plans`, whereas this schema inserts `proposal` → `design` → `specs` → `tasks` in between.
+
+**Open drift — TDD is no longer unconditional:** `subagent-driven-development`'s `SKILL.md` (32 KB in v6.3.0) contains no TDD mandate at all; every TDD reference lives in `implementer-prompt.md` and each one is conditional — "Write tests (**following TDD if task says to**)", "Did I follow TDD **if required**?", "**TDD Evidence** (**if TDD was required for this task**)". TDD therefore reaches the implementer only because `writing-plans` bakes "Step 1: Write the failing test / Step 2: Run test to verify it fails" into every task. Loosening `plan.md` without replacing that channel silently removes TDD. The same prompt already defines a `TDD Evidence` reporting slot (RED command + failing output, GREEN command + passing output), so the fix direction is to make the task contract *require* TDD and *demand that evidence*, rather than prescribe the steps.
+
+Not yet fixed — both drifts need a schema change, so the baseline row stays at `v5.1.0` and the weekly drift issue stays open until they land.
+
 ### How this is checked
 
 The contract is three layers — **baseline declaration + automated drift detection + human review** — not automated compatibility enforcement.

@@ -486,6 +486,27 @@ LLM 不必解讀 timing 文字 —— 跑指令、看結果即可。這是顧慮
 |---|---|---|---|
 | v1 | `1.3.1` | `v5.1.0` | 2026-05-11 |
 
+### 重新查證紀錄
+
+上表記錄的是本 schema **撰寫當時**所對齊的版本,不因局部查證而推進。本段記錄對更新版 upstream 的階段性查證,讓「看過了」和「重跑過完整 cycle」之間的差距保持可見。
+
+**2026-08-26 — Superpowers `v6.3.0`**(局部查證,基準**未**推進)
+
+| 查了什麼 | 結果 |
+|---|---|
+| 本 schema 點名的 8 個 skill 是否都還在(`brainstorming`、`writing-plans`、`using-git-worktrees`、`subagent-driven-development`、`finishing-a-development-branch`、`test-driven-development`、`requesting-code-review`、`executing-plans`) | ✅ 無改名 — Layer 1 PRECHECK 不受影響 |
+| 設計觸點 #4 的宣稱:`executing-plans` 不提 TDD 也不提 code-review | ✅ 仍成立 — 其 `SKILL.md` 命中數 0 |
+| `brainstorming` 的行為是否符合 `brainstorm` artifact instruction 的描述 | ❌ **已漂移,見下** |
+| apply 第 2 步宣稱 `subagent-driven-development` 會 transitive 強制 `test-driven-development`(「每張 task 都走 RED-GREEN-REFACTOR」) | ❌ **在 v6.3.0 已不成立,見下** |
+| apply 第 2 步宣稱它會 transitive 強制 `requesting-code-review` | ✅ 仍成立 — 每張 task 一個獨立 reviewer 加上最後一次 `code-reviewer.md` dispatch,都寫在其 `SKILL.md` 結構裡 |
+| 對 v6.3.0 重跑完整 cycle(`/opsx:new` → archive) | ⬜ 未執行 |
+
+**未解漂移:** `brainstorming` v6.x 一開始會先把請求分類成三條路徑 — spike / bounded / architectural — 只有 architectural 那條會執行本 schema `brainstorm.instruction` 所描述的五個步驟。走 spike 或 bounded 時,skill 只在對話中給出簡短結論就停住,下游 `design` artifact 要重組出 Context / Goals / Decisions / Risks / Migration 就沒有素材。另外,v6.x 的 skill 明載 architectural 路徑之後唯一該調用的是 `writing-plans`,而本 schema 在中間插入了 `proposal` → `design` → `specs` → `tasks`。
+
+**未解漂移 —— TDD 已不再是無條件的:** `subagent-driven-development` 的 `SKILL.md`(v6.3.0 共 32 KB)完全沒有強制 TDD 的條文;所有 TDD 字樣都在 `implementer-prompt.md`,而且**三處全是條件句** —— 「Write tests(**following TDD if task says to**)」、「Did I follow TDD **if required**?」、「**TDD Evidence**(**if TDD was required for this task**)」。TDD 之所以還會到達實作者,純粹是因為 `writing-plans` 把「Step 1: 寫失敗的測試 / Step 2: 跑它確認失敗」寫進每一張 task。**放寬 `plan.md` 而沒有替代管道,就會靜默地把 TDD 拿掉。** 同一份 prompt 已經定義了 `TDD Evidence` 回報欄位(RED 指令 + 失敗輸出、GREEN 指令 + 通過輸出),因此修正方向是讓 task 契約**要求 TDD 並索取該證據**,而不是規定步驟。
+
+尚未修復 —— 兩個漂移都需要動 schema,因此基準列維持 `v5.1.0`,每週的 drift issue 也維持開啟直到修復落地。
+
 ### 驗證機制
 
 契約分三層 — **基準聲明 + 自動 drift 偵測 + 人類檢核** — 不是自動相容性 enforcement。
