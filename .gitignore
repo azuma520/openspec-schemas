@@ -17,3 +17,16 @@ npm-debug.log*
 
 # Cross-session handoff briefs (ephemeral, never committed)
 /.handoff/
+
+# Dogfooding: superpowers-bridge 以「實體副本」裝在 openspec/schemas/ 底下。
+# (junction / symlink 驗證得過 `openspec schema validate`,但 `openspec schemas`
+#  掃不到,所以不能用連結。)
+# 唯一來源是根目錄的 /superpowers-bridge —— 改完它要重新同步:
+#   rm -rf openspec/schemas/superpowers-bridge && cp -R superpowers-bridge openspec/schemas/
+/openspec/schemas/
+
+# `openspec init/update --tools claude` 產生的 slash command 與 skill。
+# 內容隨 OpenSpec CLI 版本漂移,不進版控;新 clone 跑一次即可重建:
+#   openspec init --tools claude
+/.claude/commands/opsx/
+/.claude/skills/openspec-*/
