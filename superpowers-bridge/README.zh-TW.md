@@ -498,7 +498,7 @@ LLM 不必解讀 timing 文字 —— 跑指令、看結果即可。這是顧慮
 | 設計觸點 #4 的宣稱:`executing-plans` 不提 TDD 也不提 code-review | ✅ 仍成立 — 其 `SKILL.md` 命中數 0 |
 | `brainstorming` 的行為是否符合 `brainstorm` artifact instruction 的描述 | ❌ **已漂移,見下** |
 | apply 第 2 步宣稱 `subagent-driven-development` 會 transitive 強制 `test-driven-development`(「每張 task 都走 RED-GREEN-REFACTOR」) | ❌ **在 v6.3.0 已不成立,見下** |
-| apply 第 2 步宣稱它會 transitive 強制 `requesting-code-review` | ✅ 仍成立 — 每張 task 一個獨立 reviewer 加上最後一次 `code-reviewer.md` dispatch,都寫在其 `SKILL.md` 結構裡 |
+| apply 第 2 步宣稱它會 transitive 強制 `requesting-code-review` | ⚠️ **成立,但不是每張 task 一個。** review 一定會派、最後一次 `code-reviewer.md` 也是結構性的,但 `SKILL.md:223-229` 要求把數個同形小 task **合併成一次 dispatch、diff 當一個單位審**;`SKILL.md:415-419` 又允許 controller 在第 5 輪後把它自己認定為真實的 finding **park 掉**。因此「每張 task 都有獨立的 reviewer gate」是誇大。 |
 | 對 v6.3.0 重跑完整 cycle(`/opsx:new` → archive) | ⬜ 未執行 |
 
 **未解漂移:** `brainstorming` v6.x 一開始會先把請求分類成三條路徑 — spike / bounded / architectural — 只有 architectural 那條會執行本 schema `brainstorm.instruction` 所描述的五個步驟。走 spike 或 bounded 時,skill 只在對話中給出簡短結論就停住,下游 `design` artifact 要重組出 Context / Goals / Decisions / Risks / Migration 就沒有素材。另外,v6.x 的 skill 明載 architectural 路徑之後唯一該調用的是 `writing-plans`,而本 schema 在中間插入了 `proposal` → `design` → `specs` → `tasks`。
