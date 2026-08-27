@@ -30,3 +30,12 @@ npm-debug.log*
 #   openspec init --tools claude
 /.claude/commands/opsx/
 /.claude/skills/openspec-*/
+
+# 跨 session 討論素材(大型對話匯出 / 階段二素材),不進版控
+/Orca Worktree 模型分析.md
+/2026-08-25-brainstorm-派工模式判準.md
+/2026-08-26-監督式協調-攜出討論包.md
+
+# auto-loop hook 的 session 狀態檔(純工具狀態)
+/.claude_review_state.json
+.workflow-harness/
