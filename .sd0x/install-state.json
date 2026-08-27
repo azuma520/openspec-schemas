@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "installed_at": "2026-08-27T00:00:00Z",
+  "updated_at": "2026-08-27T00:00:00Z",
+  "plugin_version": "4.3.1",
+  "rules": {
+    "auto-loop.md": {
+      "hash": "92769a91f64e4e1f89a584c6879c146460ce97cb"
+    },
+    "codex-invocation.md": {
+      "hash": "70d8a47b0ee832bd90ee377c90f8f75cca1d0852"
+    },
+    "context-management.md": {
+      "hash": "fc8114710451673d6d1c8c9acc385b2386e7b3e7"
+    },
+    "discretion.md": {
+      "hash": "2d7ad9e13af4dd522a7e817a41eb3d4e4faa10d7"
+    },
+    "docs-numbering.md": {
+      "hash": "50951bd246665b7ba014e079e0bde5edc9d73249"
+    },
+    "docs-writing.md": {
+      "hash": "90a5292684b1c7c771d9e7e6d675f4b60ff38a5a"
+    },
+    "fix-all-issues.md": {
+      "hash": "c4cb75a5a13071370ba087075297c7c59d78699f"
+    },
+    "framework.md": {
+      "hash": "88190401bef7fe4fddb2405cb52db19014a6c8a7"
+    },
+    "git-workflow.md": {
+      "hash": "390373930fbe28504693f428bf5ec27a8a9cec35"
+    },
+    "logging.md": {
+      "hash": "730ef9d70812f965cd99a50b15272b2badb4f9ef"
+    },
+    "scope-discipline.md": {
+      "hash": "aff90861bd6155551f3aed2778c7ba0476ada1d9"
+    },
+    "security.md": {
+      "hash": "7f527a07c7e478ebef0e919ae1c320b926a3b990"
+    },
+    "self-improvement.md": {
+      "hash": "cfa8ec6774bc9313f684162196e23a646756d0a2"
+    },
+    "testing.md": {
+      "hash": "f41056e892bf7d9449a412d68e2770a5f257ce8f"
+    }
+  },
+  "scripts": {
+    "build-codex-artifacts.js": {
+      "hash": "c26769a11e58f1ea20e87d7848ef5cb3d6b25007"
+    },
+    "check-comment-blocks.js": {
+      "hash": "74c1b46c580d4861896221badcc4d05dd8aa254f"
+    },
+    "check-doc-links.js": {
+      "hash": "d36879200b823574173b46474eaca65ed30f1107"
+    },
+    "classify-docs-cli.js": {
+      "hash": "c938d33f8816a77746d01905cc6062e512a0d6db"
+    },
+    "commit-msg-guard.sh": {
+      "hash": "8412da2a7ed492593d1706f09825f4285f91edff"
+    },
+    "dep-audit.sh": {
+      "hash": "2f6305a8337498231cd931b4a3a5d91e670eaf2c"
+    },
+    "detect-scope.js": {
+      "hash": "842f830b671f02471a355ff71a895db79ea46ef5"
+    },
+    "generate-readme-catalog.js": {
+      "hash": "465f1c5918183f33cde47f7de93f30af4d466049"
+    },
+    "migrate-hook-lightweighting.js": {
+      "hash": "a011e15ca16fa081a5f69399fbb003e968c55d07"
+    },
+    "migration-audit.sh": {
+      "hash": "e9f694b20c21613318edd324d1aa3eecb178c9fa"
+    },
+    "namespace-hint.sh": {
+      "hash": "b451a8b5acbf8e482668d4a87db88bfb01a60cba"
+    },
+    "pre-push-gate.sh": {
+      "hash": "c405c9a3d79be1a63ff50b9af66db942028493eb"
+    },
+    "precommit-runner.js": {
+      "hash": "5eb4c6f938d6eb5bf2b1bb94ed3b8e622bff3720"
+    },
+    "resolve-feature-cli.js": {
+      "hash": "22b43fcdf6872dc0b9850c2945be7f36ef86da8b"
+    },
+    "resolve-feature.js": {
+      "hash": "2aa9808f1055977b6b1623343d1b0e284edfe8cb"
+    },
+    "resolve-feature.sh": {
+      "hash": "f47868db95c127d43b64362956b7da0bb616420e"
+    },
+    "resolve-review-profile.js": {
+      "hash": "d515eebc7e278fa0567a7261bcddfe5fa3f54c26"
+    },
+    "review-state.js": {
+      "hash": "111e3a239964e1adf7a88922bba2f8e7043b4e76"
+    },
+    "run-skill.sh": {
+      "hash": "084af6aef9ae2f4dfae3c0280fc9626a34bf91a1"
+    },
+    "security-redact.js": {
+      "hash": "3e48ae2c52485447c7a2b1f0c2cd2ed444c1e4b6"
+    },
+    "validate-family-sentinel.js": {
+      "hash": "f062535de7fee3c6e359a32a48674619fc26c835"
+    },
+    "verify-runner.js": {
+      "hash": "d545376fe82338882f8e595d9a382a02fa027b43"
+    },
+    "lib/context-shape.js": {
+      "hash": "e84271a32613c247e78b50b72d942135198df9be"
+    },
+    "lib/doc-classifier.js": {
+      "hash": "37203ea8a9631e535409c4f51325c86c77bda7f2"
+    },
+    "lib/doc-metadata.js": {
+      "hash": "8ed941499fc6bd493aa755715643c8809754f142"
+    },
+    "lib/fc-aggregator.js": {
+      "hash": "b17c66070c776a5fda1e2f2ffa50b9ab69d0a57d"
+    },
+    "lib/fc-doc-currency.js": {
+      "hash": "88a1678387c8609721b0c6c6efa0366e837c7348"
+    },
+    "lib/fc-extractor.js": {
+      "hash": "7d78b5abf0ba1559968879dced2763230f280285"
+    },
+    "lib/feature-resolver.js": {
+      "hash": "e0f8d52e6badce0af92826bd29ced4df3d0fc5b8"
+    },
+    "lib/request-status.js": {
+      "hash": "424251ca8ddea2140a69c3ad5a63a7c27140e28d"
+    },
+    "lib/review-dispatch.js": {
+      "hash": "bd6c6f40ffeed2ef8a5599a56b4543cc4d419824"
+    },
+    "lib/tree-digest.js": {
+      "hash": "19da230a363996694b97d32dfd4a46c1c3cecf31"
+    },
+    "lib/utils.js": {
+      "hash": "cdcc9e0c53fe2cac021aece9e6d7c0baf25b7e8b"
+    },
+    "config/doc-taxonomy.json": {
+      "hash": "5c0e51c176bbe9b36d42a30afc92765758d68c98"
+    },
+    "config/file-classification.json": {
+      "hash": "011b7fa00e216849d73c97395acbae22390523de"
+    },
+    "config/repo-intake.json": {
+      "hash": "390de2e85f950d7394fd27e5892b2193e79315ad"
+    },
+    "config/sensitive-paths.json": {
+      "hash": "6b1f897b03c435681537fc389f5b4be49d05b563"
+    }
+  }
+}
