@@ -1,287 +1,363 @@
 <!--
-Raw capture of superpowers:brainstorming output — 2026-08-27 session。
-本檔原樣捕捉討論過程，不強制結構。design.md 從本檔萃取重組，兩者互補不重疊。
+Raw capture of superpowers:brainstorming output.
+2026-08-27 重寫（非打補丁）。前一版 commit f8a1455 已被第三方審查判定不通過
+（2 P0 / 7 P1 / 2 P2），審查全文見 repo 根 `2026-08-27-TDD假保證-第三方審查與改寫建議.md`。
+重寫理由：P0-1 與 P1-3 動到的是問題的切分方式，不是細節。
 -->
 
 # Brainstorm — fix-tdd-transitive-claim
 
-> 2026-08-27，使用 `superpowers:brainstorming`（架構路徑）。
-> 路徑分類：程式面工作屬 bounded（動的是既有檔案），但本 repo 規矩要求 schema 改動走 opsx，
-> 而 `superpowers-bridge` 的 DAG 本就要求完整 artifact 鏈。**衝突時取重**，故走架構路徑。
+> **本 change 的一句話**：刪掉 schema 與 README 裡「上游會自動幫你執行 TDD」這個
+> 錯誤宣稱，並補上一句老實話。**不在本 change 內建立證據機制**——那是另一件工作。
 
 ---
 
-## 一、背景：問題是什麼
+## 一、背景：這不是錯字，是一類病
 
-`superpowers-bridge/schema.yaml` 的 apply 第 2 步對執行的 agent 說：
+### 1.1 事實
+
+`superpowers-bridge/schema.yaml:507-513` 對執行的 agent 說：
 
 > IMPORTANT — transitive skill activation:
-> subagent-driven-development internally enforces the following skills,
-> **so you do NOT need to invoke them manually:**
-> - superpowers:test-driven-development — every task follows RED-GREEN-REFACTOR
+> subagent-driven-development **internally enforces** the following skills,
+> **so you do NOT need to invoke them manually**:
+> - **superpowers:test-driven-development** — **every task** follows RED-GREEN-REFACTOR.
 
-這句話有兩個問題，第二個比第一個嚴重：
+上游 `subagent-driven-development` 整個資料夾（v6.3.0）裡 TDD 字樣**只有 4 處，全是條件句**
+（2026-08-27 實掃）：
 
-1. **它是假的**
-2. **它的語氣是解除性的**——不只描述錯誤，還主動叫 agent 停止做某件事
+| 出處 | 原文 |
+|---|---|
+| `implementer-prompt.md:36` | `Write tests (following TDD **if task says to**)` |
+| `implementer-prompt.md:113` | `Did I follow TDD **if required**?` |
+| `implementer-prompt.md:133` | `**TDD Evidence** (**if** TDD was required for this task)` |
+| `task-reviewer-prompt.md:75` | `The implementer already ran the tests and reported results with TDD` |
+
+**「有條件的」被我方寫成了「一定會」。**
+
+### 1.2 後果鏈（為什麼這比一般的文件錯誤嚴重）
+
+```
+schema 告訴 agent：後面會自動做 TDD，你不用管
+        ↓
+agent 照做 —— 它沒有錯
+        ↓
+上游只在「任務單有寫」時才做 TDD
+        ↓
+我方任務單沒寫（因為以為自動）
+        ↓
+整條流程跑完，一個測試都沒寫 —— 而且全綠、無人抗議
+```
+
+這類錯誤的**症狀就是「一切正常」**：schema validate 通過、CI 全綠、流程每步打勾。
+它不會出事，所以「等它出事再修」的機制永遠抓不到它。
+
+### 1.3 它是病，不是單一缺陷
+
+同一形狀在 24 小時內出現三次，載體各不相同：
+
+| 誰 | 犯了什麼 |
+|---|---|
+| 原作者 | 把上游的 `should use`（建議清單）讀成 `internally enforces`（強制） |
+| 2026-08-26 | 修了 Compatibility 表一列，沒往外掃同類（半修） |
+| 2026-08-27 | 在一份修假保證的文件裡，寫了三個新的假保證（見 §五） |
+
+三次的共同形狀：**以為寫下來就會發生**。
+- 把「建議」寫成「保證」
+- 把「政策」寫成「閘門」
+- 把「引用」寫成「執行」
+
+### 1.4 本 repo 的特殊性（本次討論定調的主軸）
+
+一般專案裡文件是**描述**程式；文件錯了程式照樣對。
+**本 repo 沒有程式** —— `schema.yaml` 不描述行為，**它本身就是行為**：agent 讀它、照著做。
+
+> **在這裡，文件寫錯 ≠ 說明書寫錯，文件寫錯 = 產品壞了。**
+> 功能要對齊 ⇒ 文件就是功能 ⇒ 所以文件必須對齊。
+
+推論：**上游「純散文不必有測試」（`writing-good-tests.md:154`：
+`trivial code and human prose earn none`）那條例外，在本 repo 幾乎沒有適用對象。**
+連 README 都不是純描述——採用者是讀了 README 才決定要不要用。
+分界不是「散文 vs 指令」，是**有沒有做出宣稱**。
 
 ---
 
-## 二、查證事實（每條附出處）
+## 二、查證事實（全部 2026-08-27 親自複查）
 
-### 2.1 上游從未強制過 TDD——這不是漂移，是一開始就讀錯
+### 2.1 上游從未強制過 TDD——不是漂移，是基準版即誤讀
 
-| 版本 | `subagent-driven-development/SKILL.md` 內 TDD 字樣 | 實際寫什麼 |
-|---|---|---|
-| 5.1.0 | 2 處 | `Subagents follow TDD **naturally**`（L207，在 "Advantages" 段）<br>`**Subagents should use**: test-driven-development`（L276，在 Integration 段）|
-| 6.2.0 | **0 處** | — |
-| 6.3.0 | **0 處** | — |
+- `README.md:485-487` 的相容性表釘的是 `v5.1.0`（**已查證**，前一版誤留為「未查」）。
+- 5.1.0 只有 `Subagents follow TDD naturally`（宣傳語）與
+  `Subagents should use: test-driven-development`（建議清單）。
+- `internally enforces` 在**已查的三版**（5.1.0 / 6.2.0 / 6.3.0）都找不到來源。
+  ⚠️ 措辭限定為「已查的三版」，不寫「任何一版」——未查全部版本。
 
-出處：`~/.claude/plugins/cache/superpowers-marketplace/superpowers/5.1.0/skills/subagent-driven-development/SKILL.md:204-213, 273-279`；6.2.0 / 6.3.0 同路徑，grep 命中數 0。查證日期 2026-08-27。
+### 2.2 TDD 實際上靠什麼到達實作者
 
-6.3.0 中所有 TDD 字樣都在 `implementer-prompt.md`，且**三處全是條件句**：
+靠 `writing-plans` 把微步驟寫進每張任務（`writing-plans/SKILL.md:98` 起的標準任務格式）：
 
-- `:36` — `Write tests (following TDD **if task says to**)`
-- `:113` — `Did I follow TDD **if required**?`
-- `:133` — `**TDD Evidence (if TDD was required for this task)**`
+```
+Step 1: Write the failing test
+Step 2: Run test to verify it fails
+Step 3: Write minimal implementation
+Step 4: Run test to verify it passes
+Step 5: Commit
+```
 
-反向證據：`task-reviewer-prompt.md:75` **假設** TDD evidence 存在——上游自身的契約裂縫。
+**TDD 不是執行器的功能，是計畫的內容。** 執行器只是照任務單做事的人。
 
-**結論**：`internally enforces` 這個詞在上游任何一版都找不到來源。我方讀到的是「建議清單」（`should use`）與「宣傳語」（`naturally`），寫下來變成「保證」。
+上游另有第二道：實作者交報告時必須附 **TDD Evidence**——
+RED 跑了什麼指令、失敗輸出、為什麼預期失敗；GREEN 跑了什麼指令、通過輸出
+（`implementer-prompt.md:133`）。
 
-### 2.2 同一宣稱散在 10 處，且 README 自相矛盾
+### 2.3 我方把兩道都拆掉了
 
-全 repo 掃描（`grep -rniE "transitiv|do NOT need to invoke|brings TDD|internally enforces"`，排除 `openspec/`、`docs/superpowers/`、討論素材與 handoff）：
-
-| 檔案 | 位置 |
+| 上游的閘口 | 我方現況（2026-08-27 實查） |
 |---|---|
-| `schema.yaml` | L10-11、L19-20（**schema description**，會被 `openspec schemas` 直接印給使用者）、L474、L507-513 |
-| `README.md` | L213、L247（mermaid 圖）、L282、L304-305、L368、L381、L443-445 |
-| `README.zh-TW.md` | L445 等對應處 |
-| `templates/retrospective.md` | L59-60 |
+| ① 計畫帶 TDD 微步驟 | `templates/plan.md` 全檔 **17 行**，步驟只有一句 `- [ ] **Step 1:** <!-- micro-step -->`，**無任何 TDD 結構** |
+| ② 交件附 RED/GREEN 證據 | `schema.yaml` 全檔 grep `RED` / `GREEN` → **0 筆**（第 201/206 行的 evidence 指的是 commit 數，不是 TDD 證據） |
 
-**矛盾**：README L500 的 Compatibility 表已於 commit `c134f1c`（8/26）正確標為 `❌ False in v6.3.0`，但同一份文件其餘七處仍當作成立的事實敘述。
+**兩道都拆掉，然後在文件上寫「它會自動做」。**
 
-**8/26 那次修正本身就是半修**——修了一列，沒往外掃同類。
+### 2.4 上游 TDD skill 自己列了例外，而例外要問人類
 
-### 2.3 `verification-before-completion` 已存在，但 bridge 完全沒用到
+`test-driven-development/SKILL.md:24-27` 逐字：
 
-`schema.yaml` 引用的 superpowers skill：`brainstorming`、`writing-plans`、`using-git-worktrees`、`subagent-driven-development`、`finishing-a-development-branch`、`test-driven-development`、`requesting-code-review`、`executing-plans`（否定引用）。
+```
+**Exceptions (ask your human partner):**
+- Throwaway prototypes
+- Generated code
+- Configuration files
+```
 
-`grep -rn "verification-before-completion" superpowers-bridge/` → **0 命中**。
+⇒ **上游沒有明說「為什麼不預設 TDD」**（已搜三個 skill 資料夾，無此說明），
+但理由是結構性的：**既有例外、且例外要人判斷，執行器就不能無條件強制。**
 
-該 skill 自述：`requires running verification commands and confirming output before making any success claims; evidence before assertions always`。
+⚠️ 第三種例外正是 configuration files，而 `schema.yaml` 就是 configuration。
 
-出處：`~/.claude/plugins/cache/claude-plugins-official/superpowers/6.3.0/skills/verification-before-completion/SKILL.md` frontmatter，2026-08-27。
+### 2.5 上游禁止用 grep 當測試，但它給了替代方案
 
-### 2.4 已存在一份成熟的 skill：`review-fix-propagation`
+`writing-good-tests.md:177` 逐字：
 
-位置：`D:/workflow-harness/.claude/skills/review-fix-propagation/`
+```
+| Test a script or document | Run it / pressure-test its consumer; never grep its text |
+```
 
-來歷與本次同型：5/20-5/21 連續 7 個「修完 anchor 沒擴散、下輪 review 又抓到同類殘留」案例（`references/dogfood-history.md`）。
+**它不是說「文件不能驗」，是說「要驗文件，就去跑它 / 對它的使用者施壓，別搜字面」。**
+讀我方 schema 的「使用者」就是 agent。前一版設計把 grep 稱作 TDD，與此正面衝突。
 
-9 個檢查維度中，三個直接對應本次缺陷：
+### 2.6 上游自身的契約裂縫（非我方造成）
 
-| 維度 | 內容 | 對應 |
-|---|---|---|
-| 7 | 新寫的規範句自我代入——「這句話**本身**語意錯，傳播越完整錯得越一致，前六維度全綠」 | 把「建議」寫成「保證」 |
-| 8 | 會被照著做的規範句配**正向**斷言——「把它原封退回去，有沒有測試會紅？」<br>**明文：反向斷言（驗「沒有什麼」）不算數，擋得住漂移、擋不住整句消失** | 那句解除性的話被刪掉後無人守 |
-| 9 | 同類出口並排比對——「照規格，還有誰該講同樣的話？」 | 10 處散落 |
-
-**維度 7、8、9 MUST 由外部檢查者跑、MUST NOT 由撰稿方自審**——記錄為「全數由外部 reviewer 抓到，無一由自審發現」。
-
-**分層警告**（memory `feedback_use_propagation_check_after_review_fix`）：該 skill 是 **dev workflow tool**，不是 plugin 對使用者承諾的機制。
-
-### 2.5 兩個換腦審查者今日皆可用
-
-| 工具 | 版本 / 模型 | 驗證方式 |
-|---|---|---|
-| Codex | `codex-cli 0.149.1` | `codex exec` 實際打通，回應正常 |
-| agy | `1.1.16`，`gemini-3.7-flash-high` | `agy -p --model gemini-3.7-flash-high` 實際打通 |
-
-⚠️ `agy` 的 `--effort` **不換模型**，必須用 `--model`，指定錯不會報錯。
-
-### 2.6 `strict-reviewer` 與 `doc-review` 的實際能力（讀定義，非讀名字）
-
-- **`strict-reviewer`**：sd0x 子代理，`model: opus`、`effort: high`，工具 Bash/Read/Grep/Glob。四維度＝正確性/安全/效能/可維護性。證據規矩明文「**不准推測，只回報在程式碼裡可以驗證的東西**」。
-  - ⇒ 結構上抓不到本次缺陷（四維度不沾，且真相在別的 repo 的 markdown 裡）。
-  - ⇒ 但它有 Grep + 要求 `file:line`，**適合本 repo 內部一致性與同類殘留掃描**。
-- **`doc-review`**：`allowed-tools` 含 `mcp__codex__codex`——**它走的就是 Codex**，不是文案審查。流程：確定性連結檢查 → 所有改動的 `.md` 當**一個計畫**一起審 → 五維度評分 + 閘門。
-  - 內含與本次同型的紀律：「絕不把多檔改動縮成單檔審……**計畫漏掉的檔案，就是沒有任何人審過的檔案**」。
+`task-reviewer-prompt.md:75` **假設**實作者已提供 TDD evidence，
+但實作者只在任務要求時提供（`implementer-prompt.md:36`）。
+來源：2026-08-26 審查文件 §3.5。
 
 ---
 
 ## 三、決策鏈
 
-### Q1：假保證刪掉後放什麼？→ **B（真話修正 + 補正向要求）**
+### Q1：文件類改動要什麼證據？→ **用現成的四類分工，不造新詞**
 
-- A＝純真話修正（只是不再說謊，不新增要求）
-- **B＝真話修正 + apply dispatch 契約要求會改變行為的任務附 TDD**
+| 改的是什麼 | 要求什麼 | 用誰的 | 授權 |
+|---|---|---|---|
+| 有可執行行為 | 真 TDD，RED→GREEN | `superpowers:test-driven-development` | MIT ✅ |
+| 給 agent 讀的指令文字 | 外部審查者按「指令面」問法審（「這個指令還執行得動嗎？有沒有互相衝突的指令？」） | `sd0x-dev-flow` 的 `doc-review` `executable` profile | MIT ✅ |
+| 同一句話散落多處 | 9 維度擴散檢查；維度 7/8/9 **必須外部跑** | `review-fix-propagation` | 待開放（見 Q1a） |
+| 純措辭（讀起來順不順） | 不要求 | — | — |
 
-理由：A 之後 schema 處在「知道 TDD 可能不發生，但什麼也不做」的狀態，而 TDD 是使用者用這整套的理由。且 Change 3（放寬 plan）正要拿掉目前唯一的 TDD 到達管道。
+**四類各有各的名字，不冒用彼此。** 特別是：**擴散檢查不是測試，不得宣稱它是。**
 
-### Q2：沒有測試框架的任務怎麼辦？→ **(iii) 放寬「測試」定義，不放寬「要有證據」**
+理由：使用者定調「**先把現有開源資源整合進系統節點，成為大系統後再看要不要優化**」。
+前兩者是公開、MIT、有實際使用紀錄的成品，直接接進來當節點，不自己發明。
 
-本 repo 明文「沒有原始碼、沒有 package.json、沒有測試框架」，唯一的測試是 `openspec schema validate`。
+### Q1a：`review-fix-propagation` 的可得性 → **開放**
 
-- (i) 二分宣告——「不改變行為」會變成好按的逃生鈕
-- (ii) 有測試框架才要求——即靜默降級，且判斷權在被要求的一方
-- **(iii) 凡可判定的檢查都算**（單元測試、`schema validate`、grep 斷言、`diff -r`），要求不變：**先跑看到失敗（RED）→ 改 → 再跑看到通過（GREEN）**
+實查（2026-08-27）：
+- `superpowers` = `anthropics/claude-plugins-official` / `obra/superpowers-marketplace`，**MIT、公開**
+- `sd0x-dev-flow` = `sd0xdev/sd0x-dev-flow`，**MIT、公開**
+- `review-fix-propagation` = `github.com/azuma520/workflow-harness`，**匿名存取 404（私有）、無 LICENSE 檔**
 
-對齊使用者既有裁定 `feedback_evidence_matrix_archive_gate`（三軸全部強制、不允許 N/A）與原話「規格及測試規劃沒有的就是我們的邊界」。
+使用者拍板：**開放**（本人開發）。
+公開範圍建議（沿用本 repo 8/27「原始逐字稿不進版控」先例）：
+`SKILL.md` + `references/propagation-checklist.md` + `references/dogfood-history.md` + `evals/evals.json`；
+`references/參考意見.md`（550 行外部 AI 顧問逐字稿）留在私有——其內容 SKILL.md 已吸收，
+且無連結指向它。已掃描：**四份檔案皆無憑證、金鑰、個資或內部路徑**。
 
-### Q3：閘門放哪？→ **分層，各司其職，不互相冒充**
+### Q1b：對採用者怎麼收 → **宣告依賴 + PRECHECK + 教安裝**
 
-使用者提出「交第三方審查就有閘門」。查證後修正為**緩解不是保證**，因為上游 SDD 有三個已查證的合法繞道：
+使用者定調：「不可把『你有某個 skill』**偷偷**變成別人的必要條件」指的是**偷偷**，不是不可依賴。
+**系統若包含某個 skill，正確做法是把條件說清楚並協助安裝。**
 
-| 繞道 | 出處 |
+⇒ 沿用 bridge v1 對 Superpowers 已在做的模式（Layer 1 PRECHECK：缺失就 STOP，不靜默降級），
+不新發明機制。
+
+### Q2：要不要定分類表？→ **要，但直接用現成分類器的輸出，不自己編**
+
+前一版的取捨是「甲（定分類表）怕清單外沒歸屬 / 乙（每張任務自陳判準）怕判準寫太鬆」。
+**兩個怕的東西在現成實作裡都已被解掉**（2026-08-27 讀實作確認）：
+
+| 現成分類器 | 分不出來時 |
 |---|---|
-| reviewer 被明令不准重跑 implementer 已跑的測試 | `task-reviewer-prompt.md:64-89` |
-| controller 可在第 5 輪後 park 掉它自己認定為真實的 finding | `SKILL.md:415-419` |
-| 同形小任務會被合併成一次 dispatch、diff 當一個單位審 | `SKILL.md:223-229` |
+| `resolve-review-profile.js` | 未知分類 → `full-design`（最深，五維度全審） |
+| `update-docs` 的 `resolveDocRole()` | 落不進任何規則 → fallback = 現行權威（欠對齊那一類） |
 
-⚠️ **若寫成「經第三方審查即可確保正確」，就是用同一類缺陷去修同一類缺陷。**
+兩者都**猜不到就往嚴的方向倒**，且明文 `never chosen by hand at dispatch time`。
 
-分層結論：
+⚠️ **已知邊界（讀實作得出，非讀說明）**：
+`resolve-review-profile.js:52` 的 `INSTRUCTION_SURFACE = /^(?:skills|rules|agents|commands)\//`
+是**寫死的正則、無設定可加**；且 `doc-review` 的目標集合**篩成 `.md`**。
+⇒ `schema.yaml` 屬程式碼類、走 `/codex-review-fast`，**不會進文件審查**。
+⇒ `templates/*.md` 會進，但會被判成一般文件。該分類器允許**往深指定**（`deeper()`），
+故審模板時明確指定按指令面審即可，不必改任何程式。
 
-| 層 | 誰 | 管什麼 | 擋得住嗎 |
+### Q3：真閘門現在做嗎？→ **不做。Change 1 只刪不補，但要留一句老實話**
+
+第一性拆解的結論：
+
+1. **想蓋的關卡擋不住實際發生過的那次失敗。** 關卡只能擋「已知是錯的那幾句」，
+   而當初的問題是沒有人知道那句話是錯的。
+2. **黑名單這招在使用者自己的紀錄裡已失敗過**：全域 CLAUDE.md 複審紀律記載
+   「防絕對化黑名單三個精確字串被改寫措辭繞過，且 CLI 分支從未被測」。
+   同形狀、同坑，而且失敗時是綠的。
+3. **8/26 已查出 D4（controller 手抄證據）證明力不足**：同一 commit 裡測試與實作都在，
+   只能證明「現在綠」，不能證明「先紅後綠」；且審查者被明令不要重跑實作者跑過的測試
+   （來源：8/26 審查文件 §3.4）。現在補等於補一個已知會被推翻的東西。
+
+⇒ **本 change 只做**：刪掉假保證 + 補一句老實話
+（「TDD 是否執行取決於任務單有無要求；本 schema 目前不強制」）
++ 把「沒有檢查報告不算修完」那兩個 ✅ 降級成「⚠️ 政策層，擋不住」，
+並寫明「唯一真的擋得住的是會失敗的自動關卡」。
+
+**證據機制（閘口②）留給 Change 2。** 位置已知（交件節點）、格式上游已有，但需重新設計。
+
+### Q4：與 Change 2 合併嗎？→ **拆開**（引用已決，不重議）
+
+出處：
+- 2026-08-26 審查文件 §5 結尾逐字：「**Roadmap 的 Change 1（修正錯誤宣稱）不受影響，可照原計畫進行。**」
+- 同文件 Codex 建議 #2：「把 traceability 與 TDD 修復拆成不同 change——
+  兩者不應共用『必要性』論證。」
+
+⚠️ 8/27 上午曾決定合併；**該決定作廢**，回到 8/26 的拆分。
+
+### Q5：第二視角用誰？→ **`agy`**（引用已決，不重議）
+
+出處：專案 memory `reference_third-brain-agy-pointer`（2026-08-27 使用者拍板 + 本機實測）。
+
+```bash
+"C:/Users/user/AppData/Local/agy/bin/agy.exe" -p "$(cat brief.md)" \
+  --model gemini-3.7-flash-high --output-format text --print-timeout 10m
+```
+
+⚠️ `--effort` 不換模型、指定錯不報錯（症狀是「一切正常」）。
+⚠️ 這是**本機開發前提，不進 bridge 對外契約**——採用者不必有 Codex 或 agy。
+
+---
+
+## 四、變更面清單（Affected Surface）— **算一次，凍結**
+
+依 `.claude/rules/scope-discipline.md` 三條件計算。
+**本清單凍結；後續任何路徑不得重算**（重算會把修改過程中變髒的檔一併吸收）。
+
+掃描方式（2026-08-27）：`git ls-files` 排除 `.claude/`、`openspec/schemas/`、`docs/superpowers/`，
+以 `TDD|test-driven|RED.GREEN|do NOT need to invoke|transitiv` 掃描。
+
+### 4.1 必改（依賴錯誤前提）
+
+| 檔 | 行 | 類型 |
+|---|---|---|
+| `superpowers-bridge/schema.yaml` | 10-11, 20, 474, 507-518, 522-525 | 假保證本體 + fallback 理由 |
+| `superpowers-bridge/README.md` | 213, 247, 282, 304, 328, 368, 381, 383, 445 | 假保證本體 |
+| `superpowers-bridge/README.md` | 310, 449, 553 | fallback 理由（依賴同一前提） |
+| `superpowers-bridge/README.zh-TW.md` | 213, 247, 282, 304, 305, 328, 368, **381**, 383, **443**, 445 | 假保證本體 |
+| `superpowers-bridge/README.zh-TW.md` | 310, 449, 553 | fallback 理由 |
+| `superpowers-bridge/templates/retrospective.md` | **55-78 整段** | **誘導型**（見 4.4） |
+| `CLAUDE.md` | 207 | 紅旗清單引用同一前提 |
+
+**合計 33 段**：schema 5 + README 英 12 + README 繁 14 + retrospective 1 + CLAUDE 1。
+若把中英 README 視為同一邏輯位置則為 **19 個位置**。
+前一版寫「10 處」——**任何算法都得不到 10**。
+
+> ⚠️ 上表的行號是 2026-08-27 掃描當下的值。開始修改後行號會位移，
+> **以「哪一段講什麼」為準，不以行號為準**；行號只用來重新定位。
+
+### 4.2a 本清單的第一版漏了三處——方法本身的證據
+
+第一次掃描用關鍵字 `TDD|test-driven|RED.GREEN|transitiv`，得到 30 段。
+接著用**結構完全不同的第二條路徑**（改搜「宣稱自動發生」的句型：
+`automatic|no need|不用|自動|enforce|強制|每一?[張個]|every task`）交叉驗證，多抓到：
+
+| 漏掉的 | 為什麼第一次沒抓到 |
+|---|---|
+| `README.zh-TW.md:381`「每個 subagent **自動傳遞**」 | 它是英文 `transitively activates` 的中譯。**關鍵字掃描抓不到翻譯。** |
+| `README.zh-TW.md:305, 443`「**傳遞**」 | 同上 |
+| `retrospective.md` 誘導範圍實為 **55-78**，非 59-60 | 誘導語句（「Default expectation: 全部 ✓」「每個 ✗ 必須回答三題」「不可寫『不需要』」）**不含任何 TDD 關鍵字** |
+
+**這正是審查 P1-3 的論點的實證**：可窮舉性取決於**判準的形狀**，不是內容的載體。
+「這句話有沒有出現」可判定；「這句話是不是在宣稱某事自動發生」不可用精確搜尋窮舉——
+跨語言翻譯與同義改寫都會逃逸。
+
+⇒ **本清單的凍結對象是「開始修改後不得重跑探索」，不是「不得修正錯誤」。**
+上面三處是在**動筆修改之前**、由第二條路徑交叉驗證補上的，並非事後吸收變髒的檔案。
+仍應假設本清單不完整：**修改時每一段都要重新確認，不可把清單當窮舉證明。**
+
+### 4.2 不改（已誠實標定 / 中性）
+
+| 檔 | 行 | 理由 |
+|---|---|---|
+| `superpowers-bridge/README.md` / `.zh-TW.md` | 500, 501, 506 | 已標 ❌ False / ⚠️ 不是每張 task / Open drift |
+| `superpowers-bridge/README.md` / `.zh-TW.md` | 498 | 「`executing-plans` 不提 TDD 也不提 code-review」是**已查證為真的事實**；垮掉的是由它推出的對比（見 4.3），不是它本身 |
+| `superpowers-bridge/README.md` / `.zh-TW.md` | 123, 126, 211, 497, 518 | 描述格式或 skill 清單，不含錯誤前提 |
+| `README.md` / `README.zh-TW.md`（頂層） | 11 | 只列 skill 名稱 |
+| `docs/roadmap.md` / `.zh-TW.md` | 17 | backlog 條目，非宣稱 |
+| `文檔/handoff/**`、repo 根討論素材、`openspec/changes/**/archive` | — | **記錄類，append-only 不改寫**（`update-docs` 四分類：記錄與今天的程式不一致，那個不一致本身就是記錄） |
+
+### 4.3 fallback 理由為什麼也要改（前一版漏列）
+
+現行 README/schema 的論證是：「`executing-plans` **不會** transitive 帶起 TDD 與 code-review，
+所以本 schema 不支援它。」
+
+**這個對比垮了**——`subagent-driven-development` 本來也不會無條件帶起 TDD。兩者都不帶。
+結論（不支援 `executing-plans`）可能仍然成立，但**理由要重寫**，不能再用這個對比。
+
+### 4.4 `retrospective.md` 是誘導型，不是描述型
+
+`templates/retrospective.md:59-60` 會要求**預設全部打 ✓、打 ✗ 必須解釋**。
+它不叫人停手，但**它叫人打勾**——同樣是驅動行為的句子。
+⇒ 前一版的兩類切分（解除型／描述型）漏了這一種，是判準漏，不是分類錯。
+
+---
+
+## 五、本次修正的四個假保證（含前一版自己新造的三個）
+
+| # | 原本寫法 | 問題 | 改成 |
 |---|---|---|---|
-| 說明書 | schema 要求 | 告訴人要做什麼 | ❌ |
-| 判斷 | 外部 AI 審查者 | 範圍夠不夠 | ⚠️ 判得出、可能被跳過 |
-| 換腦 | Codex / agy | 框架外的東西 | ⚠️ 同上 |
-| 硬擋 | CI 自動檢查 | **有沒有交證據** | ✅ |
-| 完成定義 | 沒有 Propagation Check Report 就不算修完 | 把「記得做」變成「沒做不算完」 | ✅ |
-
-依據：`openspec archive -y` 對未完成任務連問都不問就歸檔（8/26 查證），**prompt 層擋不住任何東西**。
-
-### Q4：這個問題有解嗎？→ **不能根除，但可分兩種，一種可機械化**
-
-- **完全解決＝不可能**：判斷「檢查夠不夠寬」需先知道真正範圍；而若已知真正範圍，一開始就不會寫窄。且檢查者的檢查也有範圍，無限回歸。
-- **宣稱關於「文字」的**（例：這包不該再出現某句話）→ **可窮舉**，把判斷題變成搜尋題。關鍵規矩：**搜的對象是「整包」，不是「我改的那幾行」**。
-- **宣稱關於「行為」的**（例：後面那個人會做測試）→ 搜不到，只能去讀對方的東西。降級做法：**每句對外宣稱綁出處**（檔案 + 行號 + 讀取日期），使其可回頭重讀、可被漂移偵測。
-
-本 repo 的優勢是**規模小到窮舉負擔得起**（個位數檔案、對外宣稱數得完）。這是實質優勢，不是精神喊話。
-
-已知失效條件：①這包長大 ②宣稱變成搜不到的東西 ③換腦那層垮掉 ④使用者不再看。
-
-### Q5：範圍——合併還是分開？→ **合併**
-
-原建議分開（照 8/26 已決：修 TDD 漂移 vs 建可追溯性拆兩個 change）。使用者將「機制」定為重點後改為合併。
-
-理由：只把話改對而機制留到下一件，中間會出現「說明書要求了但沒東西接住」的狀態——**那正是我們現在要修的病的鏡像版**。
-
-⚠️ 後果：本 change 實質吸收了原 Change 2「TDD 證據契約」的題目。8/26 該題有**六個設計已被第三方審查推翻**，見 `.handoff/2026-08-26-tdd-evidence-contract-redesign.md`，設計時逐條避開。
-
-### Q6：用現成的還是新寫？→ **兩層都做（C）**
-
-- **第一層（dev tool，自己用）**：本 repo 也裝 `review-fix-propagation`，做這個 change 時真跑一次，觀察 9 維度裡哪幾條在本 repo 有用。
-- **第二層（對採用者承諾，寫進 bridge）**：借該 skill 用 7 案例 + 3 次復發換來的**判準**，不搬 skill 本體。
-
-使用者定調：「skill 是 dev workflow tool、不是工具本身」的意思是**鷹架不是房子**——警告的是別把鷹架當房子交給客戶，不是說鷹架學到的東西不能用在房子上。
-
-**自我要求**：寫進 bridge 的每一句都要能回答「出處是什麼？整段被刪掉會不會有東西紅？」，答不出來只准寫成建議、不准寫成保證。
-
-### Q7：審查怎麼派？→ **依能力分工，不依強弱排名**
-
-使用者立場：審查只信 Codex 與 Fable；agy 頂多做第三方意見、文案、受眾模擬；技術/規格相關都算程式碼審查的一部分。
-
-**同意其歸類（決定誰審），但提出一條反駁（決定審什麼）**：
-
-> 「歸類為程式碼審查」是對的，但若因此**只用程式碼的尺去量**，本次這種缺陷會再漏一次。
-
-證據：`strict-reviewer` 四維度＋「只報程式碼裡可驗證的東西」，結構上報不出本次缺陷。Codex 的程式碼審查流程是同一組尺。
-
-本次缺陷不是「寫錯了」，是「**說了一件沒有出處的事**」。抓它需要一個程式碼審查表都不會問的題目：
-
-> **這句話的出處是什麼？出處說的，跟這裡寫的一樣嗎？**
-
-⇒ **路由決定「誰審」，題目決定「審什麼」**；兩者都要，缺後者是本次事故的直接成因。
-
-最終分工（使用者修正版——`strict-reviewer` 不是拿掉，是放對位置）：
-
-| 審什麼 | 誰 | 為什麼是他 |
-|---|---|---|
-| 本 repo 內部一致性、同類殘留、交叉引用 | `strict-reviewer` | 有 Grep、釘 Opus 高推理、證據要求 `file:line` |
-| 對外合約、規格、宣稱 vs 出處 | **Codex**（`doc-review` / `review-spec`），不可用 → **Fable** | 換一個腦，才看得到框架外 |
-| 「這句話像不像在保證」 | agy | 語感題，當**輸入**不當閘門 |
-| 同類殘留掃描 | 不派人，用搜尋 | 確定性優於判斷 |
-
-### Q8：審查路由要不要做成機制？→ **便宜版現用，貴版另立**
-
-- **便宜版（本次採用）**：一張對照表決定用哪個審查，不做機制。
-- **貴版（獨立工作）**：做成會自動判斷的東西。它有與本次同型的毛病——**路由選錯不會有人抗議，症狀又是「一切正常」**。值得認真做，不該塞進本 change 順手做掉。
+| 1 | 「上游 internally enforces TDD」 | 把建議寫成保證 | 據實：條件性，取決於任務單 |
+| 2 | 「沒有 Propagation Check Report 不算修完」標 ✅ 擋得住 | 把政策寫成閘門（無 CI job、無失敗條件；且「有報告」≠「真的跑過」） | ⚠️ 政策層，擋不住 |
+| 3 | 「綁出處就能偵測漂移」 | 出處只提供可追溯性，不會自行偵測 | 「使人工重驗可重現」 |
+| 4 | 「`strict-reviewer` 結構上抓不到」 | 把機率寫成保證（方向相反的同一種病） | 「預設題目下高機率漏掉」；刪掉無出處的那句 |
 
 ---
 
-## 四、設計結論
+## 六、明確不做
 
-### 4.1 兩類缺陷、兩種修法
-
-| 類別 | 這句話做了什麼 | 處數 | 修法 |
-|---|---|---|---|
-| **解除型** | 寫在會被執行的指令裡，**叫 agent 不用做** | 2（`schema.yaml` L507-513、L474）| **不能只刪**——刪掉會留下洞。要換上真的接得住的交代 |
-| **描述型** | 寫在說明文件裡，**只是講錯**，未叫人停手 | 8 | 改成準確即可 |
-
-### 4.2 要寫進 bridge 的五條
-
-| # | 內容 | 出處 |
-|---|---|---|
-| 1 | 修掉 10 處假宣稱（2 處解除型換成真交代，8 處描述型改準確） | 本次全域搜尋 |
-| 2 | schema 引用 `verification-before-completion` | 架上現成、bridge 0 命中（§2.3）|
-| 3 | 要求**正向**斷言，不是反向 | propagation skill 維度 8 |
-| 4 | 動手前先宣告「這次會動到哪些地方」（Affected Surface）| `references/參考意見.md` 第七層 |
-| 5 | 維度 7/8/9 必須外部審、不可自審 | propagation skill 明文＋「無一由自審發現」的紀錄 |
-
-### 4.3 步驟對應的既有 skill
-
-| 步驟 | 用什麼 | 狀態 |
-|---|---|---|
-| 設計探索 | `superpowers:brainstorming` | 本檔即產出 |
-| 寫計畫 | `superpowers:writing-plans` | 現成 |
-| 隔離工作區 | `superpowers:using-git-worktrees` | 現成 |
-| 執行 | `superpowers:subagent-driven-development` | 現成 |
-| 先寫檢查再改 | `superpowers:test-driven-development` | 現成 |
-| 沒證據不准說完成 | `superpowers:verification-before-completion` | 🆕 bridge 未用 |
-| 修完掃同類殘留 | `review-fix-propagation` | 🆕 本 repo 未裝 |
-| 內部審查 | `superpowers:requesting-code-review` | 現成 |
-| 收審查意見（不准敷衍點頭） | `superpowers:receiving-code-review` | 現成 |
-| 換腦審查 | `sd0x:doc-review`（走 Codex）/ `review-spec` | 🆕 |
-| change 完整性 | `/opsx:verify` | 現成 |
-
-### 4.4 fallback 鏈
-
-使用者定調：**審查只信 Codex 與 Fable**。故：
-
-> Codex → （不可用時）Fable
-
-⚠️ 這**修改了** CLAUDE.md「複審紀律」現行條文（原為 Codex → strict-reviewer / 確定性驗證 → 確有必要才升 Fable）。使用者知情下更動，理由是 agy 屬 Flash 級、不足以承擔規格審查；strict-reviewer 與撰稿方同腦。**該條文需同步更新，否則規矩與實作不一致。**
-
-每輪審查結果即時落檔，不因單點故障把審查掛起來等。
+- ❌ **不做自動殘留檢查腳本 / CI 黑名單**（理由見 Q3）
+- ❌ **不建立證據機制**（Change 2 的範圍）
+- ❌ **不改 schema major**（本 change 不動 artifact 圖與 `requires:` 邊）
+- ❌ **不改寫記錄類文件**（handoff、討論素材、archive）
+- ❌ **不把 Codex / agy 寫進對外契約**
 
 ---
 
-## 五、明確不做
+## 七、未決 / 待確認
 
-- ❌ 不寫「經第三方審查即可確保正確」——那是新的假保證
-- ❌ 不做自動化殘留檢查腳本——`dogfood-history.md` 記載使用者 5/21 拍板「先讓 skill dogfood 3-5 次評估性價比」
-- ❌ 不把 `review-fix-propagation` 本體搬進 bridge——鷹架不是房子
-- ❌ 不重蹈 8/26 被推翻的六個設計（升 schema 版本號隔離、`evidence` 列為 artifact、標題當識別碼、commit SHA 當 RED 證據等）
-- ❌ 不動階段二（Orca 對接）
+- [ ] `review-fix-propagation` 的實際開放動作（抽出、加 MIT LICENSE、公開）——使用者已拍板要做，尚未執行
+- [ ] 不支援 `executing-plans` 的**新理由**要怎麼寫（4.3）——需重新查 `executing-plans` 的實際內容再定
+- [ ] 本 change 是否順帶修 `templates/plan.md` 的 17 行空殼——它與「plan 放寬」那條工作重疊，可能該歸那邊
 
 ---
 
-## 六、未決 / 待確認
+## 八、審查安排
 
-1. **審查路由貴版**需登記為獨立工作（Q8）
-2. **CLAUDE.md 複審紀律條文**需依 §4.4 同步更新
-3. **工作登記需對齊**：work-map 現有 Change 1 與 Change 2 兩筆分開，本 change 已合併兩者
-4. **bridge 當初對照的 Superpowers 版本**未查（README Compatibility 表有釘版本，尚未讀該格）——不影響結論（5.1.0 與 6.x 皆不成立），但影響「當初是誤讀」這個說法能講多滿
-
----
-
-## 七、本次未讀完的材料
-
-- `review-fix-propagation/references/propagation-checklist.md`（7.7KB，詳細 grep 指令範例）
-- `review-fix-propagation/evals/evals.json`（6.6KB）
-- `2026-08-26-TDD證據契約-設計結論-待第三方審.md` 全文（僅讀交接摘要）
-- 階段二素材兩份（刻意不讀）
+- 主審：Codex（`/codex-review-doc`，指定按指令面 profile）
+- 交叉驗證：`agy --model gemini-3.7-flash-high`
+- 兩者皆為**本機開發前提**，不進對外契約
