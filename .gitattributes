@@ -1,0 +1,6 @@
+# sd0x-dev-flow 安裝物：manifest（.sd0x/install-state.json）記錄的是 LF 內容的 blob hash。
+# core.autocrlf=true 若把工作區換成 CRLF,雜湊會全部對不上,未來 install-rules 會把
+# 每一份規則誤判成「使用者改過」而靜默跳過升級。釘住 LF。
+.claude/rules/** text eol=lf
+.claude/scripts/** text eol=lf
+.sd0x/** text eol=lf
