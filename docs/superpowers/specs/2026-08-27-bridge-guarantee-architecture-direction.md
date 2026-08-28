@@ -12,9 +12,11 @@
 
 ### 1.1 Product Promise（核心句）
 
-> 讓 AI Agent 從已確認的規格一路完成實作與驗收，確保重要需求不會在過程中被遺漏或悄悄弱化；未完成必要驗證的工作，不得被宣稱為完成。
+> 讓 AI Agent 從已確認的規格一路完成實作與驗收，確保重要需求不會在過程中被遺漏或悄悄弱化，也不會在未經確認的情況下擴張功能範圍；未完成必要驗證的工作，不得被宣稱為完成。
 
-這個 bridge 不保證「你用了哪些 Skills」；它保證的是：**規格承諾不會在 Agent workflow 裡被悄悄弄丟，而且沒有足夠驗證就不能被當成真正完成。**
+（「擴張功能範圍」一詞是刻意選的：對應 G1b 禁止的「未經確認的契約擴張」，而非禁止任何額外的 code change——正常重構、命名、抽 helper 不在此列；2026-08-28 與雙向 G1 同步升級。）
+
+這個 bridge 不保證「你用了哪些 Skills」；它保證的是：**規格承諾不會在 Agent workflow 裡被悄悄弄丟、也不會未經確認地擴張，而且沒有足夠驗證就不能被當成真正完成。**
 
 措辭紀律（討論中確立、寫進承諾時不可丟）：
 
@@ -25,9 +27,16 @@
 
 | # | 保證 | 內容 |
 |---|---|---|
-| G1 | **Contract Preservation** | 已接受的 Requirement / Scenario 不得在 decomposition、execution、completion 過程中靜默遺失或弱化 |
+| G1 | **Contract Preservation**（雙向，2026-08-28 拍板） | 已接受的契約在 decomposition、implementation、verification、completion 過程中，不得被靜默遺漏、弱化，也不得被靜默擴張。拆兩個子條款：<br>**G1a — No Silent Loss**：已接受的 Requirement / Scenario 不得被遺漏或弱化。<br>**G1b — No Silent Expansion**：不得未經接受就新增 contract-level behavior。 |
 | G2 | **Verifiable Completion** | 任何 Complete 宣稱都必須能追溯到其承接的 contract，且必要 verification 已實際執行並取得可接受結果 |
 | G3 | **Explicit Degradation** | 能力不足時可以降級執行機制，但不得把降低後的 assurance 偽裝成完整保證；缺失的 guarantee 必須顯式化 |
+
+**G1b 的邊界（定案時一併劃定，落條文時不可丟）**：禁止的是 **silent contract deviation**，不是「任何 Spec 沒逐字寫到的 code change」。內部重構、命名、抽共用函式、補型別、改善內部 error handling 不屬於 contract expansion——使用者得到的系統能力沒有增加；**新增或改變可觀察行為、介面、資料語意或重要副作用**才是。兩個子條款共享同一原則：**實作可以自由選路徑，但不能自行改變契約邊界**（即 "Model owns path; harness owns boundaries" 在契約層的直接應用）。
+
+**G1 的 Gate 語意（兩邊不對稱，刻意的）**：
+
+- **G1a 直接 blocking**——Requirement 沒人承接、Scenario 沒驗、Requirement 被弱化，顯然不能宣稱完成。
+- **G1b 第一版做 detect + require disposition**：偵測到疑似新增契約行為 D 時，不要求機器自行判斷語意（「這個 helper 算不算 scope creep」機器判不可靠），而是要求明確處置——證明它只是 implementation detail、或回 Spec 把 D 正式加入 Change 並取得接受、或移除 D。**未處置前 Gate BLOCK**。Harness 不需要理解業務語意，它只需確保：被判定為 contract-level expansion 的東西，不能無聲留下。
 
 保證用途對照：G1 對應 `/to-tickets` 適配與 plan 放寬；G2 對應 Completion Contract / Acceptance Gate；G3 對應降級邊界那條工作，並直接回答「沒有 subagent 是不是禁止執行」——答案是：可以降級執行，但缺失的保證要明講。
 
@@ -51,11 +60,11 @@ Acceptance Gate         「機械判斷是否可以 Complete」
 
 設計任何一層之前，先有這五題的答案就夠；不要先設計 20 種 evidence type、10 個 state：
 
-1. 哪些事情是 bridge **必須保證**的？→ G1–G3（G1 是否雙向見 §6 未決）
+1. 哪些事情是 bridge **必須保證**的？→ G1–G3（G1 已定案為雙向：G1a No Silent Loss + G1b No Silent Expansion，見 §1.2）
 2. 哪些只是**目前版本選擇的實現機制**（可替換）？→ SDD artifact DAG、TDD（RED/GREEN）、subagent 獨立審查、PRECHECK、verify 逐需求對照、Evidence Matrix 三軸
 3. 哪些事情 bridge **明確不保證**？→ 規格本身的品質與正確性（「已接受的規格」是輸入前提）；prompt 文字層的正確性（CI 驗不到）；agent 產出品質上限（bridge 保證流程性質，不保證聰明程度）。⚠️ 此清單落成正式條文時需再窮舉一輪。
 4. degraded mode 時哪些 guarantee 下降？→ 已確認一例：無獨立審查者時，G2 的「驗證有執行」仍成立但**獨立性喪失**（residual risk 有 2026-08-27 實測數據：語意類缺陷自查命中 0%、外部命中 100%）；其餘情形待降級邊界工作逐一盤。
-5. 宣稱 Complete 最少要證明哪些 guarantee 已成立？→ 每條被接受的 Requirement 有對應驗證結果（G2）＋對照表無缺漏（G1）＋若有降級已顯式記錄（G3）。此即 Evidence Matrix 三軸的一般化。
+5. 宣稱 Complete 最少要證明哪些 guarantee 已成立？→ 每條被接受的 Requirement 有對應驗證結果（G2）＋對照表無缺漏（G1a）＋疑似 contract expansion 均已處置（G1b）＋若有降級已顯式記錄（G3）。此即 Evidence Matrix 三軸的一般化。
 
 ---
 
@@ -184,6 +193,7 @@ Task
 
 - 所有 blocking Contract 都有 Verification
 - 所有 blocking Verification = PASS
+- 疑似 contract expansion 均已處置（G1b：證明為 implementation detail / 回補 Spec 取得接受 / 移除）
 - required Review = PASS
 - 必要 Evidence 存在
 - verification freshness 有效
@@ -195,7 +205,7 @@ Task
 
 ```
 REQ-A/B/C = PASS？ required Review = PASS？ Evidence required → present？
-Result still fresh？ blocker = 0？
+Result still fresh？ blocker = 0？ 疑似 contract expansion 均已處置？（G1b）
   → 全 YES = Complete；否則 BLOCK
 ```
 
@@ -231,7 +241,7 @@ Result still fresh？ blocker = 0？
 
 | # | 未決 | 說明 |
 |---|---|---|
-| 1 | **G1 要不要雙向**（含「不偷加」） | 保證一目前只管「答應的不能少」；要不要也管「沒答應的不能偷加」（未經接受的行為 D）。AI 建議納入（同類失效、verify 對照表多看一個方向即可；2026-08-27 三輪審查中「修 A 順手造 B」實際發生 8 次），使用者裁示後面再說 |
+| 1 | ~~G1 要不要雙向~~ **已拍板（2026-08-28）** | 採雙向，拆 G1a / G1b，邊界定義為「禁止 silent contract deviation」而非禁止所有未逐字寫在 Spec 的 implementation change；G1a blocking、G1b detect + require disposition。全文見 §1.2。決策依據之一：2026-08-27 三輪審查中「修 A 順手造 B」實際發生 8 次 |
 | 2 | **階段界線重表述** | v0 把 Orca 定為唯一 runtime＝原「階段二」內容進入方向；`CLAUDE.md` 的「不要提前把 Orca 的東西塞進 schema」與兩階段表在方向落地時必須重新表述 |
 | 3 | **降級模式表** | 原問題「無 subagent 平台」在 v0 下變成「無 Orca runtime 的環境」；G3 的模式對照表要對新前提定義，且必須把「審查獨立性」列為明名項目 |
 | 4 | **「不保證」清單窮舉** | §1.4 第 3 題目前是從已知文件撈的，落成正式條文時要再掃一輪 |
