@@ -1,0 +1,246 @@
+# superpowers-bridge 下一代：技術方向與設計邊界（v0）
+
+> 2026-08-27 架構討論定案。**這是技術方向與設計邊界文件，不是 implementation spec**——方向看起來完整不等於一次全做。任何依本文件動工的 change，仍走各自的 brainstorm → spec → 核可流程。
+>
+> 討論原始紀錄：repo 根 `2026-08-27-brainstorm-產品承諾.md`（未進版控）。前情：`fix-tdd-transitive-claim` change 暫停、四條工作共同卡點的上溯，見 `文檔/handoff/session-handoff-20260827.md` Session 18:06。
+
+---
+
+## 1. Bridge Guarantee：這包 bridge 到底保證什麼
+
+所有下游設計（Completion Contract、Verification、Evidence、Gate）都從這裡推導，**不是反過來**。
+
+### 1.1 Product Promise（核心句）
+
+> 讓 AI Agent 從已確認的規格一路完成實作與驗收，確保重要需求不會在過程中被遺漏或悄悄弱化；未完成必要驗證的工作，不得被宣稱為完成。
+
+這個 bridge 不保證「你用了哪些 Skills」；它保證的是：**規格承諾不會在 Agent workflow 裡被悄悄弄丟，而且沒有足夠驗證就不能被當成真正完成。**
+
+措辭紀律（討論中確立、寫進承諾時不可丟）：
+
+- 「**弱化**」必須明寫——假保證的實際形態多半不是需求消失，而是宣稱被悄悄改強或改弱；
+- 完成條件用**閘門式**（「未完成必要驗證不得宣稱完成」），不用性質式（「有足夠的驗證依據」）——後者量不出違反。
+
+### 1.2 三條核心保證（mechanism-independent）
+
+| # | 保證 | 內容 |
+|---|---|---|
+| G1 | **Contract Preservation** | 已接受的 Requirement / Scenario 不得在 decomposition、execution、completion 過程中靜默遺失或弱化 |
+| G2 | **Verifiable Completion** | 任何 Complete 宣稱都必須能追溯到其承接的 contract，且必要 verification 已實際執行並取得可接受結果 |
+| G3 | **Explicit Degradation** | 能力不足時可以降級執行機制，但不得把降低後的 assurance 偽裝成完整保證；缺失的 guarantee 必須顯式化 |
+
+保證用途對照：G1 對應 `/to-tickets` 適配與 plan 放寬；G2 對應 Completion Contract / Acceptance Gate；G3 對應降級邊界那條工作，並直接回答「沒有 subagent 是不是禁止執行」——答案是：可以降級執行，但缺失的保證要明講。
+
+**TDD 的位置（定案）**：TDD 不寫進保證本身——它是實現手段，活在 Contract Verification 層，身分是「目前版本對程式變更要求的驗證機制，證據為 RED/GREEN 輸出」。「TDD 不可丟」這條硬約束沒有被削弱，只是換了住址：想丟 TDD 必須顯式修改驗證契約，而那是看得見的改動。
+
+### 1.3 依賴鏈
+
+```
+Bridge Guarantee        「這套 bridge 對使用者保證什麼？」
+        ↓
+Completion Contract     「什麼條件才有資格宣稱完成？」
+        ↓
+Contract Verification   「哪些承諾要怎麼被實際驗證？」
+        ↓
+Verification Result / Evidence  「用什麼結果與證據支撐 PASS？」
+        ↓
+Acceptance Gate         「機械判斷是否可以 Complete」
+```
+
+### 1.4 五個定界問題（防過度工程的第一道）
+
+設計任何一層之前，先有這五題的答案就夠；不要先設計 20 種 evidence type、10 個 state：
+
+1. 哪些事情是 bridge **必須保證**的？→ G1–G3（G1 是否雙向見 §6 未決）
+2. 哪些只是**目前版本選擇的實現機制**（可替換）？→ SDD artifact DAG、TDD（RED/GREEN）、subagent 獨立審查、PRECHECK、verify 逐需求對照、Evidence Matrix 三軸
+3. 哪些事情 bridge **明確不保證**？→ 規格本身的品質與正確性（「已接受的規格」是輸入前提）；prompt 文字層的正確性（CI 驗不到）；agent 產出品質上限（bridge 保證流程性質，不保證聰明程度）。⚠️ 此清單落成正式條文時需再窮舉一輪。
+4. degraded mode 時哪些 guarantee 下降？→ 已確認一例：無獨立審查者時，G2 的「驗證有執行」仍成立但**獨立性喪失**（residual risk 有 2026-08-27 實測數據：語意類缺陷自查命中 0%、外部命中 100%）；其餘情形待降級邊界工作逐一盤。
+5. 宣稱 Complete 最少要證明哪些 guarantee 已成立？→ 每條被接受的 Requirement 有對應驗證結果（G2）＋對照表無缺漏（G1）＋若有降級已顯式記錄（G3）。此即 Evidence Matrix 三軸的一般化。
+
+---
+
+## 2. 十條設計護欄（防膨脹）
+
+1. **先驗證責任邊界，再實作**——OpenSpec、Matt `/to-tickets`、Orca、Superpowers、sd0x 各承擔自己最擅長的責任；不為整合而複製既有能力。
+2. **成熟機制優先，最小適配**——`/to-tickets`、sd0x 的 state / freshness / terminal invariant、OpenSpec verify 都先確認能否直接利用；只有真缺口才新增。
+3. **不要把 Evidence 當主系統**——Evidence 只是支撐 Verification Result 的材料；核心鏈是 `Requirement/Scenario → Verification → Result → Completion Gate`。
+4. **Contract Verification 不得退化成「又跑一次測試」**——它逐項回答「原契約是否被充分驗證」；測試只是 Verification Method 之一。
+5. **Acceptance Gate 不得變成 Agent prompt**——Gate 的價值是機械判定 blocking conditions；Agent 產生判斷，Harness 負責判斷結果齊不齊、PASS 與否、還 fresh 嗎。
+6. **Task traceability 夠用就好**——只需「每個重要 Contract 找得到承接 Task、每個 Task 完成後找得到 Verification Result」；先不發明龐大 Evidence Matrix schema。
+7. **PASS 必須有 freshness**——驗證後 implementation 又變更時，要研究哪些 Verification Result 應失效；「曾經 PASS」不得永遠視為 PASS。
+8. **`verify.md` 暫不重構**——它是 Change-level verification report／裁判紀錄；先建好 Contract Verification、Completion Contract、Gate state，再決定怎麼吸收新結果。
+9. **Task `[x]`、Change Complete、Archive 是三個不同狀態**——不預設 Gate 綁哪一個；先調查現行 OpenSpec lifecycle，再決定哪個 state transition 需要 hard gate。
+10. **先做概念 PoC，不做 Harness v2**——先證明最小鏈 `Requirement/Scenario → Task → Verification Method → Verification Result → Gate PASS/BLOCK` 跑得通，再擴充 review、freshness、parallel execution。
+
+**新增機制的准入問題**（提出大 schema／多 artifact／多 state 前必答）：
+
+> 這個新增機制，是在補「目前沒有辦法證明 Complete」的真缺口，還是只是把既有資訊再記一次？後者原則上先不要做。
+
+**主軸句**：
+
+> 這次設計的目標不是打造更多流程，而是讓「Complete」變成一個可以被證明的狀態。模型仍然擁有解題路徑；Harness 只接管那些不能靠模型自我宣稱的完成邊界。
+
+---
+
+## 3. v0 架構：整體鏈與 Skill 綁定
+
+### 3.1 整體鏈
+
+```
+OpenSpec（定義 Change / Capability / Requirement / Scenario / Design）
+  ↓ Task Decomposition（把承諾切成可執行 Task）
+  ↓ Orca（Coordinator / Worker / serial / parallel runtime）
+  ↓ Implementation（TDD / Debug / Review / Fresh Verification）
+  ↓ Contract Verification（逐條驗 Requirement / Scenario 是否真的成立）
+  ↓ Harness State（記住 PASS / FAIL / OWED，以及 PASS 是否仍有效）
+  ↓ Completion Contract（定義怎樣才叫 Complete）
+  ↓ Acceptance Gate（機械判斷現在能不能宣稱完成）
+  ↓ OpenSpec Verify（Change-level 總體驗證）
+  ↓ verify.md（裁判紀錄）
+  ↓ Finish / Archive
+```
+
+### 3.2 綁定表
+
+| Workflow Node | 初步方案 | 狀態 |
+|---|---|---|
+| 問題探索 | **探索層自由**；預設 `superpowers:brainstorming` → `grilling`，`openspec-explore` 為前置選項（見 §5） | ✅ 定案 |
+| Change / Spec 建立 | OpenSpec propose / artifact workflow | ✅ 直接用 |
+| Task Decomposition | Matt Pocock `/to-tickets` | 🟡 做 OpenSpec 適配（見 §4.1） |
+| Execution Runtime | Orca `orchestration` | ✅ 本階段唯一正式 runtime；execution strategy 在 Orca 裡決定 |
+| Implementation | superpowers `test-driven-development` | ✅ 直接用 |
+| Debugging | superpowers `systematic-debugging` | ✅ 直接用 |
+| Worker 完成前驗證 | superpowers `verification-before-completion` | ✅ 直接用 |
+| Code Review | Superpowers review 紀律 + Orca dispatch | 🟡 改 dispatch |
+| Contract Verification | 薄層自建 Skill + 既有驗證 Skills | 🆕 真正需要補（見 §4.2） |
+| 測試鏈 | sd0x `/verify` 類機制 | 🟡 可重用 |
+| Test coverage review | sd0x `/test-review` / `/check-coverage` | 🟡 可重用 |
+| Completion State | sd0x state / freshness 概念 | 🟡 強參考 |
+| Acceptance Gate | sd0x Gate pattern + Harness command | 🆕 少量新增（見 §4.4） |
+| Change Verify | `openspec-verify-change` | ✅ 保留強化 |
+| Verification Report | 現有 `verify.md` | ✅ 保留，之後優化 |
+| Finish | superpowers `finishing-a-development-branch` | ✅ |
+| Archive | `openspec-archive-change` | ✅ |
+
+表內全部 skill 已於 2026-08-27 逐一確認實際存在（session 可見或磁碟上）。
+
+### 3.3 角色分工（架構哲學濃縮）
+
+> **OpenSpec** 管「承諾什麼」。**Matt `/to-tickets`** 管「怎麼把承諾切成可執行工作」。**Orca** 管「誰來執行、怎麼編排」。**Superpowers / sd0x Skills** 管「怎麼把工程活動做好」。**Contract Verification** 管「承諾真的成立了嗎」。**Harness** 管「必要驗證沒有發生，就不能 Complete」。**OpenSpec Verify + `verify.md`** 管最後的 Change 級裁判與紀錄。
+
+配套定位：
+
+- **Superpowers 降回工程 Skill Library**——不再讓整套 SDD workflow 控制 runtime；Worker 內用 TDD / systematic-debugging / verification-before-completion，review 紀律由 Superpowers 提供、dispatch 由 Orca 負責。
+- **Orca 是本階段唯一正式 execution runtime**——Coordinator 不在 runtime 外自由選（SDD？Orca？另一套？），而是在 Orca 裡決定 serial / parallel 等 execution strategy。
+
+---
+
+## 4. 缺口盤點：輕量適配三處＋真正新增四項
+
+**輕量適配**（既有機制加薄補丁）：① `/to-tickets` → OpenSpec Contract-aware（§4.1）② Code Review → Orca dispatch ③ sd0x state → 增加 Contract Verification state。
+
+**真正新增**（目前僅此四項）：① Contract Verification 薄層（§4.2）② `Requirement/Scenario ↔ Task ↔ Verification Result` 最小 traceability ③ Completion Contract（§4.3）④ Acceptance Gate（§4.4，以 sd0x 為基底非重造）。
+
+### 4.1 `/to-tickets` 的 OpenSpec 適配（不自建 Task Decomposition）
+
+`/to-tickets`（mattpocock-skills）作為母體。已讀全文確認它具備：tracer-bullet 垂直切片、每張 ticket 自足可驗（demoable / verifiable on its own）、blocked-by 依賴邊、fresh-context（一張 ticket 一個乾淨 context window，做完清 context 再拿下一張）、內建「切完先給使用者審 granularity 與 blocking edges」的核可閘。
+
+**要補的只有 OpenSpec Contract awareness**：Task 標明承接哪條 Requirement / Scenario——
+
+```
+Task
+├─ Deliverable
+├─ Contracts（Requirement A / Scenario A1 …）
+├─ Blocked by
+└─ Boundary
+```
+
+讀全文另撈到三個影響適配的事實（光看描述看不到）：
+
+1. frontmatter `disable-model-invocation: true`——只能使用者以 slash 觸發；且依賴 `/setup-matt-pocock-skills` 先配好 tracker 與 triage label。適配時要決定這個限制留不留。
+2. ticket template（local 與 issue 兩版）**沒有 Contracts 欄位**——適配補丁正是加這欄。
+3. 它有自己的清單載體（`.scratch/<slug>/issues/` 或真 tracker），結尾綁 `/implement` 逐張執行——與 OpenSpec `tasks.md` 是兩套清單，**適配時必須決定誰是唯一事實來源**（雙存放＝同步漂移風險，與 schema 安裝副本同步是同型問題）。
+
+### 4.2 Contract Verification 薄層
+
+目前唯一找不到成熟 skill 可完全取代的核心。它是控制層，不重造測試框架：
+
+```
+讀 Contract
+  ↓ 決定這條要執行哪個 Verification Method
+  ↓ 呼叫既有能力執行：
+      Test            → sd0x /verify
+      Coverage 判斷    → /test-review、/check-coverage
+      Review / 檢視    → Reviewer Skill
+      Smoke / E2E     → 對應工具
+  ↓ 收斂成正式 Verification Result：PASS / FAIL / BLOCKED（必要時附 Evidence）
+```
+
+**Evidence 的定位**（縮小）：Evidence ≠ completion mechanism；Evidence ＝ 支撐 Verification Result 的材料。automated test 的 command result 本身就足夠；inspection 需要 reviewer 結論；manual demonstration 需要操作結果；analysis 需要分析輸出。
+
+### 4.3 Completion Contract（Done 的定義）
+
+回答「什麼條件成立，Task / Change 才能叫 Complete」。初步條件集（**欄位不現在定死**，先確立「Complete 是一組條件，不是 Agent 的一句宣稱」）：
+
+- 所有 blocking Contract 都有 Verification
+- 所有 blocking Verification = PASS
+- required Review = PASS
+- 必要 Evidence 存在
+- verification freshness 有效
+- 沒有 unresolved blocker
+
+### 4.4 Acceptance Gate（以 sd0x 為基底，不從零造）
+
+不是寫一個 acceptance-gate skill 叫 Agent「請自行檢查」，而是借 sd0x 的成熟機制：`/precommit` 的 gate pattern、`review-state` 的 durable state、tree digest 的 verification freshness、terminal completion invariant——再加我們自己的 **Requirement / Scenario verification state**。注意：sd0x 這套在它自己家裡是**提醒層**（hook-lightweighting 後刻意 nothing blocks，verdict 在行為層）；「機械擋下」是我們要在它的 state / digest 基礎上**新加**的部分，不是它現成就有的行為：
+
+```
+REQ-A/B/C = PASS？ required Review = PASS？ Evidence required → present？
+Result still fresh？ blocker = 0？
+  → 全 YES = Complete；否則 BLOCK
+```
+
+分工原則：**Contract Verification 可由 Skill / Agent 執行；Acceptance Gate 盡量讓 Harness 機械判斷。**
+
+**sd0x 明確保留的五原則**：① Model owns path ② Harness owns boundaries ③ Durable state（不相信模型記得自己欠什麼）④ Verification freshness（implementation 改了，舊 PASS 不一定還有效）⑤ Terminal completion invariant（Complete 是一組必須成立的終態條件）。
+
+最小 traceability（真正新增第②項）也在這裡落地：`Requirement/Scenario ↔ Task ↔ Verification Result`，夠用就好（護欄 6）。
+
+---
+
+## 5. 探索層定案：預設 brainstorming + grilling
+
+探索層在 bridge 保證的**上游**（三條保證從「已接受的規格」起算），屬「模型與使用者擁有的路徑」——所以**不綁定單一 skill、不建 router 機制**。
+
+三個候選的實際角色（已逐檔讀畢）：
+
+| | 本質 | 方向 | 終點 |
+|---|---|---|---|
+| `openspec-explore` | 「a stance, not a workflow」：開放思考夥伴、無核可閘、OpenSpec-aware | 發散 | 無 |
+| `superpowers:brainstorming` | 流程：分類 → 一次一問 → 方案 → 分段設計 → spec，硬核可閘 | 收斂 | 被核可的 spec |
+| `grilling`（mattpocock） | 對抗式訪談：拷問使用者既有計畫，事實自查、決定逐條問 | 壓力測試 | 共識確認 |
+
+**定案**：
+
+- **預設鏈 = brainstorming（收斂成設計）→ grilling（拷問一輪）→ 核可、進 spec**。grilling 段是預設非強制——bounded 級小改動由 brainstorming 的短設計＋核可即可。
+- `openspec-explore` 留作「還不確定要不要動工、純想事情」的前置選項。
+- **harness 只規定出口條件**：進 Task Decomposition 前必須存在被使用者接受的 spec（有 Requirement / Scenario 可承接）。用哪條路走到那裡，不管——「規定證據，不規定步驟」在探索層的直接應用。
+
+---
+
+## 6. 未決事項（顯式清單，落地前逐一拍板）
+
+| # | 未決 | 說明 |
+|---|---|---|
+| 1 | **G1 要不要雙向**（含「不偷加」） | 保證一目前只管「答應的不能少」；要不要也管「沒答應的不能偷加」（未經接受的行為 D）。AI 建議納入（同類失效、verify 對照表多看一個方向即可；2026-08-27 三輪審查中「修 A 順手造 B」實際發生 8 次），使用者裁示後面再說 |
+| 2 | **階段界線重表述** | v0 把 Orca 定為唯一 runtime＝原「階段二」內容進入方向；`CLAUDE.md` 的「不要提前把 Orca 的東西塞進 schema」與兩階段表在方向落地時必須重新表述 |
+| 3 | **降級模式表** | 原問題「無 subagent 平台」在 v0 下變成「無 Orca runtime 的環境」；G3 的模式對照表要對新前提定義，且必須把「審查獨立性」列為明名項目 |
+| 4 | **「不保證」清單窮舉** | §1.4 第 3 題目前是從已知文件撈的，落成正式條文時要再掃一輪 |
+| 5 | **`/to-tickets` 適配的唯一事實來源** | ticket 檔 vs `tasks.md` 誰是 single source of truth（§4.1 事實 3） |
+| 6 | **Gate 綁哪個 state transition** | 護欄 9：先調查 OpenSpec lifecycle（Task `[x]` / Change Complete / Archive 三態）再定 |
+| 7 | **暫停中的 `fix-tdd-transitive-claim` 如何銜接** | 第一題定案（丙：只刪假宣稱＋收窄理由）在本方向下應保住；若後續推翻要明說，不得默默漂移 |
+
+---
+
+## 7. 下一步（依護欄 10）
+
+先做**概念 PoC**：證明最小鏈 `Requirement/Scenario → Task → Verification Method → Verification Result → Gate PASS/BLOCK` 跑得通。PoC 之前不動 schema.yaml、不建新 artifact、不擴 review / freshness / parallel。PoC 本身作為一個 change 走正常流程（brainstorm → spec → 核可）。
