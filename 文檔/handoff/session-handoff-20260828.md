@@ -120,3 +120,65 @@ G1 雙向拍板落文件（方向文件未決 #1 收案）＋概念 PoC 從 brai
 1. **先收 commit**：PoC spec＋Step 0 inventory（＋本 handoff、work-map），一次 commit。
 2. **Phase 1 動工**：六案例 fixture＋validator，Core PASS ⇔ 六案例判定全對；失敗停在 Phase 1 回頭改設計。
 3. Phase 1 過後進 Phase 2 smoke（CLAUDE.md 階段界線重表述 specimen——它同時是方向文件 §6 未決 #2 的實作）。
+
+
+## Session 17:39
+
+### 一、本 session 主題
+
+概念 PoC 全程執行收案（Phase 1 fixture＋validator → Phase 2 真 artifact smoke → 結論 concept supported）＋CLAUDE.md 階段界線重表述落地（方向文件 §6 未決 #2 收案，使用者拍板甲案）。
+
+### 二、完成事項
+
+- **Phase 1 Core Mechanism: PASS（6/6）**：六案例 fixture（真 OpenSpec 形狀）＋標準庫 gate_check.py；expected 表先於 Gate 邏輯落檔；首跑全綠後以 10 個變異測試證明非假綠（每條 BLOCK 路徑破壞後如預期轉紅）。
+- **審查抓到兩個真缺陷並補死**：P1 孤兒／同層 `- Contracts:` 標註可偽造 coverage（兩輪才修對——改為縮排嚴格深於 checkbox 的機械判定）；P2 results 欄位無型別驗證（`evidence: null` 會 crash）。code review 3 輪 ✅、precommit fallback（schema validate＋smoke）✅、doc review 4 輪 ✅。
+- **Phase 2 Integration: PASS**：`openspec new change claude-md-phase-boundary --schema superpowers-bridge` 建真 change、CLI validate 通過；happy path 四步全成立（CLI JSON 讀 Requirement → tasks.md Contracts 標註建 reference → Inspection 型 Result 掛回 → Gate PASS）。
+- **真工作交付**：CLAUDE.md「分兩階段」改為事件閘門（使用者定版：「方向可以先決定 ≠ 現在就可以實作」；兩個 YES/NO——PoC 通過？正式設計核可？）；殘留「階段一」指涉一併清除；方向文件 §6#2 比照 #1 標記已拍板。
+- **PoC 總報告落檔**：`docs/superpowers/poc/2026-08-28-traceability-gate/poc-report.md`——結論 concept supported；最小載體＝Contracts 標註＋三欄 result 檔＋小型標準庫 Gate；三條架構訊號供正式設計。
+- **驗收節點收案**：學習候選閘門 5 次樣本到齊、依節點判準 ✅ 達標、規矩保留（詳見 result 欄；5 次全為開卷、成績受污染已註記）。
+- **Commit 六筆**：`b822599`（Phase 1）、`7a426fa`（smart-commit 腳本補裝進 .claude/scripts/）、`f213e5d`（CLAUDE.md＋specimen change）、`b7441e7`（PoC 報告）、`0a0a8f8`（§6#2 標記）＋本次收工 commit。
+- **登記結算**：`task-20260828-concept-poc` 標 DONE（證據：poc-report.md 記載雙 PASS 實跑輸出）。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **方向文件 §6 剩餘未決 #3～#7 要先拍板再往下做**（使用者本 session 明示優先）：#3 降級模式表（對應既有 record「apply 階段改規定交件證據」）、#4 「不保證」清單窮舉、#5 `/to-tickets` SSOT、#6 Gate 綁哪個 state transition（護欄 9：先調查 OpenSpec lifecycle）、#7 `fix-tdd-transitive-claim` 銜接（對應 record「修正 TDD 保證的錯誤宣稱」，仍 DOING）。多數已有對應 record 在追、不需新開。
+- [#接力] specimen change `claude-md-phase-boundary` 尚未 archive（未登記為 record、使用者裁示不開 leftover）；要走時記得 Windows 目錄鎖三步 SOP（cp → diff 驗 IDENTICAL → 委派使用者 rm）。
+- [#不重議] PoC 收案結論與宣稱邊界都在 poc-report.md——不宣稱消除自我宣稱、不宣稱語意正確性、Scenario-level 未證明；正式資料模型（stable ID / freshness）是後續設計題、不因 PoC「夠用」而預先否決。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- [#正] **第一次全綠先破壞再相信**：Phase 1 六案例首跑即 6/6，未直接宣稱 PASS——先做 5 個變異驗證每條 BLOCK 路徑會轉紅才收；其後兩輪 review 的修復各配上打到該漏洞的新變異（最終 10 個、全如預期）。
+- [#正] **「修完外送、不自查」連續第三個 session 照做**：code 3 輪＋doc 4 輪，每輪修正交回審查者複驗零新缺陷才收；Codex 額度今日全程正常、未動用 fallback 鏈。
+
+**【當日洞見】**
+
+- [#洞見] **連約 180 行的 Gate 都有兩個「結構檢查被繞過」的洞**（孤兒與同層 Contracts 標註都能偽造 coverage），靠兩輪獨立審查才補死。給正式設計的訊號：附屬語法要一開始就定義成機械可判（已寫進 poc-report 架構訊號節）。
+- [#洞見] **單一資料來源不夠、交叉核對才攔得住**：標題抽取數 vs CLI JSON requirement 數的比對，實際攔下 CLI 對破損標題行的寬鬆解析（變異 M5）。
+- [#決策] **PoC 收案：concept supported**（Core＋Integration 雙 PASS）。
+- [#決策] **CLAUDE.md 動工門檻改事件閘門**（使用者定版：方向可以先決定 ≠ 現在就可以實作）；§6 未決 #2 收案、剩 #3～#7 五項且使用者明示要先拍板。
+- [#決策] **學習候選閘門驗收達標、規矩保留**（沒有×2、候選 11、改既有 4:新增 0、Hypothesis 7；5 次全開卷、污染已註記）。
+
+**【學習候選】**
+
+> Gate 第 5 次手動試跑（累計 5 / 目標 5——樣本到齊，本 session 已依節點判準收驗收）。本次產出：**沒有**——「事件門檻取代時間階段」是既有原則（ship 判準是事件不是時間軸）的應用、非新 pattern，照規則不硬升。
+
+### 五、檔案異動
+
+| 異動 | 內容 |
+|---|---|
+| `b822599` | Phase 1：fixture 五檔＋`gate_check.py`＋`expected-phase1.json`＋`phase1-core-results.md`（+368） |
+| `7a426fa` | `.claude/scripts/` 補裝 smart-commit 三支腳本 |
+| `f213e5d` | `CLAUDE.md` 事件閘門重表述＋`openspec/changes/claude-md-phase-boundary/`（五檔） |
+| `b7441e7` | `poc-report.md`（+51） |
+| `0a0a8f8` | 方向文件 §6#2 標記已拍板 |
+| 本次收工 | `驗收節點.md`（打勾＋result）、`workflow-harness/work-map.jsonl`（concept-poc → DONE）、本 handoff |
+
+錨來源：本 session 開工 commit（7f80084、開工於 2026-08-28T12:05:42）——列 7f80084..HEAD
+
+### 六、下一步建議
+
+1. **拍板方向文件 §6 剩餘未決（#3～#7）**——使用者明示要先決再做。建議起手 #6（Gate 綁哪個 state transition：護欄 9 要求先調查 OpenSpec lifecycle 三態，是 PoC 之後最自然的下一塊）或 #7（恢復 `fix-tdd-transitive-claim`，record 仍 DOING、就是現算下一步）。
+2. #3 降級模式表可與既有 record「apply 階段改規定交件證據」併行處理（同一題的兩面）。
+3. specimen change 的 archive 等正式設計動工前順手收（三步 SOP）。
