@@ -1,0 +1,8 @@
+{
+  "REQ-A": {"verdict": "PASS", "reason": "OK"},
+  "REQ-B": {"verdict": "BLOCK", "reason": "NO_TASK"},
+  "REQ-C": {"verdict": "BLOCK", "reason": "NO_RESULT"},
+  "REQ-D": {"verdict": "BLOCK", "reason": "RESULT_FAIL"},
+  "REQ-E": {"verdict": "BLOCK", "reason": "EMPTY_EVIDENCE"},
+  "REQ-F": {"verdict": "BLOCK", "reason": "CONFLICT"}
+}

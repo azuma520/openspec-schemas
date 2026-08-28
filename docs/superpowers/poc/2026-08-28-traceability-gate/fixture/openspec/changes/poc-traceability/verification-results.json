@@ -1,0 +1,27 @@
+[
+  {
+    "contract": "REQ-A",
+    "status": "PASS",
+    "evidence": "ran test_auth.py::test_expired_token_401; 1 passed, output in ci run #142"
+  },
+  {
+    "contract": "REQ-D",
+    "status": "FAIL",
+    "evidence": "ran test_password.py::test_bcrypt_storage; assertion failed: stored value is plain sha256"
+  },
+  {
+    "contract": "REQ-E",
+    "status": "PASS",
+    "evidence": ""
+  },
+  {
+    "contract": "REQ-F",
+    "status": "PASS",
+    "evidence": "ran test_session.py::test_idle_expiry; 1 passed"
+  },
+  {
+    "contract": "REQ-F",
+    "status": "FAIL",
+    "evidence": "manual re-run of test_session.py::test_idle_expiry on 2nd host; timed out"
+  }
+]
