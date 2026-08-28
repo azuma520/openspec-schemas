@@ -66,3 +66,57 @@
 2. **概念 PoC 立 change**：走 brainstorm → spec → 核可（照探索層定案，brainstorming 起手、要打就 grilling）。
 3. **CLAUDE.md 階段界線與兩階段表重表述**——可與 PoC change 一起或先行小 change。
 4. **`fix-tdd-transitive-claim` 依新方向決定**：恢復（照丙案只刪假宣稱）或併入 PoC 後續。
+
+
+## Session 12:03
+
+### 一、本 session 主題
+
+G1 雙向拍板落文件（方向文件未決 #1 收案）＋概念 PoC 從 brainstorming 到 spec 定稿＋Step 0 Tool Capability Preflight 實測完成。
+
+### 二、完成事項
+
+- **G1 雙向定案落文件並 commit（`6eb855c`）**：G1 拆 G1a No Silent Loss（blocking）/ G1b No Silent Expansion（detect + require disposition）、邊界＝禁止 silent contract deviation 非逐字比對；連動 §1.1 Product Promise 升級（「未經確認地擴張功能範圍」，使用者定措辭）、§1.4、§4.3、§4.4、§6#1 收為已拍板。審查兩輪（Codex → 額度中斷 → fallback 複驗）全 ✅。
+- **概念 PoC spec 定稿**：`docs/superpowers/specs/2026-08-28-concept-poc-traceability-gate-design.md`（十節）。brainstorming 逐題與使用者拍板：hypothesis（結構化 Verification Record、不宣稱消除自我宣稱）、兩條線（Req→Task coverage / Req→Result）、Structural Traceability vs Semantic Correctness 對照、兩階段分開判讀（Core / Integration）、六案例必做（REQ-E evidence 空、REQ-F CONFLICT 由審查者用 REQ-D 論證抓出補入）、三欄 provisional Result（contract+status+evidence）、Step 0 preflight 章、粒度邊界（Requirement-level）、「不新增正式 artifact type」精準措辭。審查六輪（fallback carrier）全 ✅ Mergeable。
+- **Step 0 Preflight 實測完成**：`docs/superpowers/poc/2026-08-28-traceability-gate/step0-capability-inventory.md`。三個關鍵發現：①手造 change 只要 `proposal.md` 就能被 `openspec show --json` 讀出 Requirement/Scenario（審查者的 latent tension 實測不成立）②change 層 JSON 不含 Requirement 標題名（Contracts key 實作時定）③最小新增面積＝Task reference + Result interface + Gate。與 spec 假設無矛盾。
+- **登記結算**：`task-20260828-concept-poc` 標 DOING。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **PoC spec＋Step 0 inventory 兩檔未 commit**（使用者喊收工在先）：擬 message `docs(superpowers): add concept PoC spec and step-0 capability inventory`，下 session 開工先收。
+- [#接力] **Phase 1 動工**：手造六案例 fixture＋Python 標準庫 validator（落點 `docs/superpowers/poc/2026-08-28-traceability-gate/`）。Step 0 已確認 fixture 可直接吃 CLI JSON（需 `proposal.md`）；Contracts key 三選一（位置序號/text/自抽標題行）實作時定。
+- [#接力] Phase 1 Core PASS 後才進 Phase 2（specimen＝CLAUDE.md 階段界線重表述、屆時開真 opsx change、routing exception 已明記於 spec §6）。
+- [#環境] Codex 額度本 session 兩度探測失敗（回報 13:01 恢復）；fallback agent（general-purpose）連跑六輪審查、同 thread 複用可行。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- [#正] **Codex 額度中斷第三次，fallback 鏈已成慣例動作**：兩次探測失敗都直接記 `[REVIEWER_FALLBACK]`、派 general-purpose 代審、驗 sentinel，零停等；同一 fallback agent 連跑六輪（含三次「修 A 造 B」複驗）、同 thread 複用省 context。
+- [#正] **「修完外送、不自查」連續第二個 session 照做**：每輪 sub-threshold 修正都交回審查者盯新缺陷，六輪全 ✅。
+
+**【當日洞見】**
+
+- [#洞見] **審查者的「可能不行」用五分鐘實驗定案，別讓它掛成未決**：審查者兩度標記「CLI JSON 可能只認 CLI 建的 change」為 latent tension；Step 0 在 scratchpad 手造 change 實測，發現只要 `proposal.md` 在場就能讀——猜想不成立。「能碰就碰」的正例：實驗成本遠低於讓疑慮掛在文件裡的成本。
+- [#洞見] **自己定的論證會被審查者拿回來打自己**：REQ-D「每條判斷路徑都要有案例打到」的論證，被審查者原樣用來抓出 evidence 空、CONFLICT 兩條沒被案例覆蓋的 Gate 路徑（REQ-E/F 因此補進 spec）——論證寫得好的副作用是它變成可執行的檢查器。
+- [#決策] G1 採雙向（G1a/G1b、silent contract deviation 為界、G1a blocking / G1b detect+disposition）；PoC 兩階段分開判讀、六案例必做、Contracts 標註與 Result 載體全 provisional；Requirement-level 粒度、Scenario-level 明列未證明。
+
+**【學習候選】**
+
+> Gate 第 4 次手動試跑（累計 4 / 目標 5，見 `驗收節點.md` 2026-09-10 節點）。本次產出：**沒有**（兩條當日洞見各 1 例、無 enforcement 掛點，照規則停在 Observe、不硬升規則）。
+
+### 五、檔案異動
+
+| 異動 | 內容 |
+|---|---|
+| `6eb855c` | `docs/superpowers/specs/2026-08-27-bridge-guarantee-architecture-direction.md` G1 雙向定案（+17/−7） |
+| 未 commit | `docs/superpowers/specs/2026-08-28-concept-poc-traceability-gate-design.md`（新）、`docs/superpowers/poc/2026-08-28-traceability-gate/step0-capability-inventory.md`（新）、`workflow-harness/work-map.jsonl`（concept-poc → DOING）、本 handoff |
+| 未進版控 | `2026-08-27-brainstorm-產品承諾.md`（沿慣例不 commit） |
+
+錨來源：本 session 開工 commit（e811b5c、開工於 2026-08-28T08:11:45）——列 e811b5c..HEAD
+
+### 六、下一步建議
+
+1. **先收 commit**：PoC spec＋Step 0 inventory（＋本 handoff、work-map），一次 commit。
+2. **Phase 1 動工**：六案例 fixture＋validator，Core PASS ⇔ 六案例判定全對；失敗停在 Phase 1 回頭改設計。
+3. Phase 1 過後進 Phase 2 smoke（CLAUDE.md 階段界線重表述 specimen——它同時是方向文件 §6 未決 #2 的實作）。
