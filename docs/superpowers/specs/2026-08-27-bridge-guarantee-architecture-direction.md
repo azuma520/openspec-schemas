@@ -40,6 +40,16 @@
 
 保證用途對照：G1 對應 `/to-tickets` 適配與 plan 放寬；G2 對應 Completion Contract / Acceptance Gate；G3 對應降級邊界那條工作，並直接回答「沒有 subagent 是不是禁止執行」——答案是：可以降級執行，但缺失的保證要明講。
 
+**G3 定版濃縮（2026-08-28 拍板，配套 §6#3）**：
+
+> 沒有 Orca 時，工作流可以退回較簡單的執行模式；失去哪些 Orca 能力就明確標示哪些保證不可用。若失去的是該 Change 的必要保證，則不得降級，必須 BLOCK。
+
+三個支撐點（使用者 2026-08-28 定調）：
+
+- **Orca 是 execution capability provider，不是 hard dependency**——完整模式＝Core Harness Guarantee＋Orca Capability；降級模式＝Core Harness Guarantee。traceability、驗證、Gate 不因無 Orca 消失；消失的是 Orca 附加能力（多 Worker 並行、隔離、dispatch、implementer/reviewer 分離）。分層上 Orca 位於 Contract/Governance 與 Verification/Completion 之間——中層可缺，上下兩層不隨之消失。
+- **每項 guarantee 分 required / degradable**：degradable 缺失 → 降級＋顯式標示（例：`Review: PASS` / `Independent Review: unavailable` / `Reason: Orca runtime unavailable`）；required 缺失 → BLOCK，不得降級。
+- **「哪些 guarantee 對哪類 Change 是 required」需要一個宣告位置**——由 Completion Contract 在正式設計定義該欄位，不留成默契。
+
 **TDD 的位置（定案）**：TDD 不寫進保證本身——它是實現手段，活在 Contract Verification 層，身分是「目前版本對程式變更要求的驗證機制，證據為 RED/GREEN 輸出」。「TDD 不可丟」這條硬約束沒有被削弱，只是換了住址：想丟 TDD 必須顯式修改驗證契約，而那是看得見的改動。
 
 ### 1.3 依賴鏈
@@ -243,14 +253,19 @@ Result still fresh？ blocker = 0？ 疑似 contract expansion 均已處置？�
 |---|---|---|
 | 1 | ~~G1 要不要雙向~~ **已拍板（2026-08-28）** | 採雙向，拆 G1a / G1b，邊界定義為「禁止 silent contract deviation」而非禁止所有未逐字寫在 Spec 的 implementation change；G1a blocking、G1b detect + require disposition。全文見 §1.2。決策依據之一：2026-08-27 三輪審查中「修 A 順手造 B」實際發生 8 次 |
 | 2 | ~~階段界線重表述~~ **已拍板（2026-08-28）** | 採甲案：`CLAUDE.md` 兩階段表改為**事件閘門**（概念 PoC 通過？正式設計核可？兩個 YES/NO），Orca 確定為未來正式 execution runtime、方向以本文件為準；更新的是「禁止動 `schema.yaml` 的理由」，不是提前允許 Orca 實作。已落地：commit `f213e5d`（change `claude-md-phase-boundary`——同時是 traceability-gate PoC 的 Phase 2 specimen，Gate PASS） |
-| 3 | **降級模式表** | 原問題「無 subagent 平台」在 v0 下變成「無 Orca runtime 的環境」；G3 的模式對照表要對新前提定義，且必須把「審查獨立性」列為明名項目 |
-| 4 | **「不保證」清單窮舉** | §1.4 第 3 題目前是從已知文件撈的，落成正式條文時要再掃一輪 |
-| 5 | **`/to-tickets` 適配的唯一事實來源** | ticket 檔 vs `tasks.md` 誰是 single source of truth（§4.1 事實 3） |
-| 6 | **Gate 綁哪個 state transition** | 護欄 9：先調查 OpenSpec lifecycle（Task `[x]` / Change Complete / Archive 三態）再定 |
-| 7 | **暫停中的 `fix-tdd-transitive-claim` 如何銜接** | 第一題定案（丙：只刪假宣稱＋收窄理由）在本方向下應保住；若後續推翻要明說，不得默默漂移 |
+| 3 | ~~降級模式表~~ **已拍板（2026-08-28）** | 與 record「apply 階段改規定交件證據」**在正式設計同一章收斂**（Completion / Evidence＋Degraded Mode＋Independent Review degradation），**不回寫歷史語意**——舊 record 當時沒包含完整 G3 就是沒有，不得事後說成「本來就是同一件事」。G3 定版濃縮與 required / degradable 分級見 §1.2；「審查獨立性」將為表中第一個明名項目（已有 2026-08-27 實測數據：語意類缺陷自查命中 0%、外部命中 100%） |
+| 4 | **「不保證」清單窮舉 → 已排程（2026-08-28 確認非新決策）** | §1.4 第 3 題自帶時機（「落成正式條文時再窮舉一輪」），列為正式設計 checklist 項即可，現在不掃 |
+| 5 | ~~`/to-tickets` 適配的唯一事實來源~~ **已拍板（2026-08-28）** | **`tasks.md` 是 SSOT**；ticket 檔是 Worker 工作包、非權威紀錄。依據（讀 CLI 1.3.1 實作）：CLI 機械消費 `tasks.md` 兩處——`instructions apply` 的 `all_done` 判定＋archive 的進度警告（後者路徑寫死在 `utils/task-progress.js`、不理會 schema `apply.tracks` 設定）；ticket 檔無任何機械消費者。PoC 已證 Contracts 標註於 `tasks.md` 可跑 Gate。反向（ticket 為權威）＝雙載體必然同步＝「兩份真相」漂移風險 |
+| 6 | ~~Gate 綁哪個 state transition~~ **已拍板（2026-08-28）** | **Gate 自身定義 Change Complete**（甲案）。調查結論（讀 CLI 1.3.1 實作）：OpenSpec **沒有** Change Complete 狀態——`all_done` 是「checkbox 全勾」的導出值（其提示文字 CLI 寫死、schema 蓋不掉）、archive 是收檔不是驗收（incomplete tasks 僅警告可繞、無 post_apply hook）。定案順序：tasks 全 `[x]` → 跑 Acceptance Gate → **Gate PASS＝Complete** → 才可 archive；archive 前置檢查「Gate PASS 紀錄存在」為第二道保險、不是 Completion 本體。Task `[x]` 層級的機械攔截留給 Orca runtime（worker 交件時）。分工句：**OpenSpec 管「工作清單做完了沒」；Harness 管「這個 Change 有沒有資格被稱為完成」** |
+| 7 | ~~`fix-tdd-transitive-claim` 如何銜接~~ **已拍板（2026-08-28）** | **恢復執行，定性為 corrective-fix exception**：只允許刪除／修正已被證偽的既有宣稱，不得藉此加入 Completion Gate、Contract Verification、Orca 或任何新正式設計。schema 動工總門檻**不變**（PoC 通過 **AND** 正式設計核可，才正式動 schema）——「PoC 過了就能動 schema.yaml」的逐列解讀已被否決；例外條文寫入 `CLAUDE.md` 事件閘門段。原丙案（只刪假宣稱＋收窄理由）與本方向相容、保住 |
 
 ---
 
 ## 7. 下一步（依護欄 10）
 
-先做**概念 PoC**：證明最小鏈 `Requirement/Scenario → Task → Verification Method → Verification Result → Gate PASS/BLOCK` 跑得通。PoC 之前不動 schema.yaml、不建新 artifact、不擴 review / freshness / parallel。PoC 本身作為一個 change 走正常流程（brainstorm → spec → 核可）。
+~~先做**概念 PoC**~~ **已完成（2026-08-28）**：最小鏈 `Requirement/Scenario → Task → Verification Method → Verification Result → Gate PASS/BLOCK` 已證明跑得通（Core 6/6＋Integration 雙 PASS，結論 concept supported，見 `docs/superpowers/poc/2026-08-28-traceability-gate/poc-report.md`）。
+
+現在的下一步（2026-08-28 §6 全數拍板後）：
+
+1. **corrective-fix exception 先行**：恢復 `fix-tdd-transitive-claim`（§6#7），只刪／修已證偽宣稱。
+2. **正式設計**：§6#3～#6 的定案為輸入（Gate 定義 Complete、tasks.md SSOT、G3 required/degradable 分級表、「不保證」清單窮舉為 checklist 項）；核可後才開始正式 schema 實作。

@@ -90,12 +90,16 @@ Orca 已經確定是 bridge 未來的正式 execution runtime,相關架構方向
 
 這句的邏輯是:**方向可以先決定 ≠ 現在就可以實作**。守門從舊的時間階段(「階段二還沒開始」——已不是事實)改成兩個可回答的事件:
 
-| 閘門事件 | 答案 | 未全 YES 前 |
-|---|---|---|
-| 概念 PoC 通過了嗎? | YES / NO | 不動 `schema.yaml` |
-| 正式設計核可了嗎? | YES / NO | 不新增正式 artifact type |
+| 閘門事件 | 目前答案 |
+|---|---|
+| 概念 PoC 通過了嗎? | **YES**(2026-08-28,concept supported,見 `docs/superpowers/poc/2026-08-28-traceability-gate/poc-report.md`) |
+| 正式設計核可了嗎? | NO |
 
-這次重表述**更新的是「禁止動工的理由」,不是提前允許 Orca 實作**——擋 schema 的力道原封不動。
+**兩個事件全 YES 之前,不做正式 schema 實作**(不修改 `schema.yaml`、不新增正式 artifact type)。單一 YES 不解鎖任何一項——2026-08-28 曾出現「表格逐列對應、PoC 過了就能動 schema.yaml」的放寬解讀,**已被使用者否決**:不能因為有一件很想修的事就重新解釋門禁。
+
+**唯一例外:corrective fix(修錯例外,2026-08-28 拍板)**——只允許**刪除或修正已被證偽的既有宣稱**(現行唯一適用案:`fix-tdd-transitive-claim` 刪「上游自動強制 TDD」假宣稱),不得藉此加入 Completion Gate、Contract Verification、Orca 整合或任何新正式設計能力。修錯走完整 opsx change 流程與審查鏈,不因例外身分減省。
+
+這次重表述**更新的是「禁止動工的理由」,不是提前允許 Orca 實作**——重表述本身不放寬任何限制;唯一的放寬是上述修錯例外,且範圍已封閉(只刪/修已證偽宣稱)。
 
 Orca 方向的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k 行 ChatGPT 匯出)、`2026-08-25-brainstorm-派工模式判準.md`、`2026-08-26-監督式協調-攜出討論包.md`。三份都未進版控。
 

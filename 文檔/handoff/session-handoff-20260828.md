@@ -182,3 +182,61 @@ G1 雙向拍板落文件（方向文件未決 #1 收案）＋概念 PoC 從 brai
 1. **拍板方向文件 §6 剩餘未決（#3～#7）**——使用者明示要先決再做。建議起手 #6（Gate 綁哪個 state transition：護欄 9 要求先調查 OpenSpec lifecycle 三態，是 PoC 之後最自然的下一塊）或 #7（恢復 `fix-tdd-transitive-claim`，record 仍 DOING、就是現算下一步）。
 2. #3 降級模式表可與既有 record「apply 階段改規定交件證據」併行處理（同一題的兩面）。
 3. specimen change 的 archive 等正式設計動工前順手收（三步 SOP）。
+
+
+## Session 18:13
+
+### 一、本 session 主題
+
+方向文件 §6 未決 #3~#7 全數拍板落檔（OpenSpec lifecycle 前置調查 → 五題決策包 → 使用者裁決 → 寫進方向文件與 CLAUDE.md → doc review gate 過）。
+
+### 二、完成事項
+
+- **#6 前置調查（讀 CLI 1.3.1 原始碼）**：OpenSpec 無 Change Complete 狀態——`all_done` 是 checkbox 全勾的導出值（提示文字 CLI 寫死、schema 蓋不掉）；archive 是收檔非驗收（incomplete tasks 僅警告可繞、無 post_apply hook）；archive 進度檢查寫死讀 `tasks.md`（`utils/task-progress.js`，不理會 `apply.tracks`）。
+- **五題全數拍板**（使用者裁決）：#6 甲——Gate 自身定義 Change Complete（tasks 全勾 → Gate PASS＝Complete → 才可 archive；archive 前置檢查為第二道保險）；#5 甲——`tasks.md` 是 SSOT、ticket 檔是 Worker 工作包；#3 甲——降級表與「apply 改規定交件證據」在正式設計同章收斂、不回寫歷史語意；#4 照排程（非新決策）；#7 甲但**corrective-fix exception**——恢復 `fix-tdd-transitive-claim`，只准刪／修已證偽宣稱，schema 動工總門檻（PoC AND 正式設計核可）不變。
+- **G3 定版濃縮寫進 §1.2**：Orca 是 capability provider 非 hard dependency；每項 guarantee 分 required / degradable（required 缺失 → BLOCK）；required 宣告位置歸 Completion Contract。
+- **CLAUDE.md 事件閘門收緊**：兩事件全 YES 才動 schema（明記否決逐列解讀）＋corrective-fix 窄例外＋PoC 已過（YES, 2026-08-28）。
+- **doc review gate 過**：Codex 額度用盡 → fallback 鏈（`[REVIEWER_FALLBACK]` → general-purpose 代審 → sentinel 機械驗證）；首輪 ✅ Mergeable 零 🔴；🟡＋⚪ 各一當場修、交回複驗零新缺陷；`doc_review pass` 已記。一條 ⚪（PoC 報告連結化）照規則 deferred。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **本批改動 commit**（本 session 收工 commit 收）。
+- [#接力] **下個 session：恢復 `fix-tdd-transitive-claim`**（corrective-fix exception 身分、record `task-20260826-fix-false-tdd-claim` 仍 DOING）：change 目錄現只有 brainstorm.md，走 opsx continue 生 proposal / spec / tasks 再動手；變更面清單已凍結（brainstorm §四、全 repo 約 10 處）；老實話措辭已在 brainstorm §三 Q3 打磨好。動 schema.yaml 要同步 `openspec/schemas/` 副本。
+- [#接力] 正式設計（§6#3~#6 定案為輸入）在修錯之後；specimen change `claude-md-phase-boundary` 的 archive 等正式設計動工前順手收（Windows 目錄鎖三步 SOP）。
+- [#環境] Codex 額度 18:00 前用盡（回報 19:10 恢復）；fallback agent（general-purpose）跑首審＋複驗共兩輪、同 agent 複用可行。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- [#正] **Codex 額度中斷第 4 次，fallback 鏈零停等**：探測失敗即記 `[REVIEWER_FALLBACK]`、派 general-purpose 代審、sentinel 機械驗證通過才收；「修完外送、不自查」連續第四個 session 照做（🟡＋⚪ 當場修後交回複驗、零新缺陷）。
+- [#正] **端選擇不端結論有生效**：五題決策包走完整格式（已查證事實＋選項優劣＋建議＋我沒查的），#7 被使用者當場糾正——決策點被看見，把關才發生。
+
+**【當日洞見】**
+
+- [#洞見] **為了想修的事重新解釋門禁＝偷拆大門**：agent 提「PoC 過了就能動 schema.yaml」的逐列解讀被使用者否決；正解是總門檻不動、另開範圍封閉的修錯例外。規則的例外要顯式新增，不能靠重新詮釋既有條文生出來。
+- [#洞見] **OpenSpec 三態實查**：archive 寫死讀 tasks.md、all_done 提示文字 CLI 寫死、無 post_apply hook——「Task 全勾 ≠ Change Complete」從實作層被證實，反向支持 Completion Gate 方向。
+- [#決策] **§6 五題全收**：#6 Gate 自定義 Complete、#5 tasks.md SSOT、#3 併正式設計且不回寫歷史語意、#4 照排程、#7 corrective-fix exception。
+
+**【學習候選】**
+
+- **Case**：agent 把閘門表讀成逐列對應、提議 schema.yaml 已解鎖；使用者否決，改開 corrective-fix 窄例外。
+- **Candidate Pattern**：被 gate 擋住又確有正當需求時，正確動作是「提案新增範圍封閉的顯式例外」，不是「重新解釋 gate 條文讓需求剛好通過」。邊界：適用於自己不是 gate owner 的情形。
+- **Evidence**：1 例（2026-08-28）。**Hypothesis**。
+- **Minimum Sufficient Intervention**：已改既有環境——CLAUDE.md 閘門段把「否決逐列解讀」與例外條文寫死，下次 agent 讀到的就是收緊版。不新增規則（無需另找掛點）。
+- **Promotion**：History only（環境已修，等 sibling case）。
+
+### 五、檔案異動
+
+| 異動 | 內容 |
+|---|---|
+| 未 commit（本次收工 commit 收） | `CLAUDE.md`（事件閘門收緊＋修錯例外）、`docs/superpowers/specs/2026-08-27-bridge-guarantee-architecture-direction.md`（§1.2 G3 濃縮、§6 rows 3-7 收案、§7 更新）、本 handoff |
+| 未進版控 | `2026-08-27-brainstorm-產品承諾.md`（沿慣例不 commit） |
+
+錨來源：本 session 開工 commit（4848914、開工於 2026-08-28T17:43:24）——列 4848914..HEAD
+
+### 六、下一步建議
+
+1. **恢復 `fix-tdd-transitive-claim`**（corrective-fix exception）：opsx continue 生 proposal / spec / tasks → 刪假宣稱＋補老實話（約 10 處、清單已凍結）→ 完整審查鏈。
+2. 修錯收案後進**正式設計**（§6 定案為輸入：Gate 定義 Complete、tasks.md SSOT、G3 required/degradable 分級表、「不保證」窮舉 checklist）。
+3. Codex 19:10 後恢復，下個 session 主審應可回 Codex（fallback 是 per-change sticky，新 change 重新探測）。
