@@ -84,18 +84,24 @@ openspec schemas                              # smoke test:列得出來才算裝
 
 這個 repo 正在從 v1 往下一代改。**動 `schema.yaml` 任何一行之前,先確認你的改動符合下面的方向。**
 
-### 分兩階段,不要混
+### 動工門檻:事件閘門,不是時間階段(2026-08-28 重表述)
 
-| 階段 | 範圍 | 狀態 |
+Orca 已經確定是 bridge 未來的正式 execution runtime,相關架構方向以 [Bridge Guarantee 方向文件](./docs/superpowers/specs/2026-08-27-bridge-guarantee-architecture-direction.md)為準;但在**概念 PoC 通過、正式設計完成並核可之前,不修改 `schema.yaml`,也不新增正式 artifact type**(方向文件護欄 10)。
+
+這句的邏輯是:**方向可以先決定 ≠ 現在就可以實作**。守門從舊的時間階段(「階段二還沒開始」——已不是事實)改成兩個可回答的事件:
+
+| 閘門事件 | 答案 | 未全 YES 前 |
 |---|---|---|
-| **一(現在)** | 把 `superpowers-bridge` 調整成符合現行做法與需求 | 進行中 |
-| **二(之後)** | 接 Orca:`execution-readiness` artifact、Coordinator agent、派工判準 | **還沒開始,不要提前把 Orca 的東西塞進 schema** |
+| 概念 PoC 通過了嗎? | YES / NO | 不動 `schema.yaml` |
+| 正式設計核可了嗎? | YES / NO | 不新增正式 artifact type |
 
-階段二的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k 行 ChatGPT 匯出)、`2026-08-25-brainstorm-派工模式判準.md`、`2026-08-26-監督式協調-攜出討論包.md`。三份都未進版控。
+這次重表述**更新的是「禁止動工的理由」,不是提前允許 Orca 實作**——擋 schema 的力道原封不動。
+
+Orca 方向的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k 行 ChatGPT 匯出)、`2026-08-25-brainstorm-派工模式判準.md`、`2026-08-26-監督式協調-攜出討論包.md`。三份都未進版控。
 
 ### 核心設計原則:規定證據,不規定步驟
 
-這是階段一的主軸,也是使用者親自定調的:
+這是現階段 bridge 調整工作的主軸,也是使用者親自定調的:
 
 > **模型擁有路徑,harness 擁有證據和不可逾越的邊界。**
 

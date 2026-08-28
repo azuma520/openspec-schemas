@@ -1,0 +1,7 @@
+[
+  {
+    "contract": "REQ-PB",
+    "status": "PASS",
+    "evidence": "inspected CLAUDE.md section 動工門檻 against the approved requirement: boundary is stated as two yes/no gate events (concept PoC passed / formal design approved), the outdated phase-two framing is gone (grep 階段二 shows only the historical mention inside the restated sentence), and the prohibition on schema.yaml / new artifact types is restated verbatim per direction-doc guardrail 10"
+  }
+]
