@@ -242,7 +242,7 @@ Result still fresh？ blocker = 0？ 疑似 contract expansion 均已處置？�
 | # | 未決 | 說明 |
 |---|---|---|
 | 1 | ~~G1 要不要雙向~~ **已拍板（2026-08-28）** | 採雙向，拆 G1a / G1b，邊界定義為「禁止 silent contract deviation」而非禁止所有未逐字寫在 Spec 的 implementation change；G1a blocking、G1b detect + require disposition。全文見 §1.2。決策依據之一：2026-08-27 三輪審查中「修 A 順手造 B」實際發生 8 次 |
-| 2 | **階段界線重表述** | v0 把 Orca 定為唯一 runtime＝原「階段二」內容進入方向；`CLAUDE.md` 的「不要提前把 Orca 的東西塞進 schema」與兩階段表在方向落地時必須重新表述 |
+| 2 | ~~階段界線重表述~~ **已拍板（2026-08-28）** | 採甲案：`CLAUDE.md` 兩階段表改為**事件閘門**（概念 PoC 通過？正式設計核可？兩個 YES/NO），Orca 確定為未來正式 execution runtime、方向以本文件為準；更新的是「禁止動 `schema.yaml` 的理由」，不是提前允許 Orca 實作。已落地：commit `f213e5d`（change `claude-md-phase-boundary`——同時是 traceability-gate PoC 的 Phase 2 specimen，Gate PASS） |
 | 3 | **降級模式表** | 原問題「無 subagent 平台」在 v0 下變成「無 Orca runtime 的環境」；G3 的模式對照表要對新前提定義，且必須把「審查獨立性」列為明名項目 |
 | 4 | **「不保證」清單窮舉** | §1.4 第 3 題目前是從已知文件撈的，落成正式條文時要再掃一輪 |
 | 5 | **`/to-tickets` 適配的唯一事實來源** | ticket 檔 vs `tasks.md` 誰是 single source of truth（§4.1 事實 3） |
