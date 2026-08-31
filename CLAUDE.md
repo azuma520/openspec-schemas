@@ -27,7 +27,7 @@ openspec-schemas/                     ← 本 repo
 │       └── retrospectives/           ← 結案複盤
 └── superpowers-bridge/                ← 第一個 bridge,自包式 schema bundle
     ├── README.md / .zh-TW.md         ← 完整 bridge 文件(含 install/upgrade + integration runbook)
-    ├── VERSION                       ← bundle SemVer(1.0.0),與 schema.yaml 的 version: 1 是兩回事
+    ├── VERSION                       ← bundle SemVer(1.0.1),與 schema.yaml 的 version: 1 是兩回事
     ├── schema.yaml                   ← 唯一的行為來源:artifacts DAG + instruction prompts + apply 編排
     └── templates/                    ← artifact 模板(8 個 artifact 各一份)
         ├── brainstorm.md / proposal.md / design.md / spec.md
@@ -187,7 +187,7 @@ Orca 方向的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k �
 | 識別碼 | 位置 | 什麼時候動 |
 |---|---|---|
 | schema major | `schema.yaml: version: 1` | 只有 schema graph 契約破壞(artifact 增刪、`requires:` 改、PRECHECK 形狀改)才 bump |
-| bundle release | `superpowers-bridge/VERSION` + git tag `v1.0.0` | 這包的 SemVer 發版,包含純文字修訂;`1.x.y` 都屬 schema major 1 |
+| bundle release | `superpowers-bridge/VERSION` + git tag(`v1.x.y`,發版時打) | 這包的 SemVer 發版,包含純文字修訂;`1.x.y` 都屬 schema major 1 |
 
 Compatibility 表的列鍵用的是 **schema major(`v1`)**,不是 bundle 版本 —— 改 VERSION 不要順手去動那張表的第一欄(會打爆上面的 CI grep)。
 
@@ -214,7 +214,7 @@ PR #970 review 提出三個顧慮,本 schema 在 v1 已具體應對。Claude 在
 - ❌ 拿掉某個 PRECHECK 但沒換更強的替代品
 - ❌ 把 verify / retrospective 從 artifact 拉掉但沒在 README「設計觸點」段同步更新限制
 - ❌ 改 schema name 但沒同步改 bridge 內所有文件 + 頂層 README 的 bridge 索引
-- ❌ 在 apply instruction 加 `superpowers:executing-plans` 當 fallback(它不會 transitive 帶起 TDD 與 code-review,等於把 Superpowers 的價值抽掉;本 schema 刻意只支援有 subagent 的平台,缺就叫使用者改用內建 `spec-driven`)
+- ❌ 在 apply instruction 加 `superpowers:executing-plans` 當 fallback(它不派任何獨立審查者——單 agent 自跑自查,上游在有 subagent 時也明示改用 subagent-driven-development;TDD 不是差異點——任務單有要求時兩邊都拿得到、沒要求時兩邊都不保證。本 schema 刻意只支援有 subagent 的平台,缺就叫使用者改用內建 `spec-driven`)
 - ❌ 把 PRECHECK 失敗改成「靜默降級」(整套設計就是 fail loud;缺 skill 一律 STOP)
 
 ## 相關連結

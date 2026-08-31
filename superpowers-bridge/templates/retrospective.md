@@ -56,22 +56,22 @@ Commit chain (時序):
 | superpowers:writing-plans                        |      |
 | superpowers:using-git-worktrees                  |      |
 | superpowers:subagent-driven-development          |      |
-| (transitive) superpowers:test-driven-development |      |
-| (transitive) superpowers:requesting-code-review  |      |
+| superpowers:test-driven-development (✓ only if the skill was explicitly invoked; write `N/A — plan-step TDD only` when TDD discipline came from plan steps alone) |      |
+| (structural via SDD) superpowers:requesting-code-review |      |
 | superpowers:finishing-a-development-branch       |      |
 
-> **Default expectation**: 全部 ✓。每個 skill 都是 schema 設計的一部分,
-> 跳過屬於異常情境。任一項 ✗ 都必須在下方
-> `### Deliberately Skipped Skills` subsection 提出原因與預防方案。
+> 如實勾選。TDD 與 code-review 兩列依上方標註本就是條件性/結構性的——
+> 任務單沒要求 TDD 就不算跳過。確實被跳過的項目在下方
+> `### Deliberately Skipped Skills` subsection 記錄原因與預防方案。
 
 ### Deliberately Skipped Skills
 
-> 跳過 skill 是設計的 escape hatch,不是常規路徑。每個 ✗ 必須回答以下三題;
-> 整節空白(全綠)是預期狀態。
+> 跳過 skill 是設計的 escape hatch,不是常規路徑。每個刻意跳過的 ✗ 回答以下三題;
+> 本節記錄實際發生了什麼——空白代表沒有刻意跳過,不是達標證明。
 
 - **`<skill name>`**
   - **What was skipped**: <具體跳過了整個 skill,還是某個 sub-step>
-  - **Why this cycle**: <具體 cycle 條件 — 不可寫「不需要」/「太小」/「沒時間」/「被外部 dep 擋住」/「skill 輸出看起來不對」之類含糊理由;要寫實際 trigger(具體 commit / log line / 觀察到的行為)>
+  - **Why this cycle**: <具體 cycle 條件 — 理由要具體,寫實際 trigger(具體 commit / log line / 觀察到的行為);「不需要」/「太小」這類理由要接著說明為什麼(判準是什麼),不可停在含糊的一句話>
   - **How to prevent recurrence**: 下一個 cycle 在同類條件下怎麼不再跳?選一:
     - `schema graph fix` — 寫具體要改 schema.yaml 的哪一段
     - `skill description tightening` — 寫具體要改哪個 skill 的 frontmatter / instruction
