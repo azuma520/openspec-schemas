@@ -210,7 +210,7 @@ Differences from `spec-driven`:
 | Entry | proposal (manual) | **brainstorm** (invokes brainstorming skill) |
 | Plan layer | tasks (coarse) | tasks + **plan** (TDD micro-steps) |
 | apply requires | tasks | **plan** |
-| apply method | standard task-by-task | **worktree + subagent-driven-development** (with TDD + code-review transitive) |
+| apply method | standard task-by-task | **worktree + subagent-driven-development** (structural code review; TDD via plan micro-steps when tasks require it) |
 | Post-apply | (none) | **verify** + **retrospective** artifacts |
 | New artifacts | — | brainstorm, plan, verify, retrospective |
 
@@ -244,7 +244,7 @@ flowchart TD
         direction TB
         A0["<b>0. Pre-flight skill check</b>"]
         A1["<b>1. Workspace</b><br/><i>using-git-worktrees</i>"]
-        A2["<b>2. Executor</b><br/><i>subagent-driven-development</i><br/>↳ TDD + code-review (transitive)"]
+        A2["<b>2. Executor</b><br/><i>subagent-driven-development</i><br/>↳ structural code review; TDD per task content"]
         A3["<b>3. Verification</b><br/><i>openspec-verify-change</i> → verify.md"]
         A4["<b>4. Retrospective</b> → retrospective.md<br/>(BEFORE PR; hot context)"]
         A5["<b>5. Archive</b><br/><i>openspec archive -y</i><br/>(sync delta + move folder)"]
@@ -279,7 +279,7 @@ PLANNING ━━━━━━━━━━━━━━━━━━━━━━━�
 APPLY ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   0. Pre-flight skill check
   1. superpowers:using-git-worktrees
-  2. superpowers:subagent-driven-development (+ TDD + code-review transitive)
+  2. superpowers:subagent-driven-development (+ structural code review; TDD when tasks require it)
   3. openspec-verify-change → verify.md ◄┐
                               │           │ blocking → fix
                               ▼           │
@@ -301,13 +301,13 @@ APPLY ━━━━━━━━━━━━━━━━━━━━━━━━�
 | 2 | `superpowers:writing-plans` | `plan` artifact instruction | Direct (with PRECHECK) |
 | 3 | `superpowers:using-git-worktrees` | apply step 1 | Direct |
 | 4 | `superpowers:subagent-driven-development` | apply step 2 | Direct |
-| 5 | `superpowers:test-driven-development` | (activated inside #4) | **Transitive** |
-| 6 | `superpowers:requesting-code-review` | (activated inside #4) | **Transitive** |
+| 5 | `superpowers:test-driven-development` | (TDD discipline arrives via plan.md task content; the schema does not invoke this skill — an implementer may self-trigger it) | **Conditional** |
+| 6 | `superpowers:requesting-code-review` | (dispatched by #4; batching possible) | **Structural** |
 | 7 | `superpowers:finishing-a-development-branch` | apply step 4 | Direct |
 
 Plus one OpenSpec built-in: `openspec-verify-change` (apply step 3, produces `verify.md`).
 
-> **No `executing-plans` fallback.** This schema is opinionated: it requires a subagent-capable platform (Claude Code, Codex, etc.). The alternative executor `superpowers:executing-plans` does not transitively activate TDD or code-review (verified against its [SKILL.md](https://github.com/obra/superpowers/blob/main/skills/executing-plans/SKILL.md)) — falling back would silently degrade Superpowers' core value. If your platform lacks subagent support, use the built-in `spec-driven` schema instead.
+> **No `executing-plans` fallback.** This schema is opinionated: it requires a subagent-capable platform (Claude Code, Codex, etc.). The alternative executor `superpowers:executing-plans` dispatches no independent reviewer — a single agent executes the plan and self-checks (verified against its [SKILL.md](https://github.com/obra/superpowers/blob/main/skills/executing-plans/SKILL.md)) — and upstream itself directs users to `subagent-driven-development` whenever subagents are available. TDD is not the differentiator: when a task requires it, both executors receive that requirement through plan.md task content — neither path guarantees it otherwise. If your platform lacks subagent support, use the built-in `spec-driven` schema instead.
 
 ### Output redirection
 
@@ -325,7 +325,7 @@ Implemented purely via context injection at invocation time, not by modifying sk
 ### Quick flow (recommended)
 ```bash
 /opsx:ff my-feature    # one-shot: scaffold + brainstorm + proposal + design + specs + tasks + plan
-/opsx:apply            # worktree + subagent-driven-development (with TDD + code-review)
+/opsx:apply            # worktree + subagent-driven-development (structural code review; TDD per task content)
 /opsx:verify           # produces verify.md (7 checks)
 /opsx:continue         # → retrospective (produces retrospective.md, §0 + 6 sections)
 /opsx:archive          # archive
@@ -365,7 +365,7 @@ Implemented purely via context injection at invocation time, not by modifying sk
 Confirms these skills are installed before proceeding:
 
 - `superpowers:using-git-worktrees`
-- `superpowers:subagent-driven-development` (transitive: `test-driven-development`, `requesting-code-review`)
+- `superpowers:subagent-driven-development` (dispatches `requesting-code-review`; TDD discipline arrives via plan.md task content — `test-driven-development` is neither prechecked nor schema-invoked, though an implementer may self-trigger it)
 - `superpowers:finishing-a-development-branch`
 
 Missing skill → STOP with explicit error. No silent fallback, no manual mode within this schema. The user should either install Superpowers or switch to the built-in `spec-driven` schema for that change.
@@ -378,10 +378,10 @@ Creates `.worktrees/<change-name>/`, switches to a new branch, runs setup, confi
 
 #### 2. Executor — `superpowers:subagent-driven-development`
 
-Main agent reads `plan.md`, dispatches a fresh subagent per micro-task. Each subagent transitively activates:
+Main agent reads `plan.md`, dispatches a fresh subagent per micro-task. Each subagent works from its task's content:
 
-- **TDD** (`superpowers:test-driven-development`): write failing test → watch it fail → minimal code → pass; production code without prior test gets deleted
-- **Per-task code review** (`superpowers:requesting-code-review`): spec-compliance review + code-quality review; critical issues block forward motion
+- **TDD discipline** (via plan content): the task's micro-steps carry RED→GREEN when `writing-plans` judged the task to need tests; the schema does not invoke `superpowers:test-driven-development` itself, and the executor does not enforce it — an implementer may self-trigger the skill
+- **Code review** (`superpowers:requesting-code-review`): structural — reviewer subagents are dispatched during execution (several small same-shape tasks may be batched into one reviewed diff); critical issues normally block forward motion, though upstream lets the controller park a still-open finding after round 5 (see the re-verification table below)
 
 Coarse `tasks.md` checkboxes tick as tasks complete. After all tasks, a final code review covers the whole implementation.
 
@@ -440,13 +440,13 @@ Each artifact / apply step that invokes a Superpowers skill runs a PRECHECK at t
 
 Integration lives entirely in `instruction:` fields (pure prompts). If Superpowers upgrades a skill's behavior, the schema doesn't change. We only touch `schema.yaml` if a skill is renamed or removed.
 
-### 3. Transitive dependencies made explicit
+### 3. How TDD and code review actually arrive — made explicit
 
-TDD and code-review are normally hidden inside `subagent-driven-development`'s SKILL.md. Our schema's apply step 2a instruction lists these two transitive activations explicitly, so a reader can see "what actually happens during apply" at a glance.
+TDD and code-review used to be described here as hidden transitive activations of `subagent-driven-development`. Our schema's apply step 2 instruction now states the conditional truth explicitly — TDD depends on plan.md task content; code review is structurally dispatched — so a reader sees what is and is not guaranteed during apply at a glance.
 
 ### 4. Opinionated: subagent platforms only, no manual fallback
 
-This schema requires a subagent-capable platform (Claude Code, Codex, etc.). The alternative executor `superpowers:executing-plans` does NOT transitively activate TDD or code-review (verified against its [SKILL.md](https://github.com/obra/superpowers/blob/main/skills/executing-plans/SKILL.md) — its body has no mention of either, and its Integration section omits both `test-driven-development` and `requesting-code-review`). Falling back to it would silently lose what Superpowers brings to this integration. We prefer to fail loud at Step 0 and direct users to the built-in `spec-driven` schema instead.
+This schema requires a subagent-capable platform (Claude Code, Codex, etc.). The alternative executor `superpowers:executing-plans` dispatches no independent reviewer: a single agent executes the plan and self-checks (verified against its [SKILL.md](https://github.com/obra/superpowers/blob/main/skills/executing-plans/SKILL.md) — its body mentions neither `test-driven-development` nor `requesting-code-review`, and it contains no reviewer dispatch). Upstream itself tells users to prefer `subagent-driven-development` whenever subagents are available. TDD is not what separates the two paths — when a task requires it, both executors receive that requirement through plan.md task content, and neither guarantees it otherwise. Falling back would silently lose the review structure Superpowers brings to this integration, so we prefer to fail loud at Step 0 and direct users to the built-in `spec-driven` schema instead.
 
 ### 5. Evidence-based PRECHECK for verify and retrospective (Layer 2 capability detection)
 
@@ -470,7 +470,7 @@ This bundle carries **two version identifiers** that should not be confused:
 | Identifier | Where | Meaning | Example |
 |---|---|---|---|
 | Schema major | `schema.yaml: version: 1` | Contract of the schema graph (artifacts, `requires:` edges, PRECHECK shape). Breaking changes bump this. | `1` |
-| Bundle release | `VERSION` file + git tag | SemVer release of this bundle, scoped to a schema major. | `1.0.0` (tagged `v1.0.0`) |
+| Bundle release | `VERSION` file + git tag | SemVer release of this bundle, scoped to a schema major. | `1.0.1` (tag `v1.0.1` at release) |
 
 A bundle release `1.x.y` is a published cut of schema major `v1`. A future schema major `v2` will restart bundle releases at `2.0.0`. Adopters who pin to `v1.x.y` are guaranteed schema-graph compatibility within the v1 major.
 
@@ -480,7 +480,7 @@ A bundle release `1.x.y` is a published cut of schema major `v1`. A future schem
 
 Baseline versions this schema was authored against. This is a **historical snapshot, not an end-to-end compatibility guarantee** — CI cannot run the full prompt-layer workflow in headless mode, so behavioral compatibility relies on human review when drift fires.
 
-Current bundle release: **`1.0.0`** (git tag `v1.0.0`; see [VERSION](./VERSION)).
+Current bundle release: **`1.0.1`** (see [VERSION](./VERSION); git tag `v1.0.1` created at release).
 
 | superpowers-bridge | OpenSpec CLI | Superpowers plugin | Baseline as of |
 |---|---|---|---|
@@ -497,15 +497,15 @@ The table above records what this schema was **authored** against; it is not bum
 | All 8 skills this schema names still exist (`brainstorming`, `writing-plans`, `using-git-worktrees`, `subagent-driven-development`, `finishing-a-development-branch`, `test-driven-development`, `requesting-code-review`, `executing-plans`) | ✅ No renames — Layer 1 PRECHECK intact |
 | Design touch #4's claim that `executing-plans` mentions neither TDD nor code-review | ✅ Still true — 0 matches in its `SKILL.md` |
 | `brainstorming` behaves as the `brainstorm` artifact instruction describes | ❌ **Drift — see below** |
-| Apply step 2's claim that `subagent-driven-development` transitively enforces `test-driven-development` ("every task follows RED-GREEN-REFACTOR") | ❌ **False in v6.3.0 — see below** |
-| Apply step 2's claim that it transitively enforces `requesting-code-review` | ⚠️ **True, but not per-task.** A review is always dispatched and a final `code-reviewer.md` pass is structural, but `SKILL.md:223-229` directs the controller to batch several small same-shape tasks into ONE dispatch reviewed as a single diff, and `SKILL.md:415-419` lets the controller park a finding it agrees is real once round 5 still leaves it open. So "a fresh reviewer gates every task" overstates it. |
+| Apply step 2's former claim (removed in bundle 1.0.1) that `subagent-driven-development` transitively enforces `test-driven-development` ("every task follows RED-GREEN-REFACTOR") | ❌ **Was false in v6.3.0 — see below.** The instruction now states the conditional truth |
+| Apply step 2's former claim (reworded in bundle 1.0.1) that it transitively enforces `requesting-code-review` | ⚠️ **True, but not per-task.** A review is always dispatched and a final `code-reviewer.md` pass is structural, but `SKILL.md:223-229` directs the controller to batch several small same-shape tasks into ONE dispatch reviewed as a single diff, and `SKILL.md:415-419` lets the controller park a finding it agrees is real once round 5 still leaves it open. So "a fresh reviewer gates every task" overstates it. |
 | Full cycle re-run (`/opsx:new` → archive) against v6.3.0 | ⬜ Not done |
 
 **Open drift:** `brainstorming` v6.x opens by classifying the request into three paths — spike / bounded / architectural — and only the architectural path performs the five steps this schema's `brainstorm.instruction` describes. On the spike and bounded paths the skill produces a short in-chat answer and stops, which starves the `design` artifact's Context / Goals / Decisions / Risks / Migration reorganization. Separately, the v6.x skill states that after the architectural path the only skill to invoke next is `writing-plans`, whereas this schema inserts `proposal` → `design` → `specs` → `tasks` in between.
 
-**Open drift — TDD is no longer unconditional:** `subagent-driven-development`'s `SKILL.md` (32 KB in v6.3.0) contains no TDD mandate at all; every TDD reference lives in `implementer-prompt.md` and each one is conditional — "Write tests (**following TDD if task says to**)", "Did I follow TDD **if required**?", "**TDD Evidence** (**if TDD was required for this task**)". TDD therefore reaches the implementer only because `writing-plans` bakes "Step 1: Write the failing test / Step 2: Run test to verify it fails" into every task. Loosening `plan.md` without replacing that channel silently removes TDD. The same prompt already defines a `TDD Evidence` reporting slot (RED command + failing output, GREEN command + passing output), so the fix direction is to make the task contract *require* TDD and *demand that evidence*, rather than prescribe the steps.
+**Open drift — TDD is conditional upstream (and was never verified as unconditional):** `subagent-driven-development`'s `SKILL.md` (32 KB in v6.3.0) contains no TDD mandate at all; every TDD reference lives in `implementer-prompt.md` and each one is conditional — "Write tests (**following TDD if task says to**)", "Did I follow TDD **if required**?", "**TDD Evidence** (**if TDD was required for this task**)". TDD therefore reaches the implementer only because `writing-plans` bakes "Step 1: Write the failing test / Step 2: Run test to verify it fails" into the tasks it judges to need tests (prose-only work may carry none). Loosening `plan.md` without replacing that channel silently removes TDD. The same prompt already defines a `TDD Evidence` reporting slot (RED command + failing output, GREEN command + passing output), so the fix direction is to make the task contract *require* TDD and *demand that evidence*, rather than prescribe the steps.
 
-Not yet fixed — both drifts need a schema change, so the baseline row stays at `v5.1.0` and the weekly drift issue stays open until they land.
+Status: the false enforcement claim itself was removed in bundle 1.0.1 (apply step 2 now states the conditional truth); the deeper fix — a task contract that *requires* TDD and *demands that evidence* — remains open, as does the `brainstorming` drift, which needs a schema change. The baseline row stays at `v5.1.0` and the weekly drift issue stays open until those land.
 
 ### How this is checked
 
@@ -550,7 +550,7 @@ Apply requires `plan` (not `tasks`) because the executor needs micro-steps; `tra
 If a Superpowers skill is unavailable:
 
 - **`brainstorm` / `plan` artifacts** — the user may explicitly opt in to writing the artifact manually (PRECHECK STOPs and informs the user; manual override requires deliberate user action, not silent degradation)
-- **`apply` phase** — no manual fallback within this schema. PRECHECK STOPs at Step 0 if any required skill is missing. The recommended path is to switch to the built-in `spec-driven` schema for that change. Rationale: see Design touch #4 above — `executing-plans` does not transitively activate TDD or code-review, and a degraded apply phase would defeat the schema's purpose.
+- **`apply` phase** — no manual fallback within this schema. PRECHECK STOPs at Step 0 if any required skill is missing. The recommended path is to switch to the built-in `spec-driven` schema for that change. Rationale: see Design touch #4 above — `executing-plans` dispatches no independent reviewer, and a degraded apply phase would defeat the schema's purpose.
 
 ---
 

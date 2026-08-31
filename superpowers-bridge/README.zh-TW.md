@@ -210,7 +210,7 @@ brainstorm ──┬──→ proposal ──→ specs ──┐
 | 起點 | proposal(手動撰寫) | **brainstorm**(調用 brainstorming skill) |
 | Plan 層級 | tasks(粗粒度) | tasks + **plan**(TDD micro-step) |
 | apply 需要 | tasks | **plan** |
-| apply 方式 | 標準 task-by-task | **worktree + subagent-driven-development**(含 TDD + code-review 傳遞) |
+| apply 方式 | 標準 task-by-task | **worktree + subagent-driven-development**(結構性 code review;TDD 依 plan 微步驟、任務有要求才做) |
 | Post-apply | (無) | **verify** + **retrospective** artifacts |
 | 新增 artifacts | — | brainstorm, plan, verify, retrospective |
 
@@ -244,7 +244,7 @@ flowchart TD
         direction TB
         A0["<b>0. Pre-flight skill check</b>"]
         A1["<b>1. Workspace</b><br/><i>using-git-worktrees</i>"]
-        A2["<b>2. Executor</b><br/><i>subagent-driven-development</i><br/>↳ TDD + code-review(傳遞)"]
+        A2["<b>2. Executor</b><br/><i>subagent-driven-development</i><br/>↳ 結構性 code review;TDD 依任務內容"]
         A3["<b>3. Verification</b><br/><i>openspec-verify-change</i> → verify.md"]
         A4["<b>4. Retrospective</b> → retrospective.md<br/>(PR 之前;hot context)"]
         A5["<b>5. Archive</b><br/><i>openspec archive -y</i><br/>(sync delta + 搬 folder)"]
@@ -279,7 +279,7 @@ PLANNING ━━━━━━━━━━━━━━━━━━━━━━━�
 APPLY ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   0. Pre-flight skill check
   1. superpowers:using-git-worktrees
-  2. superpowers:subagent-driven-development(+ TDD + code-review 傳遞)
+  2. superpowers:subagent-driven-development(+ 結構性 code review;TDD 任務有要求才做)
   3. openspec-verify-change → verify.md ◄┐
                               │           │ blocking → 回去修
                               ▼           │
@@ -301,13 +301,13 @@ APPLY ━━━━━━━━━━━━━━━━━━━━━━━━�
 | 2 | `superpowers:writing-plans` | `plan` artifact instruction | 直接(含 PRECHECK) |
 | 3 | `superpowers:using-git-worktrees` | apply step 1 | 直接 |
 | 4 | `superpowers:subagent-driven-development` | apply step 2 | 直接 |
-| 5 | `superpowers:test-driven-development` | (#4 內部觸發) | **傳遞** |
-| 6 | `superpowers:requesting-code-review` | (#4 內部觸發) | **傳遞** |
+| 5 | `superpowers:test-driven-development` | (TDD 紀律靠 plan.md 任務內容到位;schema 不會 invoke 這個 skill——實作者可能自行觸發) | **條件性** |
+| 6 | `superpowers:requesting-code-review` | (由 #4 派發;可能批次合審) | **結構性** |
 | 7 | `superpowers:finishing-a-development-branch` | apply step 4 | 直接 |
 
 加上一個 OpenSpec built-in:`openspec-verify-change`(apply step 3,產出 `verify.md`)。
 
-> **不支援 `executing-plans` fallback**。本 schema 是 opinionated 的:要求 subagent-capable 平台(Claude Code、Codex 等)。替代 executor `superpowers:executing-plans` 並**不會** transitively 觸發 TDD 或 code-review(已對 [SKILL.md](https://github.com/obra/superpowers/blob/main/skills/executing-plans/SKILL.md) 做事實查核 —— body 完全沒提到 TDD 或 code-review,Integration 段也未列出 `test-driven-development` 與 `requesting-code-review`)。退到 2b 等於靜默降級 Superpowers 的核心價值。若你的平台沒有 subagent 支援,改用 OpenSpec 內建的 `spec-driven` schema。
+> **不支援 `executing-plans` fallback**。本 schema 是 opinionated 的:要求 subagent-capable 平台(Claude Code、Codex 等)。替代 executor `superpowers:executing-plans` **不派任何獨立審查者**——單一 agent 自己執行、自己檢查(已對 [SKILL.md](https://github.com/obra/superpowers/blob/main/skills/executing-plans/SKILL.md) 做事實查核),且上游自己就明示:有 subagent 就改用 `subagent-driven-development`。TDD 不是兩條路的差異點:任務有要求時,兩個 executor 都是透過 plan.md 的任務內容拿到那個要求——沒要求時兩邊都不保證。若你的平台沒有 subagent 支援,改用 OpenSpec 內建的 `spec-driven` schema。
 
 ### Output redirection(產出重導)
 
@@ -325,7 +325,7 @@ Superpowers skill 有預設輸出路徑(例如 brainstorming 寫到 `docs/superp
 ### 快速流程(推薦)
 ```bash
 /opsx:ff my-feature    # 一條龍:scaffold + brainstorm + proposal + design + specs + tasks + plan
-/opsx:apply            # worktree + subagent-driven-development(含 TDD + code-review)
+/opsx:apply            # worktree + subagent-driven-development(結構性 code review;TDD 依任務內容)
 /opsx:verify           # 產出 verify.md(7 項檢查)
 /opsx:continue         # → retrospective(產出 retrospective.md,§0 + 6 sections)
 /opsx:archive          # 封存
@@ -365,7 +365,7 @@ Superpowers skill 有預設輸出路徑(例如 brainstorming 寫到 `docs/superp
 確認以下 skill 都安裝才繼續:
 
 - `superpowers:using-git-worktrees`
-- `superpowers:subagent-driven-development`(傳遞依賴:`test-driven-development`、`requesting-code-review`)
+- `superpowers:subagent-driven-development`(會派發 `requesting-code-review`;TDD 紀律靠 plan.md 任務內容到位——`test-driven-development` 既不在 PRECHECK 清單、schema 也不 invoke 它,實作者可能自行觸發)
 - `superpowers:finishing-a-development-branch`
 
 skill 缺失 → STOP 並通知使用者,不靜默 fallback,本 schema 內也沒有 manual mode。建議使用者在那個 change 改用 OpenSpec 內建的 `spec-driven` schema,或安裝缺失的 skill 後重來。
@@ -378,10 +378,10 @@ skill 缺失 → STOP 並通知使用者,不靜默 fallback,本 schema 內也沒
 
 #### 2. Executor — `superpowers:subagent-driven-development`
 
-Main agent 讀 `plan.md`,為每個 micro-task 派發 fresh subagent。每個 subagent 自動傳遞:
+Main agent 讀 `plan.md`,為每個 micro-task 派發 fresh subagent。每個 subagent 照自己任務單的內容工作:
 
-- **TDD**(`superpowers:test-driven-development`):先寫失敗測試 → 看著它 fail → 寫最小程式碼 → pass;production code 寫在沒測試之前會被刪掉重來
-- **per-task code review**(`superpowers:requesting-code-review`):spec compliance review + code quality review;Critical 級問題擋下進度
+- **TDD 紀律**(靠 plan 內容):`writing-plans` 判斷需要測試的任務,微步驟會帶 RED→GREEN;schema 不會 invoke `superpowers:test-driven-development` 本身,executor 也不強制——實作者可能自行觸發該 skill
+- **code review**(`superpowers:requesting-code-review`):結構性——執行過程中派發 reviewer subagent(數個同形小 task 可能合併成一次 diff 審);Critical 級問題通常會擋下進度,但上游允許 controller 在第 5 輪後 park 仍未解的 finding(見下方重驗表)
 
 完成 coarse task 就更新 `tasks.md` checkbox。所有 task 跑完後,對整個 implementation 再做一次 final code review。
 
@@ -440,13 +440,13 @@ Evidence-first 反思:§0 Evidence(量化前置數據 —— commit 數、diff �
 
 整合**完全**發生在 `instruction:` 欄位(純 prompt)。Superpowers 升版某個 skill 的行為時,本 schema 不用改。只有 skill 被改名或移除時才要 touch `schema.yaml`。
 
-### 3. 傳遞依賴顯式化
+### 3. TDD 與 code review 實際怎麼來——顯式寫清楚
 
-TDD 與 code-review 平常藏在 `subagent-driven-development` 的 SKILL.md 裡。本 schema apply step 2a 的 instruction **直接列出**這兩個 transitive activation,讓讀者一眼看懂「apply 階段到底會發生什麼」。
+TDD 與 code-review 過去在這裡被描述成 `subagent-driven-development` 內部隱藏的 transitive activation。本 schema apply step 2 的 instruction 現在**直接寫出條件性的真相**——TDD 取決於 plan.md 的任務內容;code review 是結構性派發——讓讀者一眼看懂 apply 階段什麼有保證、什麼沒有。
 
 ### 4. Opinionated:只支援 subagent 平台,沒有手動 fallback
 
-本 schema 要求 subagent-capable 平台(Claude Code、Codex 等)。替代 executor `superpowers:executing-plans` **不會** transitively 觸發 TDD 或 code-review(已對其 [SKILL.md](https://github.com/obra/superpowers/blob/main/skills/executing-plans/SKILL.md) 做事實查核 —— body 完全沒提及這兩者,Integration 段也未列出 `test-driven-development` 與 `requesting-code-review`)。退到 2b 等於靜默丟掉 Superpowers 帶給整合的核心價值。我們選擇在 Step 0 fail loud,並指引使用者改用內建的 `spec-driven` schema。
+本 schema 要求 subagent-capable 平台(Claude Code、Codex 等)。替代 executor `superpowers:executing-plans` **不派任何獨立審查者**:單一 agent 自己執行計畫、自己檢查(已對其 [SKILL.md](https://github.com/obra/superpowers/blob/main/skills/executing-plans/SKILL.md) 做事實查核——body 既沒提 `test-driven-development` 也沒提 `requesting-code-review`,更沒有任何 reviewer 派發)。上游自己也明示:有 subagent 就優先用 `subagent-driven-development`。TDD 不是兩條路的分野——任務有要求時,兩個 executor 都是透過 plan.md 的任務內容拿到那個要求,沒要求時兩邊都不保證。退過去等於靜默丟掉 Superpowers 帶給整合的審查結構,所以我們選擇在 Step 0 fail loud,並指引使用者改用內建的 `spec-driven` schema。
 
 ### 5. Evidence-based PRECHECK for verify and retrospective(Layer 2 capability detection)
 
@@ -470,7 +470,7 @@ LLM 不必解讀 timing 文字 —— 跑指令、看結果即可。這是顧慮
 | 標識 | 位置 | 含義 | 範例 |
 |---|---|---|---|
 | Schema major | `schema.yaml: version: 1` | schema graph 契約版本(artifacts、`requires:` 邊、PRECHECK 形狀)。破壞性改動才 bump | `1` |
-| Bundle release | `VERSION` 檔 + git tag | 此 bundle 的 SemVer 發佈版本,從屬於某個 schema major | `1.0.0`(tag `v1.0.0`) |
+| Bundle release | `VERSION` 檔 + git tag | 此 bundle 的 SemVer 發佈版本,從屬於某個 schema major | `1.0.1`(發版時打 tag `v1.0.1`) |
 
 `1.x.y` 是 schema major `v1` 的一個 published cut;未來 schema major `v2` 會把 bundle release 重新從 `2.0.0` 起算。Adopter 釘到 `v1.x.y` 即享有 schema graph 在 v1 major 內的相容保證。
 
@@ -480,7 +480,7 @@ LLM 不必解讀 timing 文字 —— 跑指令、看結果即可。這是顧慮
 
 本 schema 撰寫時所對齊的 upstream 基準版本。這是**歷史快照,不是端對端相容性承諾** — CI 無法在 headless 環境跑完整的 prompt-layer workflow,行為相容性依賴 drift 觸發人類檢核。
 
-目前 bundle release: **`1.0.0`**(git tag `v1.0.0`;見 [VERSION](./VERSION))。
+目前 bundle release: **`1.0.1`**(見 [VERSION](./VERSION);tag `v1.0.1` 於發版時建立)。
 
 | superpowers-bridge | OpenSpec CLI | Superpowers plugin | 基準日期 |
 |---|---|---|---|
@@ -497,15 +497,15 @@ LLM 不必解讀 timing 文字 —— 跑指令、看結果即可。這是顧慮
 | 本 schema 點名的 8 個 skill 是否都還在(`brainstorming`、`writing-plans`、`using-git-worktrees`、`subagent-driven-development`、`finishing-a-development-branch`、`test-driven-development`、`requesting-code-review`、`executing-plans`) | ✅ 無改名 — Layer 1 PRECHECK 不受影響 |
 | 設計觸點 #4 的宣稱:`executing-plans` 不提 TDD 也不提 code-review | ✅ 仍成立 — 其 `SKILL.md` 命中數 0 |
 | `brainstorming` 的行為是否符合 `brainstorm` artifact instruction 的描述 | ❌ **已漂移,見下** |
-| apply 第 2 步宣稱 `subagent-driven-development` 會 transitive 強制 `test-driven-development`(「每張 task 都走 RED-GREEN-REFACTOR」) | ❌ **在 v6.3.0 已不成立,見下** |
-| apply 第 2 步宣稱它會 transitive 強制 `requesting-code-review` | ⚠️ **成立,但不是每張 task 一個。** review 一定會派、最後一次 `code-reviewer.md` 也是結構性的,但 `SKILL.md:223-229` 要求把數個同形小 task **合併成一次 dispatch、diff 當一個單位審**;`SKILL.md:415-419` 又允許 controller 在第 5 輪後把它自己認定為真實的 finding **park 掉**。因此「每張 task 都有獨立的 reviewer gate」是誇大。 |
+| apply 第 2 步**過去**宣稱(bundle 1.0.1 已刪)`subagent-driven-development` 會 transitive 強制 `test-driven-development`(「每張 task 都走 RED-GREEN-REFACTOR」) | ❌ **該宣稱在 v6.3.0 本就不成立,見下。** instruction 現已改寫成條件式的真相 |
+| apply 第 2 步**過去**宣稱(bundle 1.0.1 已改寫)它會 transitive 強制 `requesting-code-review` | ⚠️ **成立,但不是每張 task 一個。** review 一定會派、最後一次 `code-reviewer.md` 也是結構性的,但 `SKILL.md:223-229` 要求把數個同形小 task **合併成一次 dispatch、diff 當一個單位審**;`SKILL.md:415-419` 又允許 controller 在第 5 輪後把它自己認定為真實的 finding **park 掉**。因此「每張 task 都有獨立的 reviewer gate」是誇大。 |
 | 對 v6.3.0 重跑完整 cycle(`/opsx:new` → archive) | ⬜ 未執行 |
 
 **未解漂移:** `brainstorming` v6.x 一開始會先把請求分類成三條路徑 — spike / bounded / architectural — 只有 architectural 那條會執行本 schema `brainstorm.instruction` 所描述的五個步驟。走 spike 或 bounded 時,skill 只在對話中給出簡短結論就停住,下游 `design` artifact 要重組出 Context / Goals / Decisions / Risks / Migration 就沒有素材。另外,v6.x 的 skill 明載 architectural 路徑之後唯一該調用的是 `writing-plans`,而本 schema 在中間插入了 `proposal` → `design` → `specs` → `tasks`。
 
-**未解漂移 —— TDD 已不再是無條件的:** `subagent-driven-development` 的 `SKILL.md`(v6.3.0 共 32 KB)完全沒有強制 TDD 的條文;所有 TDD 字樣都在 `implementer-prompt.md`,而且**三處全是條件句** —— 「Write tests(**following TDD if task says to**)」、「Did I follow TDD **if required**?」、「**TDD Evidence**(**if TDD was required for this task**)」。TDD 之所以還會到達實作者,純粹是因為 `writing-plans` 把「Step 1: 寫失敗的測試 / Step 2: 跑它確認失敗」寫進每一張 task。**放寬 `plan.md` 而沒有替代管道,就會靜默地把 TDD 拿掉。** 同一份 prompt 已經定義了 `TDD Evidence` 回報欄位(RED 指令 + 失敗輸出、GREEN 指令 + 通過輸出),因此修正方向是讓 task 契約**要求 TDD 並索取該證據**,而不是規定步驟。
+**未解漂移 —— TDD 在上游是條件性的(且從未被驗證過是無條件的):** `subagent-driven-development` 的 `SKILL.md`(v6.3.0 共 32 KB)完全沒有強制 TDD 的條文;所有 TDD 字樣都在 `implementer-prompt.md`,而且**三處全是條件句** —— 「Write tests(**following TDD if task says to**)」、「Did I follow TDD **if required**?」、「**TDD Evidence**(**if TDD was required for this task**)」。TDD 之所以還會到達實作者,純粹是因為 `writing-plans` 把「Step 1: 寫失敗的測試 / Step 2: 跑它確認失敗」寫進它判斷需要測試的任務(純散文類工作可能一條都沒有)。**放寬 `plan.md` 而沒有替代管道,就會靜默地把 TDD 拿掉。** 同一份 prompt 已經定義了 `TDD Evidence` 回報欄位(RED 指令 + 失敗輸出、GREEN 指令 + 通過輸出),因此修正方向是讓 task 契約**要求 TDD 並索取該證據**,而不是規定步驟。
 
-尚未修復 —— 兩個漂移都需要動 schema,因此基準列維持 `v5.1.0`,每週的 drift issue 也維持開啟直到修復落地。
+現況:假的強制宣稱本身已在 bundle 1.0.1 刪除(apply 第 2 步現在寫的是條件式的真相);更深的修法——讓 task 契約**要求 TDD 並索取證據**——仍未做,`brainstorming` 漂移也仍需動 schema。基準列維持 `v5.1.0`,每週的 drift issue 也維持開啟直到這些落地。
 
 ### 驗證機制
 
@@ -550,7 +550,7 @@ apply 要求 `plan` 而非 `tasks`,因為 executor 需要 micro-step 才能有�
 若 Superpowers skill 不可用:
 
 - **`brainstorm` / `plan` artifact**:使用者可明確 opt-in 改成手動撰寫(PRECHECK 會 STOP 並通知;手動模式需要使用者明確選擇,不會靜默降級)
-- **`apply` phase**:本 schema 沒有 manual fallback。Step 0 PRECHECK 缺任何必要 skill 就 STOP,建議改用 OpenSpec 內建的 `spec-driven` schema 跑那個 change。理由見上面「設計觸點 #4」—— `executing-plans` 不會 transitively 觸發 TDD 與 code-review,降級的 apply 等於違背 schema 的目的
+- **`apply` phase**:本 schema 沒有 manual fallback。Step 0 PRECHECK 缺任何必要 skill 就 STOP,建議改用 OpenSpec 內建的 `spec-driven` schema 跑那個 change。理由見上面「設計觸點 #4」—— `executing-plans` 不派任何獨立審查者,降級的 apply 等於違背 schema 的目的
 
 ---
 
