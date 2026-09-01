@@ -153,3 +153,59 @@ bridge guarantee capability spikes S1–S6:取事實 → 選型比較 → 使用
 1. **plan 放寬**(record 已標 NEXT):走 opsx change,依 spike 拍板落地——「規定證據不規定步驟」主軸的正體。
 2. **§2.3 措辭收斂 + deferred findings 批**(task-20260901-design-223-convergence):動設計文件時一批收 11 筆。
 3. **push 後看 Actions 是否自動觸發**(fork Actions 之謎最終實測;本 session 已有 commit 待 push)。
+
+
+## Session 15:28
+
+### 一、本 session 主題
+
+push 5 筆 commit 上 main(/push-ci 完整流程)+ fork Actions 之謎破案(fork 專屬啟用按鈕未按,已啟用並 dispatch 驗證綠)。
+
+### 二、完成事項
+
+- 開工三步驟:跑 /work-status、讀 9/1 handoff 三個 session 區塊、接力棒 3 條逐條交代、提優先建議 3 條。
+- doc gate 清完:上 session 收工 append 的 handoff 區塊經 Codex 代審(implementation-sync profile)✅ Mergeable、零 🔴、1 🟡 deferred(terminalHandle 欄位名,handoff append-only 不回改)、note doc_review pass。
+- push:走 /push-ci 完整流程(Phase 0 preflight → 保護分支預核准 → 計畫核准 → SHA/目的地 digest 綁定執行),dca5c5d..1b3606a 5 筆 commit 上 origin/main。
+- fork Actions 之謎破案:push 後 CI 仍未觸發,查出唯一 run 的 event 是 workflow_dispatch(手動)、證偽「已啟用」假說;使用者開網頁找到 fork 專屬橫幅「Workflows aren't being run on this forked repository」並按下啟用;手動 dispatch Validate schemas 驗證 1b3606a → success(15s)。
+- 向使用者白話解說 CI 機制、fork 停用規則、本次解決的問題。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **plan 放寬**(record 已標 NEXT):下個 session 主題(使用者已指定)。
+- [#接力] push 自動觸發尚未實測(啟用後還沒有新 push);下次 push 自然驗證,不必特地推。
+- [#接力] Weekly upstream version check 在 fork 上仍 Disabled(排程類要單獨啟用),要不要開由使用者決定。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- [#正] push 走 /push-ci 完整流程(保護分支預核准 + 計畫核准 + SHA/目的地 digest 綁定),doc gate 先清再推。
+- [#反省] 本 session 多步驟工作(push 流程 + CI 追查)未建 TaskCreate 管制——違反 Guardrail A4,下不為例。
+
+**【當日洞見】**
+
+- [#決策] **fork Actions 之謎真因確定並解決**:GitHub 對「fork 時帶 workflow 檔」的 repo 預設停用 Actions,啟用開關只存在於網頁 Actions 頁橫幅,**API 層(state=active、enabled=true)完全讀不到這一層**——前兩個 session 據 API 判「已啟用」皆為誤判。使用者按下按鈕後已啟用;手動 dispatch 驗證 1b3606a ✅ success(15s)。
+- [#洞見] 破案關鍵是 gh run list 的 **event 欄位**:唯一一筆 run 是 workflow_dispatch 不是 push,直接證偽「push 曾觸發過」——查「有沒有跑」不夠,要查「被什麼觸發」。
+- [#洞見] 排程類 workflow(Weekly upstream version check)在 fork 上要**另外單獨啟用**,主開關不連動,目前仍 Disabled(待使用者決定)。
+
+**【學習候選】**
+
+- **Case**:連續三個 session 用 API(gh api workflows、actions/permissions)判定 fork Actions「已啟用」,實際的 fork 專屬開關只在網頁 UI 有,API 讀不到,誤判兩輪。
+- **Candidate Pattern**:宣告某平台功能「已啟用/已設定」前,若存在「UI 專屬狀態層」(API 讀不到的開關),必須以**該功能的實際行為**(這裡:push 是否真的產生 run)驗證,不得以 API 設定值代替行為證據。邊界:僅適用「設定宣稱」場景;API 與行為一致的平台不受限。
+- **Evidence**:1 案(跨 3 session、同一誤判重複 2 次)。與全域「證據先於斷言」「能碰就碰」同族,新載體(API/UI 狀態分層)。**Hypothesis**。
+- **Minimum Sufficient Intervention**:先觀察不新增規範(掛點寫不出——沒有機制能列舉「哪些平台有 UI 專屬層」;本次由使用者開網頁攔住,行為驗證這步已因「下次 push 自然實測」內建)。
+- **Promotion**:History only。
+
+### 五、檔案異動
+
+- 本 session 無新 commit(工作為推送既有 commit + GitHub 側啟用操作);本 handoff append 為唯一本地檔案改動。
+- 遠端:origin/main dca5c5d → 1b3606a(5 筆 commit 上線);GitHub Actions 已啟用;Validate schemas run #2(workflow_dispatch、1b3606a、success)。
+- 未進版控:2026-08-27-brainstorm-產品承諾.md(沿慣例)。
+
+錨來源:本 session 開工 commit(1b3606a、開工於 2026-09-01T14:57:21)——列 1b3606a..HEAD(無新 commit)
+
+### 六、下一步建議
+
+1. **plan 放寬**(record 已標 NEXT、使用者已指定為下個 session 主題):走 opsx change,依 Formal Design + spike 拍板落地「規定證據不規定步驟」;TDD 以證據要求形式保留。
+2. 下次 push 順看 Actions 是否自動觸發(啟用後的最終實測)。
+3. Weekly upstream version check 仍 Disabled,要啟用去 Actions 頁點該 workflow enable(一鍵,由使用者決定)。
