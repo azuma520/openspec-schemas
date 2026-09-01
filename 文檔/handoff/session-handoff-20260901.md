@@ -95,3 +95,61 @@ bridge guarantee 正式設計——六題釐清逐題拍板 → 九段分段核�
 1. **capability spikes(S1–S6)+ 選型**(record 已標 NEXT):S2 acceptance provenance 與 S6 reviewer provenance 最關鍵——它們決定 assurance 模型能不能被 Gate 真的判定。
 2. **REQ-PB 例外補小 delta**(獨立小 change,record 已開)。
 3. **push 後看 Actions 是否自動觸發**(fork Actions 之謎的最終實測)。
+
+
+## Session 14:55
+
+### 一、本 session 主題
+
+bridge guarantee capability spikes S1–S6:取事實 → 選型比較 → 使用者六項拍板 → 報告落檔 + doc 審查兩輪(4 🔴 修畢)✅ Mergeable → 獨立 commit 收案(bd71f3a)。
+
+### 二、完成事項
+
+- 開工三步驟:跑 /work-status、讀 9/1 handoff 兩個 session 區塊、接力棒 3 條逐條交代、提優先建議 3 條。
+- S1–S6 spikes 全數完成(全部本機實測、非文件推測):S1 Scenario 標題/body 兩載體都過 validate、CLI JSON 只吐 rawText;S2 OpenSpec 無 approve 機制、Orca gate 身分自報;S3 schema.yaml 自訂區塊過 validate、schemas --json 四鍵不含自訂欄位;S4 模板零 TDD 欄位、顯式標註是唯一機械載體;S5 change 目錄自造 JSON 可行;S6 orca worker-list 實測拿到 runtime 核發的 dispatchId/terminalHandle 等全部欄位。
+- 使用者六項拍板:S1-A / S2-A′(保證「有顯式 record」、不保證「不可偽造」)/ S3-A / S4-A(annotation 是 semantic assertion、受 artifact review)/ S5-A′(gate-pass.json 是稽核紀錄不是通行證、archive 機械確認 current Gate PASS)/ S6-A(dispatchId+terminalHandle 相異即獨立)。
+- doc 審查:Codex 額度恢復(第 7 次中斷後首次正常代審)。首輪 4 🔴 全有效——schemas --json 欄位宣稱錯、S2 與正式設計 §2.3 矛盾、CONFLICT 更正載體漏答、S6 拍板早於欄位事實;逐筆修正(含當場唯讀實測 worker-list 補欄位)後二輪 ✅ Mergeable、2 筆 🟡/⚪ deferred。
+- 收案:spike 報告 + record DONE 獨立 commit bd71f3a;task-20260901-guarantee-spikes 標 DONE 附證據。
+- 結算決策(使用者拍板):REQ-PB delta 降級 deferred spec cleanup 併 claudemd-governance-rewrite 批(spec 無 runtime 消費者、例外唯一適用案已 archive 且雙 YES 後例外失效);loosen-plan 標 NEXT(Formal Design/Spike 結論第一個落地與 dogfood);新登記 task-20260901-design-223-convergence(TODO、掛主線)。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **plan 放寬(record 已標 NEXT)**:規定契約取代規定步驟,作為 Formal Design + spike 拍板的第一個實際落地與 dogfood;TDD 硬約束以「證據要求」形式保留(S4 拍板的顯式標註 + §4.3 RED/GREEN 證據契約)。
+- [#接力] **正式設計 §2.3 措辭收斂**(task-20260901-design-223-convergence、TODO):收斂為 S2 弱保證版,可與 9 筆 deferred findings 同批收(另加本輪 2 筆:實測憑據可重現性、中英排版)。
+- [#接力] brainstorming 三路徑漂移留作下一個獨立小修;REQ-PB delta deferred 併 governance-rewrite 批、不插主線。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- [#正] Codex 額度恢復(第 7 次中斷後首次正常代審):spike 報告首輪 4 筆 🔴 全部有效、修正後二輪 ✅ Mergeable——外部審查再次攔下自查沒抓到的事實錯誤與設計矛盾。
+
+**【當日洞見】**
+
+- [#決策] Capability spikes S1–S6 完成 + 六項選型拍板,核心邊界為使用者定調的「**有紀錄 ≠ 能證明紀錄來源**」(S2 acceptance、S5 Gate PASS 同族)——v1 保證「有顯式 record」,不保證「系統層不可偽造」,正式文件不得宣稱超過能力。
+- [#反省] **截斷輸出釀事實錯誤**:查 `schemas --json` 只看 head 截斷的前 800 字元就寫成「只吐 name/description」,審查抓出實有四鍵。結論(自訂欄位不暴露)沒錯、宣稱錯——「窮舉查完才宣告」的既有病,這次載體是自己加的輸出截斷。
+- [#洞見] **審查逼出當場實測,成本比預期低**:S6 原把欄位驗證留到實作前,審查依 §9.1「先取事實再選型」打回;當場唯讀實測 worker-list --json 十分鐘拿到全部欄位。「先拍板、之後再驗」省的時間其實很少。
+
+**【學習候選】**
+
+- **Case**:用 head 截斷 JSON 輸出後,對「輸出裡有哪些欄位」做了全稱宣告,被外部審查證偽。
+- **Candidate Pattern**:對機器輸出做「有/沒有某欄位」的宣稱前,必須 parse 完整輸出取 keys,不得以截斷片段推斷。邊界:僅適用「宣稱輸出結構」的場景;截斷用於省 context 讀內文不受限。
+- **Evidence**:1 例(2026-09-01)。**Hypothesis**。與全域「窮舉查完才宣告沒有」同族、新載體(自加截斷)。
+- **Minimum Sufficient Intervention**:先觀察不新增規範(寫不出可靠掛點;外部審查本次已攔住)。
+- **Promotion**:History only。
+
+### 五、檔案異動
+
+| 異動 | 內容 |
+|---|---|
+| commit bd71f3a | `docs/superpowers/poc/2026-09-01-capability-spikes/spike-report.md`(新增)+ `workflow-harness/work-map.jsonl`(spikes record DONE) |
+| working tree | `workflow-harness/work-map.jsonl`(loosen-plan 標 NEXT、design-223-convergence 新增、REQ-PB 加註 deferred)+ 本 handoff append |
+| 未進版控 | `2026-08-27-brainstorm-產品承諾.md`(沿慣例) |
+
+錨來源:本 session 開工 commit(8636440、開工於 2026-09-01T11:02:51)——列 8636440..HEAD
+
+### 六、下一步建議
+
+1. **plan 放寬**(record 已標 NEXT):走 opsx change,依 spike 拍板落地——「規定證據不規定步驟」主軸的正體。
+2. **§2.3 措辭收斂 + deferred findings 批**(task-20260901-design-223-convergence):動設計文件時一批收 11 筆。
+3. **push 後看 Actions 是否自動觸發**(fork Actions 之謎最終實測;本 session 已有 commit 待 push)。
