@@ -1,9 +1,9 @@
 name: superpowers-bridge
-version: 1
+version: 2
 description: >
   Spec-driven workflow integrated with Superpowers skills.
   Requirements: Superpowers plugin installed, providing skills:
-  brainstorming, writing-plans, using-git-worktrees,
+  brainstorming, using-git-worktrees,
   subagent-driven-development, finishing-a-development-branch.
   Requires a subagent-capable platform (Claude Code, Codex, etc.) —
   this schema does not support runtimes without subagent support,
@@ -17,8 +17,12 @@ description: >
   Context / Goals / Decisions / Risks / Migration; referenced by tasks
   and plan for implementation guidance).
   Apply phase uses git worktrees + subagent-driven-development
-  (structural code-review dispatch; TDD arrives via plan.md
-  task content when tasks require it).
+  (structural code-review dispatch; TDD applicability is declared
+  per task in tasks.md, and tasks annotated applicable record
+  RED/GREEN evidence there — verify's deterministic checks read
+  the presence and structure of that evidence before archive,
+  instruction-mediated rather than a mechanically enforced,
+  non-bypassable gate).
 
 artifacts:
   - id: brainstorm
@@ -160,37 +164,176 @@ artifacts:
 
       Reference specs for what needs to be built and design.md for
       how to build it (architecture decisions, trade-offs, migration).
+
+      TDD APPLICABILITY — tasks.md is the single source of truth.
+      Every task MUST carry a TDD applicability annotation. It is a
+      markdown list item nested under the task's own checkbox line —
+      indented two spaces from the `- [ ]` marker, so its own `- `
+      begins at column 3 — and it is written in exactly one of these
+      two forms (the leading `- ` IS part of the required form):
+
+        - TDD: applicable
+        - TDD: n/a — <reason>
+
+      SEPARATOR: between `n/a` and the reason, any one of `—` (em dash,
+      canonical — write this one where you can), `–` (en dash), `-`
+      (hyphen), or `--`. All four are accepted; nothing else is. What
+      the form requires is a non-empty reason, not a particular
+      character — an `n/a` with no reason after the separator is
+      non-conforming whichever separator was typed.
+
+      Seed vocabulary for `<reason>`: throwaway prototype, generated
+      code, configuration, prose/doc-only. That is a seed, not a closed
+      set — write the reason that is actually true for the task. The
+      annotation is a semantic assertion: whether an `n/a` reason holds
+      is a REVIEW judgement, not a machine judgement. Of the annotation,
+      the deterministic verify checks read presence and format only.
+
+      plan.md entries MAY echo a task's applicability but MUST NOT
+      redefine it, and plan.md MUST NOT hold a second copy of the
+      evidence.
+
+      EVIDENCE FOR APPLICABLE TASKS — a RED record and a GREEN record,
+      written in tasks.md, nested under the same task checkbox beside
+      its `TDD:` annotation (same two-space indent), as part of that
+      task's completion claim (written when the task completes, not
+      when the list is drafted). Each record is a `- RED:` / `- GREEN:`
+      list item whose fields are nested one level further, indented four
+      spaces from the `- [ ]` marker, each written as a `- <key>: <value>`
+      list item using these literal keys:
+
+      - `- RED:` requires `subject:` (the test's identifier; the v1
+        format is `test-file::test-name`), `outcome:`, and `failure:` —
+        a failure output excerpt sufficient to show the target behaviour
+        was not yet satisfied.
+      - `- GREEN:` requires `subject:` and `outcome:`. Its `subject:`
+        value MUST be identical to RED's, character for character.
+
+      OUTCOME MARKERS: `outcome:` takes a single uppercase token.
+      GREEN's MUST be the literal `PASS`. RED's MUST be any token other
+      than `PASS`; write `FAIL` unless your runner's own word is more
+      accurate (`ERROR`, `FAILED`).
+
+      The invocation (the command that was run) is supporting evidence:
+      recommended for reproducibility, NOT required. If you record it,
+      add it as a further `- invocation: <command>` field. A SyntaxError,
+      import error, missing dependency or test-harness error is not a
+      valid RED outcome — but that, like the `n/a` reason, is a REVIEW
+      judgement; the deterministic checks see only a non-`PASS` marker.
+
+      SHAPE — this block is normative, not illustrative. Reproduce its
+      keys, nesting and indentation exactly; only the values change.
+
+        - [ ] 2.1 Login error handling
+          - TDD: applicable
+          - RED:
+            - subject: test/auth.test.js::rejects empty email
+            - outcome: FAIL
+            - failure: expected 'Email required', got undefined
+          - GREEN:
+            - subject: test/auth.test.js::rejects empty email
+            - outcome: PASS
+
+      tasks.md is the FIRST STORAGE LOCATION for this evidence, not an
+      architecture invariant — a later Result/Evidence store may replace
+      it without changing the evidence semantics above. (That is a
+      separate question from the `subject:` format above, which names a
+      test rather than a place.)
+
+      SELF-REVIEW before you finish — this is earlier feedback, not the
+      required control. The required control is the verify artifact,
+      whose deterministic checks run before archive and block on
+      failure; that enforcement is instruction-mediated (an agent
+      following the verify instruction), not a mechanically enforced,
+      non-bypassable gate, so passing this check is not a guarantee.
+      Check both conditions and fix what you find: is any task missing
+      its TDD annotation, and does any `TDD: n/a` lack a reason after
+      the separator?
     requires:
       - specs
       - design
 
   - id: plan
     generates: plan.md
-    description: Micro-task implementation plan using Superpowers writing-plans
+    description: Per-task execution contract — what "done" means for each task, not how to get there
     template: plan.md
     instruction: |
-      PRECHECK — required skill availability:
-      Before invoking, confirm `superpowers:writing-plans` appears in
-      your available skills list. If missing, STOP and inform the user
-      that the Superpowers plugin must be installed (or that they can
-      explicitly opt to write plan.md manually using the template
-      below). Do NOT silently fall back.
+      Write plan.md yourself, directly from this change's tasks.md,
+      design.md and specs/. No skill invocation is required to produce
+      it. You MAY use a decomposition aid such as
+      `superpowers:writing-plans` privately, but its micro-step output
+      does not define this artifact's format — what you write must
+      conform to the Plan Contract below.
 
-      Use the Skill tool to invoke **superpowers:writing-plans**.
+      plan.md is a per-task execution contract: each entry states what
+      "done" means for one task, not how to get there. Two executors may
+      satisfy the same entry by different paths and both conform.
 
-      IMPORTANT output redirection:
-      - Do NOT write to `docs/superpowers/plans/`. Instead, write
-        the plan directly to this change's `plan.md`.
+      STRUCTURE — a header, then exactly one entry per tasks.md task.
 
-      The writing-plans skill will:
-      1. Read the tasks.md and design.md for context
-      2. Break each task into 2-5 minute micro-steps (TDD style)
-      3. Include exact file paths, code snippets, test commands
-      4. Add commit points after each task
+      1. Header
+         - Goal: what this change delivers, in one or two sentences.
+         - Pointers: this change's specs/ files and design.md. Reference
+           architecture and tech-stack decisions there; do not repeat
+           them here.
+         - Global constraints: copied verbatim from the specs, stated
+           once, binding on every entry below.
 
-      Pass the tasks.md content to the skill as the input for
-      decomposition. The plan should reference the specs and
-      design artifacts in this change directory.
+      2. One contract entry per task in tasks.md, keyed by the tasks.md
+         task number (1:1 — the set of entry keys and the set of task
+         numbers must be identical in both directions; a task with no
+         entry and an entry keyed to no task are both defects). Write
+         each entry as a `##` heading whose text BEGINS with that task
+         number, e.g. `## 1.1 — Login error handling`; the title after
+         the number is free. The key must LEAD so the entry-key set is
+         readable without interpretation — verify's deterministic
+         key-set check reads exactly this form. A `##` heading that
+         does not begin with a number is not an entry (this plan's own
+         header, a self-review section). Each entry states:
+
+         - Delivers — the end-to-end behaviour this task produces, not a
+           layer-by-layer implementation list.
+         - Acceptance criteria — concrete and verifiable. Vague language
+           such as "works correctly" or "handles errors appropriately"
+           is non-conforming: someone who did not write the entry must
+           be able to check the criterion and reach the same answer.
+         - Blocked by — the tasks that must land first, or an explicit
+           "none".
+         - Interfaces — CONDITIONAL. Required only where the task
+           couples with another task: the names and shapes it consumes
+           or produces, and which task sits on the other end. Omit it
+           for a task with no cross-task coupling; do not invent one to
+           fill the field.
+
+      RIGHT-SIZING: one entry per task, and a task is the smallest unit
+      that carries its own verification cycle and is worth a fresh
+      reviewer's gate — sized to fit a single fresh context window.
+
+      WHAT NOT TO WRITE: do not decompose entries into micro-steps and
+      do not prescribe an execution sequence. Exact file paths, code
+      snippets, test commands and commit points are NOT required —
+      implementation detail goes stale fastest, and prescribing it takes
+      ownership of the path away from the executor. A decision-rich
+      snippet (state machine, schema, type shape) MAY be included where
+      it encodes a decision more precisely than prose can.
+
+      TDD stays in tasks.md: the applicability annotation and the
+      RED/GREEN evidence live under the task checkboxes there. An entry
+      MAY echo a task's applicability but MUST NOT redefine it, and
+      plan.md MUST NOT hold a second copy of the evidence.
+
+      SELF-REVIEW before you finish. This is generation-time feedback,
+      not the required control: the required control is the verify
+      artifact, whose deterministic checks are run before archive and
+      block on failure. That enforcement is instruction-mediated — an
+      agent following the verify instruction — not a mechanically
+      enforced gate, so passing this list is not a guarantee.
+      1. Entry keys — does the set of entry keys equal the set of
+         tasks.md task numbers exactly, in both directions?
+      2. Acceptance criteria — is every one of them checkable by someone
+         who did not write it? Rewrite any that are not.
+      3. Interfaces — does every task that couples with another task
+         state its interfaces, and does each side name the other?
     requires:
       - tasks
 
@@ -292,6 +435,162 @@ artifacts:
          with identified gaps, provided they're recorded as follow-up.
          Blocks only if §7 is empty AND plan.md has `[~]` rows (means
          the gap analysis was skipped, not that gaps don't exist).
+
+      CHECKS 8-12 — TDD EVIDENCE CONTRACT AND PLAN/TASK KEY SET.
+      These five are DETERMINISTIC: each decides its verdict by
+      reading text against a fixed rule, with no judgement call. The
+      `tasks` artifact's instruction is the definition of the
+      annotation grammar and the record shape; these checks read
+      exactly that grammar and add nothing to it.
+
+      Shared definitions, used by checks 8-11:
+
+      - A TASK LINE in tasks.md is any line whose first non-space
+        characters are `- [`, one character, `]` — `- [ ]`, `- [x]`
+        and `- [~]` alike. Let N be that line's indent (its number of
+        leading spaces).
+      - A line BELONGS TO that task when it comes after the task line,
+        before the next task line or `#` heading whose indent is <= N,
+        and its own indent is STRICTLY GREATER than N.
+      - BLANK LINES ARE TRANSPARENT. A blank line belongs to nothing
+        and ends nothing: skip it and keep reading. A task's range
+        ends at the next NON-BLANK task line or `#` heading whose
+        indent is <= N, or at the end of the file.
+      - INDENT RULE — any indent strictly greater than N is accepted.
+        The `tasks` instruction tells authors to write two spaces, and
+        the templates show two; this check does NOT require that
+        depth. The contract's obligation is nesting, not a column
+        count, so a conforming tasks.md that a formatter re-indented
+        must not be blocked for the width of its indent.
+
+       8. **TDD annotation present and well-formed** (deterministic):
+
+          For EVERY task line in tasks.md, exactly one line belonging
+          to it must match, after its indent is trimmed, one of these
+          two forms — the leading `- ` IS part of the required form:
+
+            - TDD: applicable
+            - TDD: n/a <SEP> <reason>
+
+          <SEP> is one of `—` (em dash, canonical), `–` (en dash), `-`
+          (hyphen), or `--`, and nothing else; the obligation is a
+          non-empty <reason>, not a particular character. Zero
+          matching lines, more than one, any other form, or an `n/a`
+          whose reason is empty after trimming → BLOCK.
+
+       9. **RED and GREEN records present with required fields**
+          (deterministic):
+
+          For every task annotated `TDD: applicable`, the lines
+          belonging to it must include one `- RED:` line and one
+          `- GREEN:` line. Let R be a record line's indent; a FIELD of
+          that record is a line written `- <key>: <value>` that comes
+          after it with indent strictly greater than R, before the
+          next NON-BLANK line whose indent is <= R (the same nesting
+          rule, one level deeper — again any greater indent, not a
+          fixed width, and again blank lines are transparent: a blank
+          line between two fields does NOT end the record. A record
+          hand-formatted with spacing is conforming; nothing extra is
+          picked up either way, because the field keys are literal).
+
+          `- RED:` requires the fields `subject:`, `outcome:` and
+          `failure:`. `- GREEN:` requires `subject:` and `outcome:`.
+          `invocation:` is supporting evidence and is never required.
+          A task annotated `TDD: n/a` owes no records; if it carries
+          them anyway, checks 9-11 do not apply to it. A missing
+          record, a missing required field, or a required field whose
+          value is empty after trimming → BLOCK.
+
+      10. **Outcome markers** (deterministic): this check reads the
+          MARKER ONLY — whether a RED `failure:` excerpt is a
+          behavioural failure rather than a harness error is review
+          judgement R1 below, never this check. GREEN's `outcome:`
+          value must be exactly the token `PASS`. RED's must be a
+          single token of uppercase letters A-Z with no whitespace,
+          and must not be `PASS` (`FAIL`, `ERROR`, `FAILED` all
+          conform). A GREEN outcome other than `PASS`, or a RED
+          outcome that is `PASS` or does not match that token form
+          → BLOCK.
+
+      11. **RED subject equals GREEN subject** (deterministic): within
+          one task, the RED record's `subject:` value and the GREEN
+          record's `subject:` value must be identical character for
+          character after leading and trailing whitespace is trimmed.
+          Any difference → BLOCK.
+
+      12. **tasks.md task-number set equals plan.md entry-key set**
+          (deterministic):
+
+          Collect the TASK NUMBER of every task line in tasks.md: the
+          token IMMEDIATELY after the `]` of its checkbox and the
+          whitespace following it, when that token matches
+          `\d+(\.\d+)*` — a task line whose first token there is not a
+          number has no task number, and that is itself a defect of
+          this check (the plan cannot be keyed 1:1 to it).
+          Collect the ENTRY KEY of every plan.md contract entry. The
+          `plan` artifact's instruction is what REQUIRES the entry
+          form — each entry a `##` heading whose text begins with the
+          tasks.md task number, e.g. `## 1.1 — <title>`; this check
+          implements that requirement and introduces nothing of its
+          own. So: the leading `\d+(\.\d+)*` token of each `#` heading
+          in plan.md whose text begins with such a token. Headings
+          that do not begin with a number (the plan header, a
+          self-review section) are not entries and are not collected.
+
+          If plan.md does not exist at all, this check fails: `plan`
+          is a required artifact of this schema, so an absent plan.md
+          is not a normal state and must not be read as a vacuous
+          pass. Report it as "plan.md absent — no entry keys to
+          compare" rather than as a set difference.
+
+          Compare the two sets in BOTH directions and report each
+          difference individually: a task number with no entry key,
+          and an entry key matching no task number. Equal counts do
+          not pass this check — tasks `{1,2,3}` against plan `{1,2,9}`
+          fails in both directions. If plan.md exists but no entry key
+          can be collected from it, the plan is not keyed 1:1 to the
+          tasks and that is itself a failure of this check. Either
+          difference non-empty, a task line carrying no task number,
+          no collectable entry key, or no plan.md → BLOCK.
+
+      REVIEW JUDGEMENTS — NOT deterministic. Checks 8-12 above cannot
+      decide these, and a check reporting no failure says nothing
+      about them. Judge each while reading tasks.md, and report a
+      violation as a blocking finding of the review, not of a check:
+
+      - R1. Is each RED record's `failure:` excerpt a BEHAVIOURAL
+        failure — the target behaviour not yet satisfied — rather than
+        a SyntaxError, import error, missing dependency or other
+        test-harness error? An error-output RED does not satisfy the
+        evidence contract even though check 10 sees a conforming
+        non-`PASS` marker.
+      - R2. Does the cited `subject:` actually test the behaviour the
+        task claims to deliver? Checks 9-11 read the subject as an
+        opaque string and compare it to itself.
+      - R3. Does each `TDD: n/a` reason hold for that task? Check 8
+        reads presence and format only.
+      - R4. Does any task annotated `TDD: n/a` nonetheless carry RED
+        or GREEN records? Checks 9-11 do not apply to such a task, so
+        no check reports it — but at least one of the two is wrong:
+        either the applicability call (the task did need TDD) or the
+        records (they belong to another task, or nothing ran). Decide
+        which, and report it.
+
+      ENFORCEMENT BOUNDARY of checks 8-12 — state it in verify.md as
+      written here, and claim no more:
+
+      - The checks are DETERMINISTIC in what they decide, and
+        AGENT-EXECUTED (instruction-mediated) in how they run: their
+        execution is the verify agent following this instruction.
+      - v1 requires them to run before archive and to block on
+        failure, but it is NOT a Harness-level, mechanically enforced,
+        non-bypassable archive-time gate. If the verify agent does not
+        execute one of them, no v1 mechanism intercepts the omission;
+        review of verify.md is the only backstop.
+      - They verify the PRESENCE and STRUCTURE of the annotations and
+        records. They do not establish that the evidence is authentic
+        (v1 evidence is agent-submitted), do not prove a test-first
+        development history, and do not assess semantic quality.
 
       Verify MAY be re-run multiple times as the implementation is
       refined — each run overwrites verify.md with current state.
@@ -475,10 +774,11 @@ apply:
        - superpowers:using-git-worktrees
        - superpowers:subagent-driven-development
          (which dispatches superpowers:requesting-code-review;
-          TDD discipline arrives via plan.md task content when
-          tasks require it — superpowers:test-driven-development
-          is not separately invoked by this schema, though an
-          implementer may self-trigger it)
+          TDD applicability is declared per task in tasks.md, and
+          applicable tasks record their evidence there —
+          superpowers:test-driven-development is not separately
+          invoked by this schema, though an implementer may
+          self-trigger it)
        - superpowers:finishing-a-development-branch
 
        If any required skill is missing, STOP and inform the user —
@@ -503,24 +803,41 @@ apply:
 
        Use the Skill tool to invoke
        **superpowers:subagent-driven-development** to execute
-       the plan.md micro-tasks with fresh subagents per task.
+       the plan.md contract entries with fresh subagents per task.
 
        Tell the executor:
-       - Read plan.md in this change directory for micro-tasks
+       - Read plan.md in this change directory for the per-task
+         execution contract entries (each states what "done" means
+         for one task, not how to get there)
        - Update tasks.md checkboxes as coarse tasks complete
        - Work within the created worktree
 
        IMPORTANT — how TDD and code review actually arrive:
 
-       Whether TDD is executed depends on whether the task list
-       requires it. superpowers:writing-plans' standard task format
-       contains TDD micro-steps (failing test → verify fail →
-       minimal implementation → verify pass), but whether each task
-       carries them depends on that skill's judgment of the task
-       type (upstream prescribes no tests for prose-only work).
-       This schema itself neither enforces nor verifies TDD; if a
-       task lacks a TDD requirement, no layer of this schema
-       guarantees to add one.
+       TDD applicability is annotation-driven from tasks.md: every
+       task carries a `- TDD:` list item under its own checkbox
+       declaring whether TDD applies to it, and tasks.md is the
+       single source of truth for that. A plan.md entry may echo a
+       task's applicability but never redefines it.
+       Every task annotated `TDD: applicable` owes a RED record and
+       a GREEN record under its own checkbox in tasks.md as part of
+       that task's completion claim. The `tasks` artifact's
+       instruction is the definition of the annotation grammar and
+       the record shape — read it there and have the executor do the
+       same; do not restate it here or in plan.md.
+
+       What this schema checks, and what it does not: the verify
+       artifact requires deterministic (machine-evaluable) checks of
+       the PRESENCE and STRUCTURE of those annotations and records
+       before archive, and blocks on failure. Those checks are run
+       by the verify agent following the verify instruction —
+       instruction-mediated, not a Harness-enforced, non-bypassable
+       gate. The schema does not judge the semantics or the
+       authenticity of the evidence: whether an `n/a` reason holds,
+       whether a RED outcome is a behavioural failure rather than a
+       harness error, and whether the records reflect what actually
+       ran are review judgements, and that assurance degrades with
+       the review layer.
 
        Code review is structural: subagent-driven-development
        dispatches reviewer subagents during execution and a final
@@ -534,9 +851,9 @@ apply:
        single agent executes the plan and self-checks — and
        upstream itself directs users to subagent-driven-development
        whenever subagents are available. (TDD is not the
-       differentiator: when a task requires it, both executors
-       receive that requirement through plan.md task content;
-       neither path guarantees it otherwise.) If your platform
+       differentiator: applicability and evidence are carried by
+       the tasks.md annotations and the evidence contract described
+       above, whichever executor runs the tasks.) If your platform
        lacks subagent support, use the built-in `spec-driven`
        schema instead of this one.
 

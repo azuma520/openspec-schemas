@@ -120,6 +120,49 @@ ls docs/superpowers/specs/*.md 2>/dev/null
 
 ---
 
+## 8. TDD Evidence Contract — Deterministic Checks 8–12
+
+Reports the verify instruction's deterministic checks 8–12 per task. Checks 8–11
+are per task; check 12 is per change. Any BLOCK here means the change is not
+verified for archive.
+
+**Per-task results** (one row per `- [ ]` / `- [x]` / `- [~]` task line in `tasks.md`):
+
+| Task | Annotation (check 8) | Records + fields (9) | Outcome markers (10) | Subject equality (11) | Review judgement (R1–R4) |
+|---|---|---|---|---|---|
+| e.g. 2.1 | ✓ `TDD: applicable` | ✓ RED + GREEN complete | ✓ FAIL / PASS | ✓ identical | ✓ behavioural failure, subject fits |
+| e.g. 2.2 | ✓ `TDD: n/a — <reason>` | N/A (not applicable) | N/A | N/A | ✓ reason holds (R3) |
+| — | — | — | — | — | — |
+
+Legend: ✓ pass · ⛔ BLOCK (checks 8–11) · N/A (task annotated `n/a`, records not owed).
+A review-judgement violation (R1 error-output RED, R2 subject does not test the claimed
+behaviour, R3 `n/a` reason does not hold, R4 an `n/a` task carrying RED/GREEN records)
+is a **blocking finding of the review**, not of a check — record it in the same row and
+list it below.
+
+**Check 12 — task-number set vs plan.md entry-key set** (both differences must be empty):
+
+| `tasks.md` task numbers | `plan.md` entry keys | Only in tasks (no entry) | Only in plan (no task) | Verdict |
+|---|---|---|---|---|
+| `{...}` | `{...}` | — | — | ✓ / ⛔ BLOCK |
+
+**Blocking findings** (deterministic checks and review judgements):
+
+- <list each, or 「無」>
+
+> **Claim boundary — copy as written, claim no more.** These checks are
+> deterministic in *what they decide* and agent-executed (instruction-mediated)
+> in *how they run*: their execution is the verify agent following the schema
+> instruction. v1 requires them to run before archive and to block on failure,
+> but this is **not** a Harness-level, mechanically enforced, non-bypassable
+> archive-time gate — if the verify agent skips one, no v1 mechanism intercepts
+> the omission, and review of this file is the only backstop. The checks verify
+> the **presence and structure** of the annotations and records; they do not
+> establish that the evidence is authentic (v1 evidence is agent-submitted), do
+> not prove a test-first development history, and do not assess semantic quality.
+
+---
+
 ## Overall Decision
 
 - [ ] ✅ PASS — 可進入 finishing-a-development-branch 與 archive
