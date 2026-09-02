@@ -24,6 +24,8 @@ openspec-schemas/                     ← 本 repo
 │   └── superpowers/                  ← 維護者開發本 repo 時的 superpowers 產出(本 repo 無 openspec/,不跑自己的 bridge 流程)
 │       ├── specs/                    ← 設計 spec(brainstorming 產出)
 │       ├── plans/                    ← 實作 plan(writing-plans 產出)
+│       ├── poc/                      ← PoC / capability spike 報告(實測取事實)
+│       ├── research/                 ← 成熟來源拆解分析(讀 skill 全文後的比較;有目錄索引 README)
 │       └── retrospectives/           ← 結案複盤
 └── superpowers-bridge/                ← 第一個 bridge,自包式 schema bundle
     ├── README.md / .zh-TW.md         ← 完整 bridge 文件(含 install/upgrade + integration runbook)
@@ -222,6 +224,7 @@ PR #970 review 提出三個顧慮,本 schema 在 v1 已具體應對。Claude 在
 - 設計 spec:[`docs/superpowers/specs/2026-05-02-openspec-schemas-monorepo-design.md`](./docs/superpowers/specs/2026-05-02-openspec-schemas-monorepo-design.md)
 - 實作 plan:[`docs/superpowers/plans/2026-05-02-phase-1-implementation.md`](./docs/superpowers/plans/2026-05-02-phase-1-implementation.md)
 - 結案複盤:[`docs/superpowers/retrospectives/2026-05-03-pr970-endgame.md`](./docs/superpowers/retrospectives/2026-05-03-pr970-endgame.md)
+- 成熟來源拆解分析索引:[`docs/superpowers/research/README.md`](./docs/superpowers/research/README.md)(plan 結構比較、TDD evidence 分析)
 - roadmap(v1.x backlog 與「等 OpenSpec core」項目):[`docs/roadmap.md`](./docs/roadmap.md)
 - PR #970 review:<https://github.com/Fission-AI/OpenSpec/pull/970>
 - 既有 spec-kit superpowers bridges 參考:
