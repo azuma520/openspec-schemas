@@ -2,7 +2,7 @@
 
 > 2026-09-01 loosen-plan change brainstorming 期間的成熟來源拆解。
 > **定位:分析參考,不是規範**——正式拍板以 `openspec/changes/loosen-plan/` 的 change artifacts(brainstorm / design / specs)為準;本文件保存「為什麼這樣判」的推導過程,供未來 schema 調整或其他 bridge 重複使用。
-> 方法:兩個 skill 均於 2026-09-01 全文閱讀(superpowers:writing-plans 172 行 SKILL.md、mattpocock-skills /to-tickets 107 行 SKILL.md),非憑摘要或印象。
+> 方法:兩個 skill 均於 2026-09-01 全文閱讀(superpowers:writing-plans 171 行 SKILL.md、mattpocock-skills /to-tickets 107 行 SKILL.md),非憑摘要或印象。
 
 ## 0. 核心判別式(整份比較的一句話版)
 
@@ -75,7 +75,7 @@ Plan Contract = 留下 writing-plans 的**協調用**資訊,把它**控制用**�
 ## 5. 兩個結構決策點(brainstorming 中提出,拍板結果見 change artifacts)
 
 - **(a) Interfaces 塊強度**:建議條件式必填(有跨 task 耦合時必填、原子獨立 task 可免)。先例:正式設計 §3.2 方向性規則——Task→Contract 不反向強制,因為「反向強制會逼人硬掰對應、製造假 traceability」;Interfaces 全必填是同一種病。
-- **(b) fail-closed 執行落點**:建議雙落點——plan Self-Review(prompt 層,產出時攔、盡力而為)+ verify artifact 機械檢查(archive 前必攔)。宣稱邊界:v1 的 fail-closed 是「archive 前必被機械攔到」,不是「產出當下必被攔到」。verify 加一條編號檢查不算方向文件護欄 8 的「verify.md 重構」(現有結構原封不動),此讀法需經審查驗證。
+- **(b) fail-closed 執行落點**:建議雙落點——plan Self-Review(prompt 層,產出時攔、盡力而為)+ verify artifact 機械檢查(archive 前必攔)。宣稱邊界:v1 的 fail-closed 是「archive 前必被機械攔到」,不是「產出當下必被攔到」。**(此句已被 design.md D5 收斂取代:v1 的檢查是 deterministic / machine-evaluable,但執行仍由 verify agent 依 instruction 完成,不是 Harness 層不可繞過的機械閘門——以 D5 與 tdd-evidence-contract 的 Claim boundaries 為準。)**verify 加一條編號檢查不算方向文件護欄 8 的「verify.md 重構」(現有結構原封不動),此讀法需經審查驗證。
 
 ## 6. 已知連動(實作時的跨檔耦合)
 

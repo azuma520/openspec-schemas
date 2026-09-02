@@ -2,7 +2,7 @@
 
 > 2026-09-01 loosen-plan change brainstorming 期間的分析。方法論(使用者定調):**不從「Evidence 要存哪些欄位」開始設計;先回答「我們到底想證明什麼」**——從成熟 TDD skill 的實際程序出發,反推哪些節點值得 Evidence 化。
 > **定位:分析參考,不是規範**——正式拍板以 `openspec/changes/loosen-plan/` 的 change artifacts 為準。與正式設計 §4.3(TDD 證據契約)、spike 報告 S4(applicability 標註)銜接。
-> 來源:兩個 skill 均全文閱讀(2026-09-01)——superpowers:test-driven-development(320 行,**主要參考**:程序完整、每個驗證節點有精確合格條件)、mattpocock-skills:tdd(37 行主檔,輔助參考:seams、tautological anti-pattern、refactor 不屬 loop)。
+> 來源:兩個 skill 均全文閱讀(2026-09-01)——superpowers:test-driven-development(320 行,**主要參考**:程序完整、每個驗證節點有精確合格條件)、mattpocock-skills:tdd(36 行主檔,輔助參考:seams、tautological anti-pattern、refactor 不屬 loop)。
 
 ## 1. 三層區分(不可混)
 

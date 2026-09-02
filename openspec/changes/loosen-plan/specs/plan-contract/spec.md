@@ -11,10 +11,10 @@
 - **WHEN** a plan.md entry for a coupled task states delivered behaviour, verifiable acceptance criteria, blocking dependencies, and its cross-task interfaces
 - **THEN** the entry conforms to the Plan Contract
 
-#### Scenario: Entry-count cross-check
+#### Scenario: Task ID set cross-check
 
-- **WHEN** verify runs on a change whose plan.md entry count does not match the tasks.md task count
-- **THEN** the mismatch is reported as a blocking finding
+- **WHEN** verify runs on a change where the set of tasks.md task numbers and the set of plan.md entry keys differ in either direction (a task with no plan entry, or a plan entry keyed to no task — including the equal-count case such as tasks `{1,2,3}` vs plan `{1,2,9}`)
+- **THEN** each missing or extra key is reported as a blocking finding
 
 #### Scenario: Uncoupled task omits interfaces
 

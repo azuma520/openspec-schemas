@@ -95,13 +95,18 @@ Orca 已經確定是 bridge 未來的正式 execution runtime,相關架構方向
 | 閘門事件 | 目前答案 |
 |---|---|
 | 概念 PoC 通過了嗎? | **YES**(2026-08-28,concept supported,見 `docs/superpowers/poc/2026-08-28-traceability-gate/poc-report.md`) |
-| 正式設計核可了嗎? | NO |
+| 正式設計核可了嗎? | **YES**(2026-09-01,正式設計核可,見 `docs/superpowers/specs/2026-09-01-bridge-guarantee-formal-design.md`) |
 
-**兩個事件全 YES 之前,不做正式 schema 實作**(不修改 `schema.yaml`、不新增正式 artifact type)。單一 YES 不解鎖任何一項——2026-08-28 曾出現「表格逐列對應、PoC 過了就能動 schema.yaml」的放寬解讀,**已被使用者否決**:不能因為有一件很想修的事就重新解釋門禁。
+**雙 YES 已成立(2026-09-01):schema 實作已解鎖,但解鎖 ≠ 可以直接改。** 正式實作仍**逐塊走各自的 opsx change**,並依正式設計 §9 治理——先 spike 取事實、再選型、再由使用者拍板 implement / simplify / defer / reject,不自動視為必做、不因解鎖直接動 `schema.yaml`。兩件事分開看:
 
-**唯一例外:corrective fix(修錯例外,2026-08-28 拍板)**——只允許**刪除或修正已被證偽的既有宣稱**(現行唯一適用案:`fix-tdd-transitive-claim` 刪「上游自動強制 TDD」假宣稱),不得藉此加入 Completion Gate、Contract Verification、Orca 整合或任何新正式設計能力。修錯走完整 opsx change 流程與審查鏈,不因例外身分減省。
+```text
+有沒有解鎖實作? → YES
+解鎖後能不能繞過 change 流程與 §9 治理? → NO
+```
 
-這次重表述**更新的是「禁止動工的理由」,不是提前允許 Orca 實作**——重表述本身不放寬任何限制;唯一的放寬是上述修錯例外,且範圍已封閉(只刪/修已證偽宣稱)。
+第一個落地的 schema change 是 `loosen-plan`(`openspec/changes/loosen-plan/`,Plan Contract + TDD 證據契約,schema major → 2)。
+
+**歷史紀錄(已失效):** 雙 YES 前的守門是「兩個事件全 YES 之前不做正式 schema 實作;單一 YES 不解鎖」(2026-08-28 曾有「PoC 過了就能動 schema.yaml」的放寬解讀,已被使用者否決)。當時唯一的例外是 **corrective fix(修錯例外,2026-08-28 拍板)**——只允許刪除或修正已被證偽的既有宣稱(唯一適用案 `fix-tdd-transitive-claim`,已 archive)。**雙 YES 成立後該例外已失效**(2026-09-01 拍板:例外唯一適用案已 archive、雙 YES 後無存在必要);其「修錯走完整 opsx change 流程與審查鏈」的要求,現由一般 change 流程涵蓋。
 
 Orca 方向的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k 行 ChatGPT 匯出)、`2026-08-25-brainstorm-派工模式判準.md`、`2026-08-26-監督式協調-攜出討論包.md`。三份都未進版控。
 
@@ -216,7 +221,7 @@ PR #970 review 提出三個顧慮,本 schema 在 v1 已具體應對。Claude 在
 - ❌ 拿掉某個 PRECHECK 但沒換更強的替代品
 - ❌ 把 verify / retrospective 從 artifact 拉掉但沒在 README「設計觸點」段同步更新限制
 - ❌ 改 schema name 但沒同步改 bridge 內所有文件 + 頂層 README 的 bridge 索引
-- ❌ 在 apply instruction 加 `superpowers:executing-plans` 當 fallback(它不派任何獨立審查者——單 agent 自跑自查,上游在有 subagent 時也明示改用 subagent-driven-development;TDD 不是差異點——任務單有要求時兩邊都拿得到、沒要求時兩邊都不保證。本 schema 刻意只支援有 subagent 的平台,缺就叫使用者改用內建 `spec-driven`)
+- ❌ 在 apply instruction 加 `superpowers:executing-plans` 當 fallback(它不派任何獨立審查者——單 agent 自跑自查,上游在有 subagent 時也明示改用 subagent-driven-development;TDD 不是差異點——TDD 由 tasks.md 的 applicability 標註 + 證據契約承載(`loosen-plan` 起),與哪個執行器無關。本 schema 刻意只支援有 subagent 的平台,缺就叫使用者改用內建 `spec-driven`)
 - ❌ 把 PRECHECK 失敗改成「靜默降級」(整套設計就是 fail loud;缺 skill 一律 STOP)
 
 ## 相關連結

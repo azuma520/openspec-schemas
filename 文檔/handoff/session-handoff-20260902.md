@@ -63,3 +63,76 @@ loosen-plan change 開工(2026-09-01 晚間起、跨午夜):Q1–Q5 brainstormin
 1. **核可 design + specs → 進 tasks artifact**:tasks 會把跨檔耦合展開成工作項(schema.yaml 各段 / 模板×2 / 兩 README + migration guide / adopters fragments / version-check.yml / VERSION);Q1–Q5 已全拍板、tasks 之後 plan artifact 將是新 Plan Contract 的第一次 dogfood。
 2. **doc gate 批清**(research ×3 + CLAUDE.md + change artifacts,一個 /codex-review-doc dispatch)。
 3. 下次 push 順驗 Actions 自動觸發(fork 啟用後最終實測)。
+
+
+## Session 14:01
+
+### 一、本 session 主題
+
+loosen-plan 收斂到 apply 前:design/specs 三缺口拍板落字、tasks(25 步)+ plan(Plan Contract 首次 dogfood)產出並核可、doc gate 三輪(fallback 審)✅ Mergeable、CLAUDE.md 治理段追上 9/1 正式設計。
+
+### 二、完成事項
+
+- 開工三步驟:/work-status、讀 07:59 handoff 接力棒 3 條逐條交代、優先建議 3 條;使用者選「核可 design + specs」。
+- design/specs 摘要端出 + 兩個缺口(evidence 載體未指定;「機械檢查」實為 instruction 文字)→ 使用者裁 (a):evidence carrier = tasks.md task checkbox 下(first carrier、非 invariant);「deterministic check ≠ mechanically enforced gate」宣稱全面收斂(proposal/design/specs 五類措辭逐句改);plan↔tasks 改 Task ID 集合雙向差集。
+- tasks.md 產出(10 群 24 步 → 25 步含 8.4)、每步帶 `TDD:` 標註(全 n/a、理由不以副檔名為據);使用者三修(4.1 deterministic vs review 判斷分列、n/a 理由改寫、10.2 兩類 grep)落字,同類掃到 spec「Error output is not RED」一併改為 review 判斷。
+- plan.md 產出:Plan Contract 首次實戰(header + 25 entries、global constraints 逐字抄 spec、interfaces 條件式、無步驟指令);使用者三確認落字(ID 集合證明 / 四處 diff 措辭改 outcome-boundary / claim boundary 段 + task 10.4 fresh-context smoke test)。
+- doc gate:Codex 額度耗盡 → `[REVIEWER_FALLBACK] plane=doc_review from=codex to=contract-neutral-reviewer reason=quota | 2026-09-02T01:43:35Z`(本 change sticky);三輪:R1 ⛔(3🔴 閘門表過期 / 7→4 skill 數 / CLAUDE.md 漏出 sweep;4🟡 2⚪)→ 修 → R2 ✅(舊 digest,新 2🟡 當場修)→ R3 ✅ 現 digest;`[SENTINEL_VALID] contract=doc`、`doc_review pass` 已記。
+- CLAUDE.md 兩處(使用者親閱核可):閘門表第二列 YES(2026-09-01)+「解鎖 ≠ 可直接改、逐 change + §9 治理」+ corrective-fix 例外標歷史已失效;紅旗 TDD 子句改「由 tasks.md 標註 + 證據契約承載、與執行器無關」(只改過期子句)。
+- research ×2 行數修正(171 / 36,先 `wc -l` 驗)、:78 舊「archive 前必被機械攔到」註記已被 D5 取代;design Risks 補「證據載體未真實使用」「Q4-A 證據薄弱」兩條。
+- `openspec validate loosen-plan` 通過;6/8 artifacts(verify / retrospective 待 apply 後)。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **下 session 開工:先 commit 本 session working tree(11 檔),再 `/opsx:apply loosen-plan`**——設計定稿與實作分兩個 commit;apply 動 `superpowers-bridge/`,是新的 code/doc 審查面。
+- [#接力] **Codex independent review 未補**:全套 artifacts + CLAUDE.md 治理段只過 fallback 審;Codex 恢復後補獨立審,補審前不 archive。
+- [#接力] **push 順驗 Actions**:本機 main 領先 origin/main 2 commits(fa3ad02、3a153f1)+ 本 session 未 commit;連兩個 session 未兌現。
+- [#接力] 方向文件(2026-08-27)仍把 corrective-fix 例外寫成現行——record 不改,是否加一行「已失效、見 CLAUDE.md」指標由使用者定。
+- [#不重議] 缺口 1/2、tasks 三修、plan 三確認、doc gate 三 🔴 處置均已拍板,出處在 change 的 design.md / plan.md 與本區塊;apply 時遇同題引用照辦。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- [#正] 端出選擇而非結論兌現三次:缺口 1/2 端出三選項、🔴3 端 (a)/(b)、fallback 審結論最前面標明「非 Codex 獨立審、結論打折」——都由使用者裁、沒自己做完只報結果。
+- [#正] 一個缺陷=一類缺陷兌現兩次:「7 skills」抓到後掃出 plan 7.4 同病;spec「Error output is not RED」隨 tasks 4.1 同批改。
+- [#債] **Codex independent review 未補**:loosen-plan 全套 artifacts + CLAUDE.md 治理段只過 fallback 審(contract-neutral-reviewer 三輪 ✅),schema 契約屬高風險——Codex 額度恢復後 SHALL 補獨立審,補審前不 archive。
+- [#債] **fa3ad02 + 3a153f1 + 本 session commit 均未 push**:9/1 handoff 寫「5 commits pushed」但收工 commit 本身沒推;接力棒「push 順驗 Actions」連兩個 session 未兌現。
+
+**【當日洞見】**
+
+- [#決策] design/specs 三處收斂拍板:evidence carrier = tasks.md task checkbox 下(first carrier、非 invariant);「deterministic (machine-evaluable) check ≠ mechanically enforced gate」——v1 規則硬、執行者仍是 verify agent,不宣稱 Harness 不可繞過閘門;plan↔tasks 用 Task ID 集合雙向差集、不用 count。
+- [#決策] tasks.md 核可(25 步驟,全 `TDD: n/a`、理由不以副檔名為據);plan.md 為 Plan Contract 首次 dogfood 但**不算 direct-producer 證據**——10.4 fresh-context smoke test 才是 Q4-A 第一個樣本。
+- [#決策] 🟡「全 n/a、證據載體未被真實使用」→ 寫進 Risks 放行、不造假 applicable task;第一個有 executable behaviour 的下游 change 才是真 dogfood。
+- [#決策] CLAUDE.md 治理段追上 9/1 正式設計:閘門表第二列 YES;「解鎖 ≠ 可直接改」;corrective-fix 例外標歷史已失效;紅旗 TDD 子句改為「由 tasks.md 標註 + 證據契約承載、與執行器無關」(只改過期子句,整條 §5 重寫留登記項)。
+- [#洞見] 這輪 doc gate 抓到的三個 🔴 都不是文句問題,而是三種系統病:**過期治理狀態**(CLAUDE.md 沒跟上 handoff 記的決策)、**錯誤依賴數字**(兩張不同清單混算)、**漏掉 spec 點名的 normative surface**(sweep 範圍比 spec 窄 → 假綠)。第三種正是 10.2 兩類 grep 分法要防的。
+- [#洞見] 方向文件(2026-08-27)仍把 corrective-fix 例外寫成現行條文——record 不改,但讀者從那裡進來不會知道例外已失效;要不要加一行指標由使用者定。
+- [#摩擦] subagent 回報經 teammate message 三次截斷(每次 ~4k 字),Gate 行落在最後永遠被切掉;要求「≤15 行、Gate 單獨末行」才一次到齊。
+
+**【學習候選】**
+
+1. **Case**:9/1 handoff 記「正式設計核可 → 第二個 YES」,但 CLAUDE.md 閘門表仍寫 NO;今天由 fallback reviewer 抓到,不是任何機制。
+2. **Candidate Pattern**:handoff【當日洞見】記下的 `[#決策]` 若改變了某個 **always-on 載體**(CLAUDE.md / rules)裡寫死的狀態,該載體要在同一收工同步;只記在 handoff 等於決策活在只載入一次的地方、而過期版本每個 session 都被讀。
+3. **Evidence**:一例(本案)+ 全域 CLAUDE.md 既有的「backlog 不會被自動載入、寫在那裡等於沒寫」同型推論 → **Hypothesis**。
+4. **Minimum Sufficient Intervention**:不新增規範。掛點寫不出來(誰會發現 CLAUDE.md 沒同步?——只有下一次 doc review 碰巧把 CLAUDE.md 納進批次),依 always-on 規則降級 **Observe**:本條先記在【當日洞見】,第二例出現再談。
+5. **Promotion**:Case Memory。
+
+### 五、檔案異動
+
+本 session 無新 commit;改動全在 working tree(本次收工 commit 收入):
+
+| 異動 | 內容 |
+|---|---|
+| 修改 | `CLAUDE.md`(事件閘門段、紅旗 TDD 子句) |
+| 修改 | `openspec/changes/loosen-plan/`:proposal / design / specs×3 |
+| 新增 | `openspec/changes/loosen-plan/tasks.md`、`plan.md` |
+| 修改 | `docs/superpowers/research/2026-09-01-plan-structure-comparison.md`、`2026-09-01-tdd-evidence-analysis.md` |
+| 未進版控 | `2026-08-27-brainstorm-產品承諾.md`(沿慣例) |
+
+錨來源:本 session 開工 commit(3a153f1、開工於 2026-09-02T08:05:18)——列 3a153f1..HEAD(無新 commit)
+
+### 六、下一步建議
+
+1. **commit 本批 → `/opsx:apply loosen-plan`**:25 步依 plan blocked-by 邊執行;apply 是 subagent-driven-development 第一次吃 Plan Contract 而非 micro-step,注意執行者有沒有因為沒步驟而卡住(這本身是 Q4/D3 觀察點)。
+2. **Codex 恢復後補 independent review**(artifacts + CLAUDE.md),再談 archive。
+3. **push + 驗 Actions**(拖兩個 session 了)。
