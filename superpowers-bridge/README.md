@@ -464,7 +464,7 @@ This schema requires a subagent-capable platform (Claude Code, Codex, etc.). The
 Each timing-sensitive artifact runs concrete shell evidence checks at the start of its instruction:
 
 - **verify**: `git log <base>..HEAD | wc -l > 0` AND `grep -c '^- \[x\]' tasks.md > 0`
-- **retrospective**: `test -f verify.md` AND `! grep -q '^- \[x\] ❌ FAIL' verify.md`
+- **retrospective**: `test -f verify.md` AND exactly one of verify.md's three Overall Decision boxes is checked (`grep -cE '^- \[x\] (✅ PASS|⚠️ PASS WITH WARNINGS|❌ FAIL)' verify.md` equals 1) AND `! grep -q '^- \[x\] ❌ FAIL' verify.md`. The count check is what makes it fail-closed: the FAIL grep alone passes a verify.md that recorded no verdict at all
 
 The LLM does not need to interpret timing prose — it runs commands and reads results. This is layer 2 of concern #1 / mitigation for concern #2.
 

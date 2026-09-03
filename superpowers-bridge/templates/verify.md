@@ -153,12 +153,12 @@ list it below.
 > **Claim boundary — copy as written, claim no more.** These checks are
 > deterministic in *what they decide* and agent-executed (instruction-mediated)
 > in *how they run*: their execution is the verify agent following the schema
-> instruction. v1 requires them to run before archive and to block on failure,
-> but this is **not** a Harness-level, mechanically enforced, non-bypassable
-> archive-time gate — if the verify agent skips one, no v1 mechanism intercepts
-> the omission, and review of this file is the only backstop. The checks verify
-> the **presence and structure** of the annotations and records; they do not
-> establish that the evidence is authentic (v1 evidence is agent-submitted), do
+> instruction. This schema requires them to run before archive and to block on
+> failure, but this is **not** a Harness-level, mechanically enforced, non-bypassable
+> archive-time gate — if the verify agent skips one, no mechanism in this schema
+> intercepts the omission, and review of this file is the only backstop. The checks
+> verify the **presence and structure** of the annotations and records; they do not
+> establish that the evidence is authentic (the evidence is agent-submitted), do
 > not prove a test-first development history, and do not assess semantic quality.
 
 ---

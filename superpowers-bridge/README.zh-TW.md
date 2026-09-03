@@ -464,7 +464,7 @@ TDD 與 code-review 過去在這裡被描述成 `subagent-driven-development` �
 時序敏感的 artifact 在 instruction 開頭跑具體 shell 證據檢查:
 
 - **verify**:`git log <base>..HEAD | wc -l > 0` 且 `grep -c '^- \[x\]' tasks.md > 0`
-- **retrospective**:`test -f verify.md` 且 `! grep -q '^- \[x\] ❌ FAIL' verify.md`
+- **retrospective**:`test -f verify.md`,且 verify.md 的三個 Overall Decision 勾選框**恰好勾了一個**(`grep -cE '^- \[x\] (✅ PASS|⚠️ PASS WITH WARNINGS|❌ FAIL)' verify.md` 等於 1),且 `! grep -q '^- \[x\] ❌ FAIL' verify.md`。數量那一項才是 fail-closed 的關鍵:光靠 FAIL 那條 grep,一份根本沒記下任何結論的 verify.md 也會通過
 
 LLM 不必解讀 timing 文字 —— 跑指令、看結果即可。這是顧慮 #1 第 2 層,以及顧慮 #2 的緩解。
 

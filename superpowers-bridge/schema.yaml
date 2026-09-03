@@ -202,8 +202,10 @@ artifacts:
       spaces from the `- [ ]` marker, each written as a `- <key>: <value>`
       list item using these literal keys:
 
-      - `- RED:` requires `subject:` (the test's identifier; the v1
-        format is `test-file::test-name`), `outcome:`, and `failure:` —
+      - `- RED:` requires `subject:` (the test's identifier; the format
+        this schema requires is `test-file::test-name` — its first
+        convention for this, not an architecture invariant), `outcome:`,
+        and `failure:` —
         a failure output excerpt sufficient to show the target behaviour
         was not yet satisfied.
       - `- GREEN:` requires `subject:` and `outcome:`. Its `subject:`
@@ -532,7 +534,7 @@ artifacts:
           form — each entry a `##` heading whose text begins with the
           tasks.md task number, e.g. `## 1.1 — <title>`; this check
           implements that requirement and introduces nothing of its
-          own. So: the leading `\d+(\.\d+)*` token of each `#` heading
+          own. So: the leading `\d+(\.\d+)*` token of each `##` heading
           in plan.md whose text begins with such a token. Headings
           that do not begin with a number (the plan header, a
           self-review section) are not entries and are not collected.
@@ -582,14 +584,14 @@ artifacts:
       - The checks are DETERMINISTIC in what they decide, and
         AGENT-EXECUTED (instruction-mediated) in how they run: their
         execution is the verify agent following this instruction.
-      - v1 requires them to run before archive and to block on
+      - This schema requires them to run before archive and to block on
         failure, but it is NOT a Harness-level, mechanically enforced,
         non-bypassable archive-time gate. If the verify agent does not
-        execute one of them, no v1 mechanism intercepts the omission;
-        review of verify.md is the only backstop.
+        execute one of them, no mechanism in this schema intercepts the
+        omission; review of verify.md is the only backstop.
       - They verify the PRESENCE and STRUCTURE of the annotations and
         records. They do not establish that the evidence is authentic
-        (v1 evidence is agent-submitted), do not prove a test-first
+        (the evidence is agent-submitted), do not prove a test-first
         development history, and do not assess semantic quality.
 
       Verify MAY be re-run multiple times as the implementation is
@@ -608,18 +610,30 @@ artifacts:
     instruction: |
       PRECHECK — verify completion evidence:
       Before producing retrospective.md, run these commands. If
-      either fails, STOP and tell the user verify must pass first.
+      any fails, STOP and tell the user verify must pass first.
 
       1. verify.md exists:
          test -f openspec/changes/<change-name>/verify.md
 
-      2. verify.md's Overall Decision is NOT marked as FAIL.
-         The verify.md template has 3 mutually-exclusive checkboxes
-         in its "Overall Decision" section: "✅ PASS", "⚠️ PASS WITH
-         WARNINGS", "❌ FAIL". Only "❌ FAIL" being checked is blocking:
-         ! grep -q '^- \[x\] ❌ FAIL' openspec/changes/<change-name>/verify.md
+      2. verify.md records exactly one Overall Decision verdict, and
+         it is an acceptable one. The verify.md template has 3
+         mutually-exclusive checkboxes in its "Overall Decision"
+         section: "✅ PASS", "⚠️ PASS WITH WARNINGS", "❌ FAIL".
+         Both commands must succeed:
 
-      Only after both succeed, proceed.
+         a. exactly one of the three boxes is checked:
+            test "$(grep -cE '^- \[x\] (✅ PASS|⚠️ PASS WITH WARNINGS|❌ FAIL)' openspec/changes/<change-name>/verify.md)" -eq 1
+         b. the checked one is not FAIL:
+            ! grep -q '^- \[x\] ❌ FAIL' openspec/changes/<change-name>/verify.md
+
+         Zero checked (no verdict recorded) and more than one checked
+         (ambiguous verdict) both STOP, as does FAIL. Check (a) is
+         written this way on purpose and must not be "simplified"
+         away: (b) alone is fail-open — a verify.md that ticked no
+         box at all contains no FAIL line, so the absence of a
+         verdict would read as permission to proceed.
+
+      Only after all succeed, proceed.
 
       Write a retrospective of this change with evidence-first analysis.
 
@@ -695,9 +709,11 @@ artifacts:
 
          Fill §4 truthfully. The TDD and code-review rows are
          conditional/structural (see the row labels in the
-         template): a task list that did not require TDD is not
-         a skip, and a blank subsection records that nothing was
-         deliberately skipped — it is not proof of compliance.
+         template): a task annotated `TDD: n/a` in tasks.md is
+         not a skip — the annotation is the declaration, and the
+         reason it carries is judged by review — and a blank
+         subsection records that nothing was deliberately
+         skipped, which is not proof of compliance.
 
          For any skill actually skipped, DO NOT just write a
          one-line reason. Instead, the `### Deliberately Skipped
