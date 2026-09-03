@@ -102,7 +102,7 @@ different axis and is not shipped; it was deliberately left as written.
 
 | Surface | Signal |
 |---|---|
-| `superpowers-bridge/schema.yaml` | 583 → 902 lines (`wc -l`, both measured); `version: 1 → 2` |
+| `superpowers-bridge/schema.yaml` | 583 → 916 lines (`wc -l`, both measured); `version: 1 → 2` |
 | `superpowers-bridge/VERSION` | `1.0.1 → 2.0.0` |
 | `superpowers-bridge/templates/plan.md` | micro-step shell → Plan Contract shape |
 | `superpowers-bridge/templates/tasks.md` | annotation + normative record block |
@@ -138,19 +138,51 @@ the repo's original build, predating this change. No new leak: this change produ
 
 ### 8.1 Results for this change
 
-25 tasks, **all annotated `TDD: n/a`**, 0 applicable.
+**27 tasks, all annotated `TDD: n/a`, 0 applicable.** These are the results of the **re-run** at 27
+tasks; §8.1a below records the run this replaced and why replacing it was necessary.
 
 | Check | What it decides | Result |
 |---|---|---|
-| 8 | annotation present and well-formed on every task | **PASS** — 25/25; `applicable` = 0, `n/a` = 25, every `n/a` carries an accepted separator and a non-empty reason |
+| 8 | annotation present and well-formed on every task | **PASS** — 27/27; `applicable` = 0, `n/a` = 27, every `n/a` carries an accepted separator and a non-empty reason |
 | 9 | every `applicable` task has RED and GREEN with required fields | **PASS (vacuous)** — no applicable task |
 | 10 | RED outcome marker non-pass, GREEN marker pass | **PASS (vacuous)** |
 | 11 | RED subject == GREEN subject | **PASS (vacuous)** |
-| 12 | tasks.md task-number set == plan.md entry-key set, both differences empty | **PASS** — \|tasks\| = 25, \|plan\| = 25, both differences empty |
+| 12 | tasks.md task-number set == plan.md entry-key set, both differences empty | **PASS** — \|tasks\| = 27, \|plan\| = 27, both differences empty |
 
 Controls run alongside, because a checker that read nothing produces the same output as one that read
-everything: positive control — both files non-empty and parsed; negative control — a bogus key `99.9`
-is absent from both sets.
+everything: positive control — `11.1` present in both sets; negative control — a bogus key `99.9`
+absent from both.
+
+### 8.1a The run this replaced, and the defect it hid
+
+**The first run of §8.1 was honest and its result was correct at the moment it ran: 25 tasks, 25
+entry keys, check 12 PASS.** Group 11 then reopened the task list to 27 — and added the two tasks
+**without** adding their plan entries. From that moment until the entries landed, this change's own
+artifacts **violated check 12**: 27 task numbers against 25 entry keys, differences `{11.1, 11.2}`.
+
+Nothing caught it, and the reason is structural rather than careless: **every gate had already run.**
+Checks 8–12, the group-11 review, the final whole-branch review and two commit checkpoints all
+executed *before* the reopen or on scopes that did not include the key sets, and **nothing re-ran the
+set comparison afterwards**. It surfaced only when an independent reviewer, dispatched to check the
+*execution record* (`docs/superpowers/retrospectives/2026-09-03-loosen-plan-execution.md`), verified a
+task count quoted in it and compared the two files itself.
+
+The re-run is evidenced in both directions rather than by a green result alone:
+
+| Fixture | tasks | plan | Differences | Result |
+|---|---|---|---|---|
+| Current tree | 27 | 27 | both empty | **PASS** |
+| Pre-fix (`git show HEAD:…/plan.md` + current tasks.md) | 27 | 25 | in tasks not in plan: `['11.1', '11.2']` | **BLOCK** |
+
+The second row is the load-bearing one: the check does not merely pass now, it **names the exact two
+keys** when they are missing. The positive control flips to `False` on that fixture, which confirms
+the control measures what it claims rather than being satisfied by any input.
+
+**This is the change's own thesis arriving one layer up.** §5 of the execution record collects eleven
+products that were formally complete and substantively wrong, whose shared symptom is that nothing
+protests. This is the tenth of them, and its shape is the most instructive: *a check that passed truthfully,
+over an artifact that changed afterwards.* Freshness — not correctness — was the missing property, and
+no gate in this change's design owns it.
 
 **Three of the five checks are vacuous here, and that is a stated property of this change, not an
 oversight.** design.md § Risks records it in advance: *"every task in this change's tasks.md is
@@ -456,15 +488,18 @@ the next instance depending on a reader noticing. Each of the three was checked 
 text (`git show a4c761c:…`) to confirm the new phrases would actually have caught it: a phrase list that
 only matches the repaired wording would be worthless.
 
-`計畫步驟的 TDD` matches nothing in the repo and is a speculative entry — recorded here rather than
-removed, so the "five added" count is not read as five evidenced ones.
+`計畫步驟的 TDD` matches no claim on any bridge-owned surface — its only occurrences in the repo are
+the phrase list itself (`tasks.md` 10.2, this file, and the SDD workspace copies) — so it is a
+speculative entry, recorded here rather than removed so the "five added" count is not read as five
+evidenced ones.
 
 Cross-verified through a **structurally different path** (a Python reader rather than `grep`), with a
 missing-file report and a positive control, after a silent zero was found elsewhere in this sweep
 (below). 16 surfaces scanned, no missing files, total 0, control present.
 
 **Class (b) — boundary vocabulary, where 0 is explicitly not the criterion.** `mechanical`,
-`guarantee`, `bypass`, `gate`, `fail-closed`: 39 raw hit-lines across 9 surfaces, grouped into 25
+`guarantee`, `bypass`, `gate`, `fail-closed`: 39 raw hit-lines falling in **8 of the 16 surfaces
+scanned** (an earlier figure of 9 surfaces did not reproduce; 39 does, exactly), grouped into 25
 dispositioned rows under a stated grouping rule. Every hit is a negation, an in-boundary claim, or
 out of scope. **0 findings.** A reviewer independently spot-checked the four most positive-sounding
 dispositions and found none wrong.
@@ -574,7 +609,7 @@ was independent review beyond a single fallback pass; what this change actually 
 - 11 independent subagent reviews and re-reviews, each on a fresh context
 - 1 blind mutation exercise by an agent with no knowledge of the change
 - 1 blind plan-generation sample plus an independent scorer, on a corrected instrument
-- 1 whole-branch review on the full 2009-line diff
+- 1 whole-branch review on a 2009-line review package (the package's own line count, not the diff's)
 - 6 fix rounds, which caught defects that would otherwise have shipped — including a check that both
   wrongly blocked conforming work and wrongly passed the defect it existed for, and a front-page
   description that under-claimed what verify does
@@ -594,22 +629,22 @@ be re-reviewed when external review recovers.
 
 | Dimension | Status |
 |---|---|
-| Completeness | 25/25 tasks; 3 delta specs staged for sync |
+| Completeness | 27/27 tasks; 3 delta specs staged for sync |
 | Correctness | 5/5 deterministic checks pass; mutation run 6/6 + 1 positive control |
 | Coherence | 7/7 design decisions landed; one shipped wording defect found and fixed during verification |
 
 - [ ] ✅ PASS — 可進入 finishing-a-development-branch 與 archive
-- [x] ⚠️ PASS WITH WARNINGS — 可進入後續步驟但需注意：一個出貨文字缺口（見下方 WARNING）與四項接力
+- [x] ⚠️ PASS WITH WARNINGS — 可進入後續步驟但需注意：一個出貨文字缺口（見下方 WARNING）與六項接力
 - [ ] ❌ FAIL — 返回失敗的 artifact 修正後重跑 verify
 
 **下一步**：retrospective → checkpoint commit → archive → PR。
 
-**No CRITICAL issues. One WARNING. Four items carried forward.**
+**No CRITICAL issues. One WARNING. Six items carried forward.**
 
 ### WARNING — a gap in shipped contract text, found by §11.3 and not closed by this change
 
 The `plan` instruction requires global constraints "copied **verbatim** from the specs"
-(`schema.yaml:293-295`, `specs/plan-contract/spec.md:5`) and **states no fallback for a change that has
+(`schema.yaml:281`, `specs/plan-contract/spec.md:7`) and **states no fallback for a change that has
 no `specs/` directory**. Two independent scorers, on two runs and two instrument configurations, each
 hit it unprompted: the producer had to both choose a source and silently relax *verbatim* to *drawn
 from*. It is a defect in the contract text rather than in any producer, and it does not depend on
@@ -623,7 +658,7 @@ cleaner than the file it summarises.
 
 1. **Task 9.1's live CI run** — cannot be verified from a worktree; owed after the branch is pushed.
    The only acceptance criterion in this change not closed by evidence in this file.
-2. **The evidence carrier is installed but not exercised end-to-end** — all 25 tasks are honestly
+2. **The evidence carrier is installed but not exercised end-to-end** — all 27 tasks are honestly
    `TDD: n/a`, so checks 9–11 are vacuous here. Predicted in design.md § Risks; the first downstream
    change with executable behaviour is the real dogfood.
 3. **The v1 → v2 migration guide has never been walked** — no in-flight v1 change has been migrated
@@ -635,12 +670,21 @@ cleaner than the file it summarises.
 5. **Class-(a) detection is exact-phrase, so a differently-worded fourth instance would still slip.**
    Narrowed rather than closed: the class-(b) boundary-vocabulary sweep is the hand-reviewed net such an
    instance would most likely fall into. Widening class (a) to patterns is a separate change.
+6. **Nothing in this schema owns check *freshness*.** §8.1a is the demonstration: a reopen changed
+   `tasks.md` after checks 8–12 had run, and no gate re-ran the set comparison — the results stayed on
+   the record, correct as of a tree that no longer existed. The `verify` instruction says when the
+   checks must run (before archive) but not that a later edit to `tasks.md` or `plan.md` invalidates a
+   recorded result. **This is a gap in the shipped schema, not only in how this change was executed**,
+   and it is exactly the shape the retrospective PRECHECK fix (§14.2) closed one layer down: absence of
+   a failure signal read as permission. Whether `verify` should carry a staleness condition — and
+   whether that can be stated without a Harness-level mechanism the claim boundary forbids — is a
+   decision for the owner and a candidate for the next change.
 
 **Two items that were on this list in the first draft are now closed rather than carried**: the three v1
 TDD survivors (§14.1) and the fail-open PRECHECK (§14.2). They were reopened as tasks, fixed, reviewed and
 ticked — not deferred.
 
-**Result: PASS. Ready for retrospective and archive**, with the warning and the four items above
+**Result: PASS. Ready for retrospective and archive**, with the warning and the six items above
 recorded for the retrospective rather than resolved here.
 
 ### Provenance of this section
@@ -648,6 +692,16 @@ recorded for the retrospective rather than resolved here.
 This Overall Decision was itself corrected during the final whole-branch review. Its first version read
 "No CRITICAL issues. No WARNING issues." while §11.3 already recorded the contract gap above — a summary
 that let a reader take away **less** than the file established. Two counts in this file were also wrong
-and are corrected: `schema.yaml`'s line count (`583 → ~860`, actually 902) and "7/7 design decisions"
-against a table that listed six. Recorded rather than silently amended, because a verification report
-that quietly fixes its own numbers is exactly the artefact this change exists to make harder.
+and are corrected: `schema.yaml`'s line count and "7/7 design decisions" against a table that listed
+six. Recorded rather than silently amended, because a verification report that quietly fixes its own
+numbers is exactly the artefact this change exists to make harder.
+
+**And the line count was wrong twice, which is the more useful half of this paragraph.** The first
+version said `583 → ~860`; the correction above said **902**; the actual count is **916**
+(`wc -l superpowers-bridge/schema.yaml`), and it has been 916 since commit `31d012c` — *before this
+file was written*. 902 matches no commit on this branch (the sequence is 583 → 900 → 916). So the
+correction was made **inside the very paragraph asserting that this file's counts had been checked**,
+and it was itself unchecked. Caught by round 2 of the doc gate, not by anything here. **A paragraph
+claiming to have verified its own numbers is not evidence that it did** — the same shape as §8.1a's
+stale check result and as the fail-open PRECHECK closed in §14.2: a statement that looks like a
+control while controlling nothing.

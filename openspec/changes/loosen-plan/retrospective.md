@@ -1,20 +1,36 @@
 # Retrospective: loosen-plan
 
 > Written: 2026-09-03 (after verify passed with warnings)
-> Commit range: `5aa19bf..HEAD` — two commits landed, a third pending at checkpoint 3
+> Commit range: `5aa19bf..84df208` — four commits (pinned to literal SHAs; `HEAD` re-evaluates on
+> every read and would make this line false as soon as another commit lands)
 > Worktree: `.claude/worktrees/loosen-plan` on branch `worktree-loosen-plan`
 
 ---
 
 ## 0. Evidence
 
-- **Commit range**: `5aa19bf..HEAD` — 2 commits so far (`932a044`, `a4c761c`), plus the group-10 and
-  artifact work still uncommitted at the time of writing
-- **Diff size**: 15 files changed, +688 / −170
+- **Commit range**: `5aa19bf..84df208` — 4 commits (`932a044`, `a4c761c`, `31d012c`, `84df208`)
+- **Diff size**: `git diff --shortstat 5aa19bf..84df208` → **18 files changed, +1614 / −184**.
+  An earlier figure here read "15 files changed, +688 / −170"; the file count matched the then-current
+  two-commit range but **the ± figures reproduce against no range at all** (`5aa19bf..a4c761c` gives
+  15/+682/−166), so they are replaced by a pinned range with its command rather than by a
+  closer-looking guess. Recorded because this is the same defect class §2 collects — a stat that was
+  plausible and unrecomputable, sitting in a section headed *Evidence*
 - **Tasks done**: **27/27** — reopened from 25/25 at verification (see §3) and closed again after review
 - **Active hours**: ~8 across two calendar days (2026-09-02 into 2026-09-03), one session
-- **Subagent dispatches**: 31 — 10 implementers, 13 task reviewers / re-reviewers, 2 blind evaluators,
-  2 plan producers, 2 plan scorers, 1 whole-branch reviewer, plus 1 review that died on a capacity limit
+- **Subagent dispatches**: **~31, and this figure is NOT evidence-backed** — approximately 10
+  implementers, 11–13 task reviewers / re-reviewers, 2 blind evaluators, 2 plan producers, 2 plan
+  scorers, 1 whole-branch reviewer, plus 1 review that died on a capacity limit.
+  **The disagreement is between this bullet's own breakdown and §4**: §4 states 9 implementer
+  dispatches and 11 task reviews / re-reviews, which agrees with `verify.md` §15's 11 — it is this
+  bullet's "~10 / 11–13" that neither matches. **Nothing in the repository settles it.** The SDD ledger
+  records dispatches in prose rather than in a countable form — a mechanical pass over it finds only
+  three agent identifiers — so every one of these figures is a reconstruction from the session, not a
+  derived count. Recorded as a discrepancy rather than reconciled to a plausible number, per this
+  change's own standard: a count with no source is not made true by picking the one that looks right.
+  What the workspace does hold is the review **artifacts** — 17 `review-*.diff` packages plus
+  `branch-review.txt` and `task11-review.txt` — and their existence is a stronger fact than any of
+  these counts, while still not establishing which of them is right.
 - **New external dependencies**: none
 - **Bugs encountered post-merge**: n/a — not merged
 - **OpenSpec validate state**: `openspec validate loosen-plan` → valid
@@ -28,7 +44,8 @@ Commit chain:
 5aa19bf  (base) docs(loosen-plan): artifacts 6/8
 932a044  feat(schema): plan becomes a contract, TDD becomes evidence (v1 -> v2)
 a4c761c  docs(bridge): carry the v2 contract into templates, docs and CI
-<pending> group 10 + verify.md + retrospective.md
+31d012c  fix(schema): close v1 residue and the fail-open retrospective PRECHECK
+84df208  (head) docs(loosen-plan): land verify and retrospective, tasks 27/27
 ```
 
 ---
@@ -57,38 +74,6 @@ a4c761c  docs(bridge): carry the v2 contract into templates, docs and CI
   no per-task review could have seen**: the plan instruction defines an entry as a `##` heading while
   check 12 collected any `#` heading — and the check's own sentence claimed it "introduces nothing of its
   own". Each side had been reviewed with a different task.
-
----
-
-## 2. Misses
-
-- [evidence: ledger defects #1–#9] **Nine controller-made defects, and six of them produced a
-  plausible-looking wrong result rather than an error.** A flat snapshot that reported a whole file as
-  DELETED; a stat that silently dropped blank lines (`+61 −18` for a `+70 −22` change); fixture directory
-  names carrying the answers; a package section printing repo-wide status as if it were the task's; a
-  `/tmp` path that means different directories to Git Bash and Windows Python; and a CRLF→LF rewrite that
-  git hid by normalising. **None of them errored.** The one that was caught before producing anything was
-  the `/tmp` case — the only one with an enforcement hook.
-- [evidence: class-(b) sweep, first version] **A silent zero was trusted as evidence.** An ad hoc grep
-  returned nothing for two surfaces and was recorded as "0 hits"; the real counts were 1 and 4. The
-  conclusion survived — all five missed hits were negations or out of scope — but **the evidence behind it
-  had not**. It prompted a re-verification of my own class-(a) sweep through a different code path, with a
-  positive control, because the two failure modes are byte-identical in output.
-- [evidence: 10.4 run 1, discarded] **The first Q4-A sample measured a condition no adopter is in.** I
-  withheld `templates/plan.md`, which the CLI ships inside the same artifact block, and built a fixture
-  whose "uncoupled" task consumed a shape and a set of names from its siblings. Two of the four scores were
-  therefore uninterpretable. Discarded and re-run on a corrected instrument — **and the discard was
-  recorded before the second run existed**, which is the only thing that makes the boundedness claim
-  checkable rather than convenient.
-- [evidence: fix round scoping, R32] **I twice took a review's enumeration as the scope instead of sweeping
-  the class.** The `v1` wording fix was scoped to three named phrases and left a fourth instance; the class
-  sweep found it one round later. The repo's own rule says one defect means one class.
-- [evidence: `verify.md` Overall Decision, first version] **My own verification report summarised itself
-  too favourably** — "No CRITICAL. No WARNING." while its §11.3 recorded a defect in shipped contract text.
-  A reader of the decision alone would have taken away less than the file established.
-
----
-
 - [evidence: group 11, `tasks.md`] **The completion count was reopened rather than defended.** At 25/25 with
   verify written, two holes were known: three normative surfaces still carrying a v1 TDD claim, and a
   fail-open PRECHECK. Ticking through would have meant "all tasks complete" while both stood. The owner
@@ -100,6 +85,48 @@ a4c761c  docs(bridge): carry the v2 contract into templates, docs and CI
   ambiguous two-verdict file; and the **old** command was run against the verdict-less fixture, where it
   returns exit 0. The hole was demonstrated, not described — and the demonstration is what distinguishes
   "we changed the check" from "the check now catches it".
+
+---
+
+## 2. Misses
+
+- 🔴 [blocking | evidence: ledger defects, plus two found at the doc gate] **Eleven controller-made
+  defects, and ten of them produced a plausible-looking wrong result rather than an error.** A flat
+  snapshot that reported a whole file as DELETED; a stat that silently dropped blank lines (`+61 −18` for
+  a `+70 −22` change); fixture directory names carrying the answers; a package section printing repo-wide
+  status as if it were the task's; a snapshot review package leaving two live baselines, which made two
+  reviewers report false positives; a CRLF→LF rewrite that git hid by normalising; a fidelity fix that
+  weakened a blinding; a substring probe that missed a wrapped sentence; a check result that stayed on the
+  record after its subject changed; and a line count reported as an occurrence count. **None of those ten
+  errored.** The eleventh — a `/tmp` path meaning different directories to Git Bash and Windows Python —
+  is the only one caught before it produced anything, and the only one with an enforcement hook. The last
+  two were found by the independent doc-gate review, after this section first said "nine".
+- 🔴 [blocking | evidence: class-(b) sweep, first version] **A silent zero was trusted as evidence.** An ad hoc grep
+  returned nothing for two surfaces and was recorded as "0 hits"; the real counts were 1 and 4. The
+  conclusion survived — all five missed hits were negations or out of scope — but **the evidence behind it
+  had not**. It prompted a re-verification of my own class-(a) sweep through a different code path, with a
+  positive control, because the two failure modes are byte-identical in output.
+- 🟡 [painful | evidence: 10.4 run 1, discarded] **The first Q4-A sample measured a condition no adopter is in.** I
+  withheld `templates/plan.md`, which the CLI ships inside the same artifact block, and built a fixture
+  whose "uncoupled" task consumed a shape and a set of names from its siblings. Two of the four scores were
+  therefore uninterpretable. Discarded and re-run on a corrected instrument — **and the discard was
+  recorded before the second run existed**, which is the only thing that makes the boundedness claim
+  checkable rather than convenient.
+- 🟡 [painful | evidence: fix round scoping, R32] **I twice took a review's enumeration as the scope instead of sweeping
+  the class.** The `v1` wording fix was scoped to three named phrases and left a fourth instance; the class
+  sweep found it one round later. The repo's own rule says one defect means one class.
+- 🔴 [blocking | evidence: `verify.md` Overall Decision, first version] **My own verification report
+  summarised itself too favourably** — "No CRITICAL. No WARNING." while its §11.3 recorded a defect in
+  shipped contract text. A reader of the decision alone would have taken away less than the file
+  established. **And the correction was itself wrong**: the paragraph recording it stated a `schema.yaml`
+  line count of 902 against an actual 916 — inside the very sentence asserting the counts had been
+  checked. Caught at the doc gate, two rounds later.
+- 📌 [nit | evidence: doc gate rounds 1–3] **My fixes have a measurable defect rate.** Repairing three
+  blocking findings in round 2 introduced two new ones in round 3 — both in the sentence written to record
+  a discrepancy honestly. This is the argument for re-reviewing a fix rather than trusting it, stated as a
+  measurement rather than as caution.
+
+---
 
 ## 3. Plan deviations
 
@@ -135,9 +162,13 @@ a4c761c  docs(bridge): carry the v2 contract into templates, docs and CI
 | (structural via SDD) superpowers:requesting-code-review | ✓ — 11 task reviews / re-reviews plus one whole-branch review |
 | superpowers:finishing-a-development-branch | pending — the PR is the last step |
 
-> The `test-driven-development` row is filled at v2's semantics deliberately. The template still offers
-> `N/A — plan-step TDD only`, which is the superseded v1 claim this change removes; using it would have
-> contradicted the change in its own retrospective.
+> The `test-driven-development` row is filled at v2's semantics deliberately. When this section was
+> first written the template still offered `N/A — plan-step TDD only` — the superseded v1 claim this
+> change removes — so using it would have contradicted the change in its own retrospective. **Task 11.1
+> then rewrote that row**: the shipped template now offers `N/A — annotation-driven`
+> (`superpowers-bridge/templates/retrospective.md:59`), and `plan-step TDD` returns 0 hits across all
+> bridge-owned surfaces (§12, §14.1). This sentence is kept in corrected form rather than deleted,
+> because the gap between the two states is what task 11.1 existed to close.
 
 ### Deliberately Skipped Skills
 
@@ -169,26 +200,48 @@ a4c761c  docs(bridge): carry the v2 contract into templates, docs and CI
 
 ## 6. Promote candidates → long-term learning
 
-1. **A zero from a reader that read nothing is byte-identical to a zero from a reader that read
-   everything.** Every "expect 0" check needs a positive control that proves the reader read, and a
-   report of what it could not open. This session produced two live instances — a silently-failing grep
-   trusted as evidence, and my own substring probe returning "not found" for a sentence the file wraps.
-   *Promotion: strengthens the repo's existing "0 hits ≠ absence" rule with a concrete mechanism.*
-2. **Bilingual agreement is not evidence of correctness.** Two locales that agree can both be wrong, and a
-   review comparing translation against source is blind to a faithfully-mirrored error. Check the
-   translation against the **authoritative source**, not against its counterpart. *Promotion: candidate
-   rule for any bilingual repo.*
-3. **Reusing a skill does not inherit its permission assumptions.** A skill defines *procedure*; the repo
-   and harness define *execution permission*. SDD assumes implementer commits; this repo forbids them. The
-   schema names SDD as its executor and says nothing about the gap. *Promotion: worth a line in the bridge
-   README's integration section — and it is the fact base for a later, separate governance question about
-   whether an isolated worktree should permit worker-local commits.*
-4. **A per-entry field cannot surface an edge invisible from that entry.** If the Interfaces omission
-   recurs, the fix is not a stricter reviewer but a graph-level check or a differently-scoped field.
-   *Promotion: hold as a D3 trigger observation at N=1; do not act yet.*
-5. **State a discard before you see the replacement.** Run 1 of the Q4-A sample was discarded for
-   instrument defects, and saying so before run 2 existed is the only thing that makes the claim
-   falsifiable. *Promotion: general practice for any re-run of a measurement.*
+- [ ] 🔴 **A zero from a reader that read nothing is byte-identical to a zero from a reader that read
+      everything** → **Promote to CLAUDE.md** (strengthen the existing "0 hits ≠ absence" rule)
+  > **Why**: two live instances this session — a silently-failing grep trusted as evidence (class-(b)
+  > sweep reported 0 hits for two files that actually had 1 and 4), and my own substring probe returning
+  > "not found" for a sentence the file wraps.
+  > **How to apply**: every "expect 0" check ships with a positive control that proves the reader read,
+  > plus an explicit report of what it could not open.
+
+- [ ] 🔴 **Bilingual agreement is not evidence of correctness** → **Promote to CLAUDE.md**
+  > **Why**: `apply step 4` was wrong in the English README and **faithfully mirrored** into zh-TW; both
+  > locales agreed and both were wrong. A review comparing translation against source is blind to this.
+  > **How to apply**: when checking a translated normative surface, check it against the **authoritative
+  > source** (the schema, the CLI, the code), never against its counterpart locale.
+
+- [ ] 🟡 **Reusing a skill does not inherit its permission assumptions** → **Promote to schema**
+      (a line in the bridge README's integration section)
+  > **Why**: SDD's normal flow depends on implementer task-level commits; this repo forbids agent commits
+  > outright (Anchor Register #4). The schema names SDD as its executor and says nothing about the gap.
+  > **How to apply**: a skill defines *procedure*; the repo and harness define *execution permission* —
+  > check the second before adopting the first. This is also the fact base for the separate governance
+  > question of whether an isolated worktree should permit worker-local commits.
+
+- [ ] 📌 **A per-entry field cannot surface an edge invisible from that entry** → **Promote to one-off**
+      (hold as a D3 trigger observation at N=1; do not act yet)
+  > **Why**: the Plan Contract's Interfaces field is worded consumer-first, so an entry written before its
+  > consumers exist has nothing to consume — and per-entry review does not force building the coupling graph.
+  > **How to apply**: if the omission recurs, the fix is a graph-level check or a differently-scoped field,
+  > not a stricter reviewer.
+
+- [ ] 🟡 **State a discard before you see the replacement** → **Promote to memory** (type: feedback)
+  > **Why**: run 1 of the Q4-A sample was discarded for instrument defects; said afterwards, "discarded for
+  > defects rather than for its result" would have been unfalsifiable.
+  > **How to apply**: whenever a measurement is re-run, record what the first run produced and why it is
+  > being discarded **before** the second run exists.
+
+- [ ] 🔴 **A check that passed truthfully does not stay true when its subject changes** → **Promote to schema**
+  > **Why**: checks 8–12 ran and passed at 25 tasks; the group-11 reopen took `tasks.md` to 27 without
+  > adding plan entries, and for one commit this change violated its own check 12. Every gate had already
+  > run; none re-ran. Found by an independent review of the execution record, not by any gate.
+  > **How to apply**: a recorded check result needs a binding to what it was computed over — freshness, not
+  > correctness, is the property that was missing. See `verify.md` carried-forward #6 for the open question
+  > of whether this can be stated without a Harness-level mechanism the claim boundary disclaims.
 
 ---
 
@@ -235,3 +288,12 @@ What remains, all recorded rather than resolved:
    the three real survivors was checked against its *pre-fix* text to confirm it would have been caught —
    but a differently-worded fourth instance would still slip. Narrowed, not closed; the hand-reviewed
    class-(b) sweep is the net it would most likely fall into.
+6. **Nothing in the shipped schema owns check *freshness*, and this change proved it on itself.** The
+   group-11 reopen changed `tasks.md` after checks 8–12 had run, and no gate re-ran the set comparison:
+   for the span of one commit this change violated its own check 12 (27 task numbers, 25 plan entry
+   keys). It was found by an independent review of the **execution record**, not by any gate — every gate
+   had already run. Now re-run and evidenced in both directions (`verify.md` §8.1a: current tree PASS,
+   pre-fix fixture BLOCK naming `{11.1, 11.2}`). **The residue handed over is the schema-level question**:
+   `verify` says the checks must run before archive, but not that a later edit to `tasks.md` or `plan.md`
+   invalidates a recorded result — and whether that can be stated without the Harness-level mechanism the
+   claim boundary explicitly disclaims is the owner's call, not a verification fix.
