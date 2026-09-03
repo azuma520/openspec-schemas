@@ -39,8 +39,12 @@
 ### Front-door 反模式(別做)
 
 - 讓 brainstorming 寫到 `docs/superpowers/specs/`
-- 讓 writing-plans 寫到 `docs/superpowers/plans/`
+- 讓私下使用的 writing-plans 微步驟拆解定義 `plan.md` 的格式——`plan.md` 是直接從 `tasks.md` / `design.md` / `specs/` 寫出;writing-plans 是選用的,若有用也只當私下輔助
 - TBD 沒收斂就升級到 opsx
 - 對 bug fix / typo 也建 change
+
+### TDD 證據(tasks.md)
+
+`tasks.md` 每個任務都要有 `TDD:` 適用性標註(`applicable` 或 `n/a — <理由>`);適用的任務要在同一層級補上 RED/GREEN 紀錄。標註文法與紀錄格式只在 bridge 的 `schema.yaml` 的 `tasks` artifact instruction 定義一次——此處不重複。
 
 詳細見 [superpowers-bridge README §進入與離開的判斷](https://github.com/JiangWay/openspec-schemas/blob/main/superpowers-bridge/README.zh-TW.md#進入與離開的判斷entry--exit-gates)。

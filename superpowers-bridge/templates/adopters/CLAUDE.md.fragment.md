@@ -39,8 +39,12 @@ When all 5 hold → proactively suggest "ready to `/opsx:propose`?" — wait for
 ### Front-door anti-patterns (don't do)
 
 - Letting brainstorming write to `docs/superpowers/specs/`
-- Letting writing-plans write to `docs/superpowers/plans/`
+- Letting a privately-used `writing-plans` micro-step decomposition define `plan.md`'s format — `plan.md` is written directly from `tasks.md` / `design.md` / `specs/`; `writing-plans` is optional and, if used, is a private aid only
 - Promoting to opsx with unresolved blocking TBDs
 - Opening a change for bug fix / typo
+
+### TDD evidence (tasks.md)
+
+Every task in `tasks.md` carries a `TDD:` applicability annotation (`applicable` or `n/a — <reason>`); applicable tasks record RED/GREEN evidence under the same checkbox. Grammar and record shape are defined once, in the `tasks` artifact instruction in the bridge's `schema.yaml` — don't restate them here.
 
 Full detail: [superpowers-bridge README §Entry & exit gates](https://github.com/JiangWay/openspec-schemas/blob/main/superpowers-bridge/README.md#entry--exit-gates).

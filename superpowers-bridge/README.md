@@ -9,7 +9,7 @@
 
 > Bridges [OpenSpec](https://github.com/Fission-AI/OpenSpec)'s artifact governance (the **what**) with [obra/superpowers](https://github.com/obra/superpowers) execution skills (the **how**) into a single workflow. Adds an evidence-first `retrospective` artifact filling a gap Superpowers does not natively cover.
 >
-> The integration lives entirely at the prompt layer — no Superpowers source modified, no OpenSpec CLI changes. Schema version: v1.
+> The integration lives entirely at the prompt layer — no Superpowers source modified, no OpenSpec CLI changes. Schema version: v2 (see [Compatibility](#compatibility) and [Migrating v1 → v2](#migrating-v1--v2)).
 
 ---
 
@@ -112,18 +112,18 @@ rm -rf /tmp/oss-upgrade
 
 > The bridge directory is monolithic — you take the whole new version or stay on the old one. There is no per-file opt-in. CLAUDE.md is the only project-root file the upgrade ever touches, and never without your ack.
 
-> In-flight changes (any phase: brainstorm / design / specs / ...) remain valid because the schema graph (`requires:` edges, PRECHECKs, artifact dependencies) hasn't changed in v1.x. Existing `verify.md` / `retrospective.md` from before the upgrade are still readable; if you re-run `/opsx:verify` or `/opsx:continue → retrospective` on them, the new template structure applies on overwrite.
+> Within one schema major, in-flight changes (any phase: brainstorm / design / specs / ...) remain valid because the schema graph (`requires:` edges, PRECHECKs, artifact dependencies) does not change across patch releases. Existing `verify.md` / `retrospective.md` from before the upgrade are still readable; if you re-run `/opsx:verify` or `/opsx:continue → retrospective` on them, the new template structure applies on overwrite.
 
-> If a future upgrade modifies the schema graph structurally (artifact add/remove, `requires:` edge changes, PRECHECK changes), the README will gain a version field and a migration guide. v1 → v1.x prose-only changes are safe and do not need migration.
+> **Crossing a schema major does need migration.** Upgrading from bundle `1.x.y` (schema major `v1`) to `2.x.y` (schema major `v2`) changes what `tasks.md` and `plan.md` must contain, so an in-flight v1 change needs the steps in [Migrating v1 → v2](#migrating-v1--v2) before it will pass verify. Structural schema-graph changes (artifact add/remove, `requires:` edge changes, PRECHECK changes) are always announced with a migration guide under [Versioning](#versioning).
 
 ---
 
 ## What problem does this solve?
 
-OpenSpec governs **what to do** (artifact lifecycle: proposal / specs / tasks / verify, etc.). Superpowers governs **how to do it** (execution discipline: brainstorming, writing-plans, TDD, code review). Each is solid on its own; interleaving them in real development surfaces three structural problems:
+OpenSpec governs **what to do** (artifact lifecycle: proposal / specs / tasks / verify, etc.). Superpowers governs **how to do it** (execution discipline: brainstorming, planning, TDD, code review). Each is solid on its own; interleaving them in real development surfaces three structural problems:
 
 1. **Output duplication** — brainstorming writes design output to `docs/superpowers/specs/`; OpenSpec re-authors `proposal.md` / `design.md` in the change directory, with overlapping content.
-2. **Task fragmentation** — OpenSpec's `tasks.md` (coarse checkboxes) and Superpowers' `plan.md` (TDD micro-steps) describe the same work in different formats, locations, and progress trackers.
+2. **Task fragmentation** — OpenSpec's `tasks.md` (coarse checkboxes) and a Superpowers-style `plan.md` (a step-by-step implementation script) describe the same work in different formats, locations, and progress trackers.
 3. **Manual orchestration** — the user has to decide on every step which skill to invoke; the two systems do not connect on their own.
 
 ### Why a custom schema rather than modifying existing skills?
@@ -187,7 +187,7 @@ If any condition is missing, keep brainstorming. When all five hold:
 | Anti-pattern | Why it's wrong |
 |---|---|
 | Letting brainstorming write to `docs/superpowers/specs/` after the schema is installed | Bypasses redirection at [schema.yaml](./schema.yaml) lines 35-39; produces orphan artifacts |
-| Letting writing-plans write to `docs/superpowers/plans/` | Same reason (schema.yaml lines 169-171) |
+| Handing the executor a step-by-step implementation script as `plan.md` | `plan.md` is a per-task execution contract — what "done" means for each task, not how to get there (see the `plan` artifact instruction in [schema.yaml](./schema.yaml)). A private decomposition aid may inform it, but its output shape does not define the artifact |
 | Promoting to opsx with unresolved blocking TBDs | Those TBDs will block apply phase too — promotion just defers the same problem |
 | Opening a change for bug fix / typo / config tweak | Process ceremony exceeds actual risk; slows delivery without value |
 
@@ -208,9 +208,9 @@ Differences from `spec-driven`:
 | | spec-driven | superpowers-bridge |
 |---|---|---|
 | Entry | proposal (manual) | **brainstorm** (invokes brainstorming skill) |
-| Plan layer | tasks (coarse) | tasks + **plan** (TDD micro-steps) |
+| Plan layer | tasks (coarse) | tasks (coarse, plus a per-task `TDD:` applicability annotation and RED/GREEN evidence) + **plan** (per-task execution contract) |
 | apply requires | tasks | **plan** |
-| apply method | standard task-by-task | **worktree + subagent-driven-development** (structural code review; TDD via plan micro-steps when tasks require it) |
+| apply method | standard task-by-task | **worktree + subagent-driven-development** (structural code review; TDD applicability declared per task in `tasks.md`, with RED/GREEN evidence recorded there) |
 | Post-apply | (none) | **verify** + **retrospective** artifacts |
 | New artifacts | — | brainstorm, plan, verify, retrospective |
 
@@ -228,8 +228,8 @@ flowchart TD
         PROP["<b>proposal.md</b>"]
         DES["<b>design.md</b><br/><i>(required, structured decisions)</i>"]
         SP["<b>specs/**/*.md</b>"]
-        TK["<b>tasks.md</b>"]
-        PL["<b>plan.md</b><br/><i>superpowers:writing-plans</i>"]
+        TK["<b>tasks.md</b><br/><i>(+ per-task TDD annotation; RED/GREEN evidence)</i>"]
+        PL["<b>plan.md</b><br/><i>(per-task execution contract)</i>"]
 
         BS --> PROP
         BS --> DES
@@ -244,7 +244,7 @@ flowchart TD
         direction TB
         A0["<b>0. Pre-flight skill check</b>"]
         A1["<b>1. Workspace</b><br/><i>using-git-worktrees</i>"]
-        A2["<b>2. Executor</b><br/><i>subagent-driven-development</i><br/>↳ structural code review; TDD per task content"]
+        A2["<b>2. Executor</b><br/><i>subagent-driven-development</i><br/>↳ structural code review; TDD per tasks.md annotation"]
         A3["<b>3. Verification</b><br/><i>openspec-verify-change</i> → verify.md"]
         A4["<b>4. Retrospective</b> → retrospective.md<br/>(BEFORE PR; hot context)"]
         A5["<b>5. Archive</b><br/><i>openspec archive -y</i><br/>(sync delta + move folder)"]
@@ -279,7 +279,7 @@ PLANNING ━━━━━━━━━━━━━━━━━━━━━━━�
 APPLY ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   0. Pre-flight skill check
   1. superpowers:using-git-worktrees
-  2. superpowers:subagent-driven-development (+ structural code review; TDD when tasks require it)
+  2. superpowers:subagent-driven-development (+ structural code review; TDD per tasks.md annotation)
   3. openspec-verify-change → verify.md ◄┐
                               │           │ blocking → fix
                               ▼           │
@@ -298,25 +298,28 @@ APPLY ━━━━━━━━━━━━━━━━━━━━━━━━�
 | # | Superpowers skill | Where it's invoked | Trigger |
 |---|---|---|---|
 | 1 | `superpowers:brainstorming` | `brainstorm` artifact instruction | Direct (with PRECHECK) |
-| 2 | `superpowers:writing-plans` | `plan` artifact instruction | Direct (with PRECHECK) |
+| 2 | `superpowers:writing-plans` | (not invoked — `plan` is written directly from `tasks.md` / `design.md` / `specs/`; the instruction names the skill only as an optional private decomposition aid) | **Not invoked** |
 | 3 | `superpowers:using-git-worktrees` | apply step 1 | Direct |
 | 4 | `superpowers:subagent-driven-development` | apply step 2 | Direct |
-| 5 | `superpowers:test-driven-development` | (TDD discipline arrives via plan.md task content; the schema does not invoke this skill — an implementer may self-trigger it) | **Conditional** |
+| 5 | `superpowers:test-driven-development` | (TDD applicability is declared per task in `tasks.md`, and tasks annotated applicable record RED/GREEN evidence there; the schema does not invoke this skill — an implementer may self-trigger it) | **Conditional** |
 | 6 | `superpowers:requesting-code-review` | (dispatched by #4; batching possible) | **Structural** |
-| 7 | `superpowers:finishing-a-development-branch` | apply step 4 | Direct |
+| 7 | `superpowers:finishing-a-development-branch` | apply step 6 | Direct |
 
 Plus one OpenSpec built-in: `openspec-verify-change` (apply step 3, produces `verify.md`).
 
-> **No `executing-plans` fallback.** This schema is opinionated: it requires a subagent-capable platform (Claude Code, Codex, etc.). The alternative executor `superpowers:executing-plans` dispatches no independent reviewer — a single agent executes the plan and self-checks (verified against its [SKILL.md](https://github.com/obra/superpowers/blob/main/skills/executing-plans/SKILL.md)) — and upstream itself directs users to `subagent-driven-development` whenever subagents are available. TDD is not the differentiator: when a task requires it, both executors receive that requirement through plan.md task content — neither path guarantees it otherwise. If your platform lacks subagent support, use the built-in `spec-driven` schema instead.
+> **Naming is not requiring.** This table lists the seven skills the schema **names** in its artifact and apply instructions; `superpowers:executing-plans` is named as well — in the paragraph below, and only in order to rule it out. The schema actually requires and PRECHECKs **four**: `brainstorming` (in the `brainstorm` artifact) and the three in [apply step 0](#0-pre-flight--verify-required-superpowers-skills). Of the rest, `writing-plans` is named only as an optional private aid, and `test-driven-development` / `requesting-code-review` are never invoked by the schema itself.
+
+> **No `executing-plans` fallback.** This schema is opinionated: it requires a subagent-capable platform (Claude Code, Codex, etc.). The alternative executor `superpowers:executing-plans` dispatches no independent reviewer — a single agent executes the plan and self-checks (verified against its [SKILL.md](https://github.com/obra/superpowers/blob/main/skills/executing-plans/SKILL.md)) — and upstream itself directs users to `subagent-driven-development` whenever subagents are available. TDD is not the differentiator: applicability and the RED/GREEN evidence are carried by the `tasks.md` annotations and the evidence contract, whichever executor runs the tasks. If your platform lacks subagent support, use the built-in `spec-driven` schema instead.
 
 ### Output redirection
 
 Superpowers skills have default output paths (e.g., brainstorming writes to `docs/superpowers/specs/`). This schema's artifact instructions **override** that behavior by injecting context that redirects output into the change directory:
 
 - brainstorming → `openspec/changes/<name>/brainstorm.md`
-- writing-plans → `openspec/changes/<name>/plan.md`
 
 Implemented purely via context injection at invocation time, not by modifying skill source.
+
+`plan.md` needs no such redirection: the `plan` artifact is written directly by the agent from `tasks.md`, `design.md` and `specs/`, so no skill produces it and no default output path is in play.
 
 ---
 
@@ -325,8 +328,8 @@ Implemented purely via context injection at invocation time, not by modifying sk
 ### Quick flow (recommended)
 ```bash
 /opsx:ff my-feature    # one-shot: scaffold + brainstorm + proposal + design + specs + tasks + plan
-/opsx:apply            # worktree + subagent-driven-development (structural code review; TDD per task content)
-/opsx:verify           # produces verify.md (7 checks)
+/opsx:apply            # worktree + subagent-driven-development (structural code review; TDD per tasks.md annotation)
+/opsx:verify           # produces verify.md (12 checks + review judgements)
 /opsx:continue         # → retrospective (produces retrospective.md, §0 + 6 sections)
 /opsx:archive          # archive
 ```
@@ -341,7 +344,7 @@ Implemented purely via context injection at invocation time, not by modifying sk
 /opsx:continue         # → tasks
 /opsx:continue         # → plan
 /opsx:apply            # → implementation + worktree + subagent-driven-development
-/opsx:verify           # → verify.md (post-apply, runs the 7 checks)
+/opsx:verify           # → verify.md (post-apply, runs the 12 checks)
 /opsx:continue         # → retrospective.md (post-verify, evidence-first §0 + 6 sections)
 /opsx:archive
 ```
@@ -365,7 +368,7 @@ Implemented purely via context injection at invocation time, not by modifying sk
 Confirms these skills are installed before proceeding:
 
 - `superpowers:using-git-worktrees`
-- `superpowers:subagent-driven-development` (dispatches `requesting-code-review`; TDD discipline arrives via plan.md task content — `test-driven-development` is neither prechecked nor schema-invoked, though an implementer may self-trigger it)
+- `superpowers:subagent-driven-development` (dispatches `requesting-code-review`; TDD applicability is declared per task in `tasks.md` and applicable tasks record their RED/GREEN evidence there — `test-driven-development` is neither prechecked nor schema-invoked, though an implementer may self-trigger it)
 - `superpowers:finishing-a-development-branch`
 
 Missing skill → STOP with explicit error. No silent fallback, no manual mode within this schema. The user should either install Superpowers or switch to the built-in `spec-driven` schema for that change.
@@ -378,9 +381,9 @@ Creates `.worktrees/<change-name>/`, switches to a new branch, runs setup, confi
 
 #### 2. Executor — `superpowers:subagent-driven-development`
 
-Main agent reads `plan.md`, dispatches a fresh subagent per micro-task. Each subagent works from its task's content:
+Main agent reads `plan.md`, dispatches a fresh subagent per task. Each subagent works from its task's contract entry — what "done" means for that task, not a prescribed sequence of steps:
 
-- **TDD discipline** (via plan content): the task's micro-steps carry RED→GREEN when `writing-plans` judged the task to need tests; the schema does not invoke `superpowers:test-driven-development` itself, and the executor does not enforce it — an implementer may self-trigger the skill
+- **TDD discipline** (via the `tasks.md` annotation): every task carries a `- TDD:` list item under its own checkbox declaring whether TDD applies, and `tasks.md` is the single source of truth for that — a `plan.md` entry may echo it but never redefines it. Every task annotated `TDD: applicable` owes a RED record and a GREEN record under the same checkbox as part of its completion claim. The annotation grammar and the record shape are defined once, in the `tasks` artifact instruction in [schema.yaml](./schema.yaml); the schema does not invoke `superpowers:test-driven-development` itself — an implementer may self-trigger the skill
 - **Code review** (`superpowers:requesting-code-review`): structural — reviewer subagents are dispatched during execution (several small same-shape tasks may be batched into one reviewed diff); critical issues normally block forward motion, though upstream lets the controller park a still-open finding after round 5 (see the re-verification table below)
 
 Coarse `tasks.md` checkboxes tick as tasks complete. After all tasks, a final code review covers the whole implementation.
@@ -389,7 +392,15 @@ This schema does NOT support `superpowers:executing-plans` as a fallback. See th
 
 #### 3. Verification — `openspec-verify-change`
 
-Produces `verify.md` from 7 checks: structural validation (`openspec validate --all --json`), task completion, delta-spec sync state, design/specs coherence (non-blocking warning), implementation signal (committed code), front-door routing leak detector (non-blocking warning), and deferred-dogfood vs automated-test equivalence. The last check blocks only when `plan.md` has `[~]` deferrals but the equivalence section is empty (gap analysis skipped); otherwise it is informational.
+Produces `verify.md` from 12 checks. Checks 1–7 are the cycle-completeness set: structural validation (`openspec validate --all --json`), task completion, delta-spec sync state, design/specs coherence (non-blocking warning), implementation signal (committed code), front-door routing leak detector (non-blocking warning), and deferred-dogfood vs automated-test equivalence. Check 7 blocks only when `plan.md` has `[~]` deferrals but the equivalence section is empty (gap analysis skipped); otherwise it is informational.
+
+Checks 8–12 are the TDD evidence contract and the plan/task key set, added in schema v2. Each **decides its verdict deterministically** — reading text against a fixed rule, with no judgement call — and each blocks on failure: the `TDD:` annotation is present and well-formed on every task (8); every applicable task carries `- RED:` and `- GREEN:` records with their required fields (9); the outcome markers conform, GREEN being exactly `PASS` and RED anything else (10); RED's `subject:` equals GREEN's character for character (11); and the set of `tasks.md` task numbers equals the set of `plan.md` entry keys, compared in both directions (12).
+
+**What checks 8–12 do and do not establish** — the boundary, stated as the schema states it:
+
+- They are deterministic in *what they decide* and **agent-executed** in *how they run*: their execution is the verify agent following the verify instruction. The schema requires them to run before archive and to block on failure, but this is **not** a Harness-level, mechanically enforced, non-bypassable archive-time gate. If the verify agent does not execute one of them, no mechanism in this schema intercepts the omission — review of `verify.md` is the only backstop.
+- They read the **presence and structure** of the annotations and records. They do not establish that the evidence is authentic (it is agent-submitted; that assurance rests on the review layer and degrades with it), do not prove a test-first development history, and do not assess semantic quality.
+- The semantic questions — whether a RED `failure:` excerpt is a behavioural failure rather than a harness error, whether the cited subject actually tests what the task claims, whether an `n/a` reason holds, and whether an `n/a` task nonetheless carries records — are stated in the instruction as **review judgements** (R1–R4), reported as blocking findings of the review rather than of a check.
 
 Failures route back to the corresponding artifact for fix; verify can be re-run.
 
@@ -442,11 +453,11 @@ Integration lives entirely in `instruction:` fields (pure prompts). If Superpowe
 
 ### 3. How TDD and code review actually arrive — made explicit
 
-TDD and code-review used to be described here as hidden transitive activations of `subagent-driven-development`. Our schema's apply step 2 instruction now states the conditional truth explicitly — TDD depends on plan.md task content; code review is structurally dispatched — so a reader sees what is and is not guaranteed during apply at a glance.
+TDD and code-review used to be described here as hidden transitive activations of `subagent-driven-development`. Our schema's apply step 2 instruction states the truth explicitly instead — code review is structurally dispatched, and TDD is annotation-driven: applicability is declared per task in `tasks.md`, applicable tasks record RED/GREEN evidence there, and verify's deterministic checks read the presence and structure of both before archive and block on failure. That enforcement is instruction-mediated (an agent following the verify instruction), not a mechanically enforced, non-bypassable gate — so a reader sees what is and is not established during apply at a glance.
 
 ### 4. Opinionated: subagent platforms only, no manual fallback
 
-This schema requires a subagent-capable platform (Claude Code, Codex, etc.). The alternative executor `superpowers:executing-plans` dispatches no independent reviewer: a single agent executes the plan and self-checks (verified against its [SKILL.md](https://github.com/obra/superpowers/blob/main/skills/executing-plans/SKILL.md) — its body mentions neither `test-driven-development` nor `requesting-code-review`, and it contains no reviewer dispatch). Upstream itself tells users to prefer `subagent-driven-development` whenever subagents are available. TDD is not what separates the two paths — when a task requires it, both executors receive that requirement through plan.md task content, and neither guarantees it otherwise. Falling back would silently lose the review structure Superpowers brings to this integration, so we prefer to fail loud at Step 0 and direct users to the built-in `spec-driven` schema instead.
+This schema requires a subagent-capable platform (Claude Code, Codex, etc.). The alternative executor `superpowers:executing-plans` dispatches no independent reviewer: a single agent executes the plan and self-checks (verified against its [SKILL.md](https://github.com/obra/superpowers/blob/main/skills/executing-plans/SKILL.md) — its body mentions neither `test-driven-development` nor `requesting-code-review`, and it contains no reviewer dispatch). Upstream itself tells users to prefer `subagent-driven-development` whenever subagents are available. TDD is not what separates the two paths — applicability and the RED/GREEN evidence are carried by the `tasks.md` annotations and the evidence contract, whichever executor runs the tasks. Falling back would silently lose the review structure Superpowers brings to this integration, so we prefer to fail loud at Step 0 and direct users to the built-in `spec-driven` schema instead.
 
 ### 5. Evidence-based PRECHECK for verify and retrospective (Layer 2 capability detection)
 
@@ -459,7 +470,7 @@ The LLM does not need to interpret timing prose — it runs commands and reads r
 
 ### 6. verify and retrospective are time-mismatched artifacts (known limitation)
 
-`verify.requires: [plan]` and `retrospective.requires: [verify]` are file-existence dependencies in the schema graph, but each instruction explicitly states "MUST run AFTER apply phase / verify pass". This is intentional misalignment — OpenSpec's engine only checks predecessor file existence. Engine-native fix awaits a `post_apply` phase concept upstream (analogous to spec-kit's `after_implement` hook); evidence-based PRECHECK above is the v1 mitigation.
+`verify.requires: [plan]` and `retrospective.requires: [verify]` are file-existence dependencies in the schema graph, but each instruction explicitly states "MUST run AFTER apply phase / verify pass". This is intentional misalignment — OpenSpec's engine only checks predecessor file existence. Engine-native fix awaits a `post_apply` phase concept upstream (analogous to spec-kit's `after_implement` hook); evidence-based PRECHECK above is the current mitigation.
 
 ---
 
@@ -469,22 +480,49 @@ This bundle carries **two version identifiers** that should not be confused:
 
 | Identifier | Where | Meaning | Example |
 |---|---|---|---|
-| Schema major | `schema.yaml: version: 1` | Contract of the schema graph (artifacts, `requires:` edges, PRECHECK shape). Breaking changes bump this. | `1` |
-| Bundle release | `VERSION` file + git tag | SemVer release of this bundle, scoped to a schema major. | `1.0.1` (tag `v1.0.1` at release) |
+| Schema major | `schema.yaml: version: 2` | Contract of the schema graph (artifacts, `requires:` edges, PRECHECK shape). Breaking changes bump this. | `2` |
+| Bundle release | `VERSION` file + git tag | SemVer release of this bundle, scoped to a schema major. | `2.0.0` (tag `v2.0.0` at release) |
 
-A bundle release `1.x.y` is a published cut of schema major `v1`. A future schema major `v2` will restart bundle releases at `2.0.0`. Adopters who pin to `v1.x.y` are guaranteed schema-graph compatibility within the v1 major.
+A bundle release `2.x.y` is a published cut of schema major `v2`, as `1.x.y` was of `v1`. Adopters who pin to a `1.x.y` or `2.x.y` bundle are guaranteed schema-graph compatibility within that major.
 
-> The compatibility matrix below uses `v1` (schema major) as the row key, because compatibility with OpenSpec / Superpowers is governed by the schema contract, not by patch-level edits inside this bundle.
+> The compatibility matrix below uses the schema major (`v1`, `v2`) as the row key, because compatibility with OpenSpec / Superpowers is governed by the schema contract, not by patch-level edits inside this bundle.
+
+### Why v1 → v2 is a schema-major bump
+
+Two of the policy's criteria are met, and the first is on its own sufficient:
+
+1. **Previously-valid artifacts become invalid.** v2 makes the TDD applicability annotation and the RED/GREEN evidence normative and adds deterministic verification of them (verify checks 8–12). A `tasks.md` that was legal under v1 — no `TDD:` annotations, no records — now fails verification until it is migrated, and a v1 `plan.md` not keyed 1:1 to the task numbers fails check 12. Previously-legal artifacts becoming illegal is what breaking means, independently of any argument about PRECHECKs.
+2. **PRECHECK shape changed.** The `plan` artifact's skill PRECHECK is removed, which hits this section's "PRECHECK shape" criterion directly. It is removed because its subject is gone — with `superpowers:writing-plans` no longer a dependency, "is that skill present?" has no object — not because prose replaced it. The replacement control covers a different question: a conforming plan, checked by verify's deterministic checks before archive. Every other PRECHECK (brainstorm, verify, retrospective, apply pre-flight) is untouched.
+
+Keeping `version: 1` and rewording the policy was considered and rejected: that would redefine "breaking" to fit the change and silently break the compatibility promise made to anyone pinned to `v1.x.y`.
+
+### Migrating v1 → v2
+
+For an in-flight change started under a `1.x.y` bundle, after upgrading the schema directory:
+
+1. **`tasks.md`** — add a `- TDD: applicable` or `- TDD: n/a — <reason>` list item under every task checkbox.
+2. **Applicable tasks** — record the RED and GREEN evidence under the task in `tasks.md`, per the contract, before running verify.
+3. **`plan.md`** — migrate a step-prescribing plan to the Plan Contract shape (one `##` entry per task, keyed by the task number, stating what "done" means), or regenerate it from `tasks.md` + `design.md`.
+4. **`superpowers:writing-plans`** — no longer a required dependency; remove it from your install expectations. It stays usable as a private decomposition aid.
+
+The annotation grammar and the record shape are defined once, in the `tasks` artifact instruction in [schema.yaml](./schema.yaml) — read them there rather than from a second copy.
+
+**Rollback:** pin bundle `1.0.1`. Schema major `v1` remains a published cut and is not withdrawn; an unmigrated change keeps working on it.
 
 ## Compatibility
 
 Baseline versions this schema was authored against. This is a **historical snapshot, not an end-to-end compatibility guarantee** — CI cannot run the full prompt-layer workflow in headless mode, so behavioral compatibility relies on human review when drift fires.
 
-Current bundle release: **`1.0.1`** (see [VERSION](./VERSION); git tag `v1.0.1` created at release).
+Current bundle release: **`2.0.0`** (see [VERSION](./VERSION); git tag `v2.0.0` created at release).
 
 | superpowers-bridge | OpenSpec CLI | Superpowers plugin | Baseline as of |
 |---|---|---|---|
+| v2 | `1.3.1` | `v5.1.0` | 2026-09-01 |
 | v1 | `1.3.1` | `v5.1.0` | 2026-05-11 |
+
+> Newest major first. Each major keeps its own row, and the v1 row is retained for adopters still pinned to a `1.x.y` bundle.
+>
+> The v2 row's OpenSpec entry is a **CLI-level attestation**, not a full prompt-layer cycle: CLI behaviour under `version: 2` was exercised across the CLI surface (validate / schemas / new / status / instructions) against openspec `1.3.1` in an isolated test project on 2026-09-01. The Superpowers entry is **unchanged from v1** — v2 removes a dependency rather than adding one, and no full cycle has been re-run against a newer Superpowers release, so bumping it would claim a check nobody performed. See the re-verification log below for what has and has not been checked against `v6.3.0`.
 
 ### Re-verification log
 
@@ -494,7 +532,7 @@ The table above records what this schema was **authored** against; it is not bum
 
 | Check | Result |
 |---|---|
-| All 8 skills this schema names still exist (`brainstorming`, `writing-plans`, `using-git-worktrees`, `subagent-driven-development`, `finishing-a-development-branch`, `test-driven-development`, `requesting-code-review`, `executing-plans`) | ✅ No renames — Layer 1 PRECHECK intact |
+| All 8 skills this schema names still exist (`brainstorming`, `writing-plans`, `using-git-worktrees`, `subagent-driven-development`, `finishing-a-development-branch`, `test-driven-development`, `requesting-code-review`, `executing-plans`) | ✅ No renames. **Naming ≠ requiring:** `executing-plans` is named only to be forbidden, and as of v2 `writing-plans` is named only as an optional decomposition aid. **v2 update:** the `plan` artifact's skill PRECHECK was removed with that dependency, so Layer 1 PRECHECK now covers `brainstorming` and the three apply pre-flight skills — those are intact; there is no longer a PRECHECK on `writing-plans` to keep intact |
 | Design touch #4's claim that `executing-plans` mentions neither TDD nor code-review | ✅ Still true — 0 matches in its `SKILL.md` |
 | `brainstorming` behaves as the `brainstorm` artifact instruction describes | ❌ **Drift — see below** |
 | Apply step 2's former claim (removed in bundle 1.0.1) that `subagent-driven-development` transitively enforces `test-driven-development` ("every task follows RED-GREEN-REFACTOR") | ❌ **Was false in v6.3.0 — see below.** The instruction now states the conditional truth |
@@ -503,9 +541,11 @@ The table above records what this schema was **authored** against; it is not bum
 
 **Open drift:** `brainstorming` v6.x opens by classifying the request into three paths — spike / bounded / architectural — and only the architectural path performs the five steps this schema's `brainstorm.instruction` describes. On the spike and bounded paths the skill produces a short in-chat answer and stops, which starves the `design` artifact's Context / Goals / Decisions / Risks / Migration reorganization. Separately, the v6.x skill states that after the architectural path the only skill to invoke next is `writing-plans`, whereas this schema inserts `proposal` → `design` → `specs` → `tasks` in between.
 
-**Open drift — TDD is conditional upstream (and was never verified as unconditional):** `subagent-driven-development`'s `SKILL.md` (32 KB in v6.3.0) contains no TDD mandate at all; every TDD reference lives in `implementer-prompt.md` and each one is conditional — "Write tests (**following TDD if task says to**)", "Did I follow TDD **if required**?", "**TDD Evidence** (**if TDD was required for this task**)". TDD therefore reaches the implementer only because `writing-plans` bakes "Step 1: Write the failing test / Step 2: Run test to verify it fails" into the tasks it judges to need tests (prose-only work may carry none). Loosening `plan.md` without replacing that channel silently removes TDD. The same prompt already defines a `TDD Evidence` reporting slot (RED command + failing output, GREEN command + passing output), so the fix direction is to make the task contract *require* TDD and *demand that evidence*, rather than prescribe the steps.
+**Resolved in v2 — TDD is conditional upstream (and was never verified as unconditional).** The finding below stands as recorded on 2026-08-26; the fix it points at landed in schema v2. `subagent-driven-development`'s `SKILL.md` (32 KB in v6.3.0) contains no TDD mandate at all; every TDD reference lives in `implementer-prompt.md` and each one is conditional — "Write tests (**following TDD if task says to**)", "Did I follow TDD **if required**?", "**TDD Evidence** (**if TDD was required for this task**)". TDD therefore reaches the implementer only because `writing-plans` bakes "Step 1: Write the failing test / Step 2: Run test to verify it fails" into the tasks it judges to need tests (prose-only work may carry none). Loosening `plan.md` without replacing that channel silently removes TDD. The same prompt already defines a `TDD Evidence` reporting slot (RED command + failing output, GREEN command + passing output), so the fix direction identified at the time was to make the task contract *require* TDD and *demand that evidence*, rather than prescribe the steps.
 
-Status: the false enforcement claim itself was removed in bundle 1.0.1 (apply step 2 now states the conditional truth); the deeper fix — a task contract that *requires* TDD and *demands that evidence* — remains open, as does the `brainstorming` drift, which needs a schema change. The baseline row stays at `v5.1.0` and the weekly drift issue stays open until those land.
+Status: the false enforcement claim itself was removed in bundle 1.0.1 (apply step 2 now states the conditional truth). **The deeper fix landed in schema v2** — TDD applicability is declared per task in `tasks.md`, applicable tasks record RED/GREEN evidence there, and verify's deterministic checks 8–12 read the presence and structure of both before archive and block on failure (instruction-mediated, not a non-bypassable gate; see [apply step 3](#3-verification--openspec-verify-change) for the full boundary). The bridge no longer depends on `writing-plans` as the TDD channel, so the loosening of `plan.md` no longer removes it.
+
+**Still open:** the `brainstorming` drift above, which needs its own schema change. The Superpowers baseline row stays at `v5.1.0` and the weekly drift issue stays open until it lands.
 
 ### How this is checked
 
@@ -517,11 +557,13 @@ The contract is three layers — **baseline declaration + automated drift detect
 | Drift notification | [`version-check.yml`](../.github/workflows/version-check.yml) weekly, compares baseline above against latest npm / GitHub release | Pinned ≠ latest upstream | Opens / updates a [labelled drift issue](https://github.com/JiangWay/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check) for human review (workflow stays green — drift is normal, not a failure) |
 | End-to-end workflow | **Not automated** | Behavioral changes inside Superpowers skills (renames, prose rewrites altering PRECHECK semantics, transitive-dependency changes); subtle OpenSpec engine semantic shifts | A human reads upstream release notes when the drift issue fires |
 
-The "Baseline as of" date is bumped when a maintainer manually re-runs a full cycle against the listed versions and confirms nothing degraded. Until then, the date marks human attestation, not an automated test pass.
+The "Baseline as of" date is bumped when a maintainer manually re-runs a full cycle against the listed versions and confirms nothing degraded. Until then, the date marks human attestation, not an automated test pass. **One exception, stated so the row and this definition do not disagree:** the v2 row's `2026-09-01` is a **CLI-level attestation only** — CLI behaviour under `version: 2` (validate / schemas / new / status / instructions) against openspec `1.3.1` — **not** a full prompt-layer cycle re-run. No full cycle has been re-run since the v1 row's `2026-05-11`.
 
 ### Known breaking changes
 
-None to date. Future schema-graph structural changes (artifact add/remove, `requires:` edge changes, PRECHECK changes) will be listed here with a migration note.
+**v1 → v2** (bundle `1.0.1` → `2.0.0`). The TDD applicability annotation and the RED/GREEN evidence become normative and are verified (checks 8–12), so a `tasks.md` that was valid under v1 fails verification until migrated, and a `plan.md` not keyed 1:1 to the task numbers fails check 12. The `plan` artifact's skill PRECHECK is removed along with the `superpowers:writing-plans` dependency. Migration: [Migrating v1 → v2](#migrating-v1--v2). Rollback: pin bundle `1.0.1`.
+
+Future schema-graph structural changes (artifact add/remove, `requires:` edge changes, PRECHECK changes) will be listed here with a migration note.
 
 For adopters: pin to versions ≥ those listed above. To inspect your own project's runtime state, run `openspec list` + `openspec schemas` + `claude plugin list`.
 
@@ -538,18 +580,19 @@ Brainstorming is multi-turn interactive dialogue requiring user participation. M
 
 ### Why `plan` is separate from `tasks`
 
-`tasks.md` is a coarse checkbox ("Add PdfServiceTest"); `plan.md` is micro-steps ("scaffold test → write downloadPdf test → run → commit"). They serve different purposes:
+`tasks.md` is a coarse checkbox list ("Add PdfServiceTest") that also carries each task's `TDD:` applicability and, for applicable tasks, its RED/GREEN evidence. `plan.md` is a per-task execution contract: one entry per task, keyed by the task number, stating what "done" means for that task. They serve different purposes:
 
-- `tasks.md` → tracks overall progress (apply phase's `tracks` field parses these checkboxes)
-- `plan.md` → guides subagents step by step (the executor's input)
+- `tasks.md` → tracks overall progress (apply phase's `tracks` field parses these checkboxes) and is the single source of truth for TDD applicability and evidence
+- `plan.md` → tells the executor what each task must deliver and how it will be judged, without prescribing the path (the executor's input)
 
-Apply requires `plan` (not `tasks`) because the executor needs micro-steps; `tracks: tasks.md` ensures progress is still surfaced via the coarse checkboxes.
+Apply requires `plan` (not `tasks`) because the executor needs the acceptance criteria per task, not just the checkbox; `tracks: tasks.md` ensures progress is still surfaced via the coarse checkboxes. Because the two files are keyed to each other, verify check 12 compares the task-number set against the entry-key set in both directions.
 
 ### Fallback strategy
 
 If a Superpowers skill is unavailable:
 
-- **`brainstorm` / `plan` artifacts** — the user may explicitly opt in to writing the artifact manually (PRECHECK STOPs and informs the user; manual override requires deliberate user action, not silent degradation)
+- **`brainstorm` artifact** — the user may explicitly opt in to writing the artifact manually (PRECHECK STOPs and informs the user; manual override requires deliberate user action, not silent degradation)
+- **`plan` artifact** — not affected. As of v2 it invokes no skill and has no skill PRECHECK: the agent writes it directly from `tasks.md`, `design.md` and `specs/`, so there is nothing to fall back from
 - **`apply` phase** — no manual fallback within this schema. PRECHECK STOPs at Step 0 if any required skill is missing. The recommended path is to switch to the built-in `spec-driven` schema for that change. Rationale: see Design touch #4 above — `executing-plans` dispatches no independent reviewer, and a degraded apply phase would defeat the schema's purpose.
 
 ---
