@@ -1,0 +1,13 @@
+## 1. Fixture group
+
+- [x] 1 Add email validation
+  - TDD: applicable
+  - RED:
+    - subject: test/auth.test.js::rejects empty email
+    - outcome: ERROR
+    - failure: SyntaxError: Unexpected token ')' at src/auth.js:12
+  - GREEN:
+    - subject: test/auth.test.js::rejects empty email
+    - outcome: PASS
+- [x] 2 Update the README install section
+  - TDD: n/a — prose/doc-only

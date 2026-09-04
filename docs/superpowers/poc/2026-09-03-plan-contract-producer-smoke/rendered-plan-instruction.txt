@@ -1,0 +1,161 @@
+- Generating instructions...
+<artifact id="plan" change="add-rate-limit" schema="superpowers-bridge">
+
+<task>
+Create the plan artifact for change "add-rate-limit".
+Per-task execution contract — what "done" means for each task, not how to get there
+</task>
+
+<dependencies>
+Read these files for context before creating this artifact:
+
+<dependency id="tasks" status="done">
+  <path>C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-openspec-schemas\f80079ae-df49-4d7c-9f88-d131d0eea44d\scratchpad\v2render2\openspec\changes\add-rate-limit\tasks.md</path>
+  <description>Implementation checklist with trackable tasks</description>
+</dependency>
+</dependencies>
+
+<output>
+Write to: C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-openspec-schemas\f80079ae-df49-4d7c-9f88-d131d0eea44d\scratchpad\v2render2\openspec\changes\add-rate-limit\plan.md
+</output>
+
+<instruction>
+Write plan.md yourself, directly from this change's tasks.md,
+design.md and specs/. No skill invocation is required to produce
+it. You MAY use a decomposition aid such as
+`superpowers:writing-plans` privately, but its micro-step output
+does not define this artifact's format — what you write must
+conform to the Plan Contract below.
+
+plan.md is a per-task execution contract: each entry states what
+"done" means for one task, not how to get there. Two executors may
+satisfy the same entry by different paths and both conform.
+
+STRUCTURE — a header, then exactly one entry per tasks.md task.
+
+1. Header
+   - Goal: what this change delivers, in one or two sentences.
+   - Pointers: this change's specs/ files and design.md. Reference
+     architecture and tech-stack decisions there; do not repeat
+     them here.
+   - Global constraints: copied verbatim from the specs, stated
+     once, binding on every entry below.
+
+2. One contract entry per task in tasks.md, keyed by the tasks.md
+   task number (1:1 — the set of entry keys and the set of task
+   numbers must be identical in both directions; a task with no
+   entry and an entry keyed to no task are both defects). Write
+   each entry as a `##` heading whose text BEGINS with that task
+   number, e.g. `## 1.1 — Login error handling`; the title after
+   the number is free. The key must LEAD so the entry-key set is
+   readable without interpretation — verify's deterministic
+   key-set check reads exactly this form. A `##` heading that
+   does not begin with a number is not an entry (this plan's own
+   header, a self-review section). Each entry states:
+
+   - Delivers — the end-to-end behaviour this task produces, not a
+     layer-by-layer implementation list.
+   - Acceptance criteria — concrete and verifiable. Vague language
+     such as "works correctly" or "handles errors appropriately"
+     is non-conforming: someone who did not write the entry must
+     be able to check the criterion and reach the same answer.
+   - Blocked by — the tasks that must land first, or an explicit
+     "none".
+   - Interfaces — CONDITIONAL. Required only where the task
+     couples with another task: the names and shapes it consumes
+     or produces, and which task sits on the other end. Omit it
+     for a task with no cross-task coupling; do not invent one to
+     fill the field.
+
+RIGHT-SIZING: one entry per task, and a task is the smallest unit
+that carries its own verification cycle and is worth a fresh
+reviewer's gate — sized to fit a single fresh context window.
+
+WHAT NOT TO WRITE: do not decompose entries into micro-steps and
+do not prescribe an execution sequence. Exact file paths, code
+snippets, test commands and commit points are NOT required —
+implementation detail goes stale fastest, and prescribing it takes
+ownership of the path away from the executor. A decision-rich
+snippet (state machine, schema, type shape) MAY be included where
+it encodes a decision more precisely than prose can.
+
+TDD stays in tasks.md: the applicability annotation and the
+RED/GREEN evidence live under the task checkboxes there. An entry
+MAY echo a task's applicability but MUST NOT redefine it, and
+plan.md MUST NOT hold a second copy of the evidence.
+
+SELF-REVIEW before you finish. This is generation-time feedback,
+not the required control: the required control is the verify
+artifact, whose deterministic checks are run before archive and
+block on failure. That enforcement is instruction-mediated — an
+agent following the verify instruction — not a mechanically
+enforced gate, so passing this list is not a guarantee.
+1. Entry keys — does the set of entry keys equal the set of
+   tasks.md task numbers exactly, in both directions?
+2. Acceptance criteria — is every one of them checkable by someone
+   who did not write it? Rewrite any that are not.
+3. Interfaces — does every task that couples with another task
+   state its interfaces, and does each side name the other?
+</instruction>
+
+<template>
+<!-- Use this as the structure for your output file. Fill in the sections. -->
+# [Feature Name] — Plan Contract
+
+> **For agentic workers:** Use superpowers:subagent-driven-development
+> to implement this plan task-by-task. Each entry states what "done"
+> means for one task, not how to get there — two executors may satisfy
+> the same entry by different paths and both conform.
+
+**Goal:** <!-- 一到兩句話：這個 change 交付什麼 -->
+
+**Pointers:** <!-- 這個 change 的 specs/ 檔案 + design.md；架構與技術棧決策放那邊參照，這裡不重複 -->
+
+**Global constraints (verbatim from the specs; every entry below is bound by them):**
+
+<!-- 從 specs/ 逐字複製、每條一個 bullet；不是改寫、不是摘要 -->
+
+---
+
+<!--
+entry key 必須放在每個 `##` heading 最前面（`## <task-number> — <title>`），
+因為 verify 的 entry-key 檢查讀的就是這個位置；key 對應 tasks.md 的任務
+編號，1 對 1，兩邊集合必須完全相同（tasks.md 少一個或 plan.md 多一個都
+會擋在 verify）。**這份範例的 entry key 集合 {1.1, 1.2, 2.1} 刻意對齊
+templates/tasks.md 範例的任務編號集合——兩份範例本身就是配對的種子，不是
+各自獨立的示範。**
+-->
+
+## 1.1 — <!-- Task title -->
+
+- **Delivers:** <!-- 這個任務交付什麼端到端行為，不是逐層列實作步驟 -->
+- **Acceptance:** <!-- 具體、可驗證的條件；禁止「運作正常」這類無法驗證的說法 -->
+- **Blocked by:** <!-- 必須先完成的任務編號，或明寫 "none" -->
+- **Interfaces:** <!-- 條件性欄位——只有這個任務與其他任務耦合時才寫：交換的名稱/形狀，以及對方是哪個任務 -->
+
+## 1.2 — <!-- Task title -->
+
+<!-- 這個範例刻意省略 Interfaces 區塊：1.2 與其他任務沒有耦合，示範
+「沒耦合就整段省略、不要硬湊」這條規則本身，而不是只在註解裡宣稱它。 -->
+
+- **Delivers:** <!-- 這個任務交付什麼端到端行為，不是逐層列實作步驟 -->
+- **Acceptance:** <!-- 具體、可驗證的條件；禁止「運作正常」這類無法驗證的說法 -->
+- **Blocked by:** <!-- 必須先完成的任務編號，或明寫 "none" -->
+
+## 2.1 — <!-- Task title -->
+
+- **Delivers:** <!-- 這個任務交付什麼端到端行為，不是逐層列實作步驟 -->
+- **Acceptance:** <!-- 具體、可驗證的條件；禁止「運作正常」這類無法驗證的說法 -->
+- **Blocked by:** <!-- 必須先完成的任務編號，或明寫 "none" -->
+- **Interfaces:** <!-- 條件性欄位——只有這個任務與其他任務耦合時才寫：交換的名稱/形狀，以及對方是哪個任務 -->
+</template>
+
+<success_criteria>
+<!-- To be defined in schema validation rules -->
+</success_criteria>
+
+<unlocks>
+Completing this artifact enables: verify
+</unlocks>
+
+</artifact>
