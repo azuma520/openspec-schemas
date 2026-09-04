@@ -161,6 +161,13 @@ list it below.
 > establish that the evidence is authentic (the evidence is agent-submitted), do
 > not prove a test-first development history, and do not assess semantic quality.
 
+> **Freshness.** Every result above describing `tasks.md` or `plan.md` describes it
+> as it was when that check ran. If either file is modified afterwards, the results
+> computed from it are **STALE** and those checks must be re-run before archive:
+> an edit to `tasks.md` reaches **§2 and §8's checks 8–11 and 12**; an edit to
+> `plan.md` reaches **§7 and check 12**. This is agent-executed like the checks
+> themselves: **nothing in this schema detects a stale result.**
+
 ---
 
 ## Overall Decision

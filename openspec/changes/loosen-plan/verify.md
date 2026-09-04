@@ -670,15 +670,22 @@ cleaner than the file it summarises.
 5. **Class-(a) detection is exact-phrase, so a differently-worded fourth instance would still slip.**
    Narrowed rather than closed: the class-(b) boundary-vocabulary sweep is the hand-reviewed net such an
    instance would most likely fall into. Widening class (a) to patterns is a separate change.
-6. **Nothing in this schema owns check *freshness*.** §8.1a is the demonstration: a reopen changed
-   `tasks.md` after checks 8–12 had run, and no gate re-ran the set comparison — the results stayed on
-   the record, correct as of a tree that no longer existed. The `verify` instruction says when the
-   checks must run (before archive) but not that a later edit to `tasks.md` or `plan.md` invalidates a
-   recorded result. **This is a gap in the shipped schema, not only in how this change was executed**,
-   and it is exactly the shape the retrospective PRECHECK fix (§14.2) closed one layer down: absence of
-   a failure signal read as permission. Whether `verify` should carry a staleness condition — and
-   whether that can be stated without a Harness-level mechanism the claim boundary forbids — is a
-   decision for the owner and a candidate for the next change.
+6. **Check *freshness*: the minimal patch landed; the mechanical version is deferred.** §8.1a is the
+   demonstration — a reopen changed `tasks.md` after checks 8–12 had run, no gate re-ran the set
+   comparison, and the recorded PASS stayed on the record describing a tree that no longer existed.
+   **Owner ruling (2026-09-04): fix it now, at the smallest size the current architecture can honestly
+   support.** The `verify` instruction now carries a freshness requirement — a recorded result
+   describes the artifacts as they were when the check ran, so a later edit to `tasks.md` or `plan.md`
+   makes the affected results STALE and they must be re-run before archive — mirrored into
+   `templates/verify.md`, both bridge READMEs' design touch #3, and the `tdd-evidence-contract` spec.
+   **It is positioned as an agent-executed freshness requirement and nothing more**: no digest of the
+   checked state is computed or compared, so no surface describes freshness as mechanically guaranteed.
+   **What remains deferred** is the mechanical form — binding a verification result to a digest of the
+   state it was computed over, recomputing at the gate, and invalidating on mismatch. That needs a
+   result carrier, a digest owner and a gate contract, which is its own formal design and its own
+   change. Recorded here as a candidate, deliberately not started in this one. The owner's framing:
+   *fix the demonstrated false-pass first, but only up to the level of assurance the current
+   architecture can actually provide.*
 
 **Two items that were on this list in the first draft are now closed rather than carried**: the three v1
 TDD survivors (§14.1) and the fail-open PRECHECK (§14.2). They were reopened as tasks, fixed, reviewed and

@@ -453,7 +453,7 @@ Evidence-first 反思:§0 Evidence(量化前置數據 —— commit 數、diff �
 
 ### 3. TDD 與 code review 實際怎麼來——顯式寫清楚
 
-TDD 與 code-review 過去在這裡被描述成 `subagent-driven-development` 內部隱藏的 transitive activation。本 schema apply step 2 的 instruction 改成**直接寫出真相**——code review 是結構性派發;TDD 則是註記驅動的:適用性由 `tasks.md` 逐 task 宣告,標為適用的 task 把 RED/GREEN 證據記在那裡,而 verify 的決定性檢查會在 **archive 之前**讀這兩者的存在與結構,失敗就 block。這層強制是 **instruction 層執行**的(靠一個照著 verify instruction 走的 agent),不是機械強制、無法繞過的 gate——讓讀者一眼看懂 apply 階段什麼被確立了、什麼沒有。
+TDD 與 code-review 過去在這裡被描述成 `subagent-driven-development` 內部隱藏的 transitive activation。本 schema apply step 2 的 instruction 改成**直接寫出真相**——code review 是結構性派發;TDD 則是註記驅動的:適用性由 `tasks.md` 逐 task 宣告,標為適用的 task 把 RED/GREEN 證據記在那裡,而 verify 的決定性檢查會在 **archive 之前**讀這兩者的存在與結構,失敗就 block。這層強制是 **instruction 層執行**的(靠一個照著 verify instruction 走的 agent),不是機械強制、無法繞過的 gate——讓讀者一眼看懂 apply 階段什麼被確立了、什麼沒有。同一份 instruction 另帶一條**新鮮度**要求:一筆已記錄的檢查結果,描述的是「檢查當下」的 artifact,所以之後若改動 `tasks.md` 或 `plan.md`,受影響的結果即視為 STALE、必須在 archive 前重跑。這條同樣是 agent 執行的——這裡沒有任何東西會去計算或比對被檢查狀態的 digest。
 
 ### 4. Opinionated:只支援 subagent 平台,沒有手動 fallback
 

@@ -288,12 +288,16 @@ What remains, all recorded rather than resolved:
    the three real survivors was checked against its *pre-fix* text to confirm it would have been caught —
    but a differently-worded fourth instance would still slip. Narrowed, not closed; the hand-reviewed
    class-(b) sweep is the net it would most likely fall into.
-6. **Nothing in the shipped schema owns check *freshness*, and this change proved it on itself.** The
+6. **Check freshness: patched at instruction level; the mechanical form is a future change.** The
    group-11 reopen changed `tasks.md` after checks 8–12 had run, and no gate re-ran the set comparison:
    for the span of one commit this change violated its own check 12 (27 task numbers, 25 plan entry
    keys). It was found by an independent review of the **execution record**, not by any gate — every gate
-   had already run. Now re-run and evidenced in both directions (`verify.md` §8.1a: current tree PASS,
-   pre-fix fixture BLOCK naming `{11.1, 11.2}`). **The residue handed over is the schema-level question**:
-   `verify` says the checks must run before archive, but not that a later edit to `tasks.md` or `plan.md`
-   invalidates a recorded result — and whether that can be stated without the Harness-level mechanism the
-   claim boundary explicitly disclaims is the owner's call, not a verification fix.
+   had already run. Re-run and evidenced in both directions (`verify.md` §8.1a: current tree PASS,
+   pre-fix fixture BLOCK naming `{11.1, 11.2}`). **The owner then ruled it a demonstrated false-pass
+   rather than a nice-to-have** and required the minimum repair the current architecture can honestly
+   support: `verify` now states that a recorded result is STALE once `tasks.md` or `plan.md` changes, and
+   that the affected checks must be re-run before archive. Positioned strictly as **agent-executed** —
+   no digest is computed or compared, and no surface calls freshness mechanically guaranteed.
+   **Deferred, deliberately not started here**: the mechanical form — a verification result bound to a
+   digest of the state it was computed over, recomputed at the gate, invalidated on mismatch. That needs
+   a result carrier, a digest owner and a gate contract, i.e. its own formal design and its own change.

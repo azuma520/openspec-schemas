@@ -594,6 +594,32 @@ artifacts:
         (the evidence is agent-submitted), do not prove a test-first
         development history, and do not assess semantic quality.
 
+      FRESHNESS of a recorded check result — an execution requirement,
+      not a claim about enforcement:
+
+      - A recorded result describes the artifacts AS THEY WERE when the
+        check ran. If `tasks.md` or `plan.md` is modified after a check
+        result is recorded, that result is STALE: the affected checks
+        MUST be re-run and verify.md updated before archive.
+      - The affected set is derived from INPUTS, not from which checks
+        are newest: check 2 and checks 8-11 read `tasks.md`; check 7
+        reads `plan.md`; check 12 reads BOTH. An edit to either file
+        staleness-invalidates every result computed from it, so an
+        edit to `tasks.md` reaches check 2, 8, 9, 10, 11 and 12, and
+        an edit to `plan.md` reaches check 7 and 12.
+      - Scope is deliberately those two files. The other checks read
+        `specs/`, `design.md`, commit state or `docs/`; staleness for
+        those is not addressed here and MUST NOT be claimed to be.
+      - This is agent-executed like the checks themselves. Nothing in
+        this schema detects a stale result — there is no digest of the
+        checked state and no mechanism that compares one. Surfaces
+        SHALL NOT describe freshness as mechanically guaranteed.
+      - Why this rule exists rather than being left implicit: a check
+        that PASSED truthfully does not stop being recorded when its
+        inputs change. Reopening a task list after the checks have run
+        is ordinary, and without this rule the earlier PASS stays on
+        the record describing a state that no longer exists.
+
       Verify MAY be re-run multiple times as the implementation is
       refined — each run overwrites verify.md with current state.
 

@@ -195,7 +195,9 @@
 | `archive` → PR | 待執行（Windows 目錄鎖：`cp -r` ＋ `diff -r` ＋ **委派使用者跑 `rm -rf`**） |
 | Anchor #4 正式檢討 | 事實基礎見 §7；未排期 |
 | E1 是否為產品層 silent fallback | 需 bounded spike；本次不宣稱 |
-| **schema 沒有任何一層擁有「檢查新鮮度」** | 本次實證（§5 第 10 個）。`verify` 規定檢查 archive 前要跑，沒規定「`tasks.md` / `plan.md` 後來被改過，先前結果就作廢」。已補跑並雙向舉證，但**缺口在 schema、不只在這次執行**；且能否在不動用 claim boundary 明文否認的 Harness 層機制下表述，本身就是問題的一部分。列入 `verify.md` carried-forward #6，交你裁 |
+| **schema 沒有任何一層擁有「檢查新鮮度」**<br>**（2026-09-04 後記：已部分關閉，見本節末）** | 本次實證（§5 第 10 個）。`verify` 規定檢查 archive 前要跑，沒規定「`tasks.md` / `plan.md` 後來被改過，先前結果就作廢」。已補跑並雙向舉證，但**缺口在 schema、不只在這次執行**；且能否在不動用 claim boundary 明文否認的 Harness 層機制下表述，本身就是問題的一部分。列入 `verify.md` carried-forward #6，交你裁 |
+
+> **後記（2026-09-04，不改寫上方紀錄，只標明其後續）**：使用者於次日裁定 —— 這不是「還能更好」，是**本次已實測的假放行**，必須在出貨前補到「當前架構真正能提供的保證程度」。`verify` 指令因此加入**新鮮度要求**：一筆已記錄的結果描述的是檢查當下的 artifact，之後改動 `tasks.md` 或 `plan.md` 會使**由該檔算出的每一筆結果**變成 STALE、必須在 archive 前重跑（受影響集合**由各檢查的輸入推導**：check 2 與 8–11 讀 `tasks.md`、check 7 讀 `plan.md`、check 12 兩者皆讀）。**定位僅為 agent-executed** —— 不計算也不比對任何 digest，各表面不得宣稱新鮮度已被機械保證。上方那句「沒有任何一層擁有新鮮度」在 09-03 當下為真；今日起精確的說法是「**沒有任何一層機械地擁有它**」。真正的機械版（結果綁定被驗證狀態的 digest、gate 前重算、不符即失效）另列為後續正式 change 候選，本次刻意未開始。
 
 **一個已收斂、值得記錄其收斂方式的**：bundle 的規範指令面（`schema.yaml` ＋ `templates/`）現在有**零個** `\bv1\b`；兩份 README 各有 **15 行 / 23 處**，其中 12 行落在 migration guide、compatibility matrix 與 versioning 說明 —— **那裡指名前一個 major 正是它的用途** —— 另 3 行分別在導言（`:12`）、升級說明（`:117`）與 apply 走查（`:411`，那處是 `v1.x`，指 bundle 發版而非 schema major）。（ledger 裡記的是「bundle 零個」，那句話的實際範圍是前者。而本檔第一版在這句宣稱「用精確版本」的話裡，**把行數當成處數寫** —— 由 doc gate 的獨立審查抓出，見 §10。）
 
