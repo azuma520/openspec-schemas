@@ -40,8 +40,16 @@
 | `f5-key-set-mismatch` | tasks `{1,2,3}` 對 plan `{1,2,9}`（**數量相同、集合不同**） | check 12 BLOCK |
 | `f6-syntaxerror-red` | RED 的 outcome 是 `ERROR`（SyntaxError），不是行為失敗 | **決定性檢查不 BLOCK**——check 10 形式上通過（`ERROR` 是合法的非 `PASS` 標記），只有 review judgement R1 抓得到 |
 | `f7-blank-spaced-record` | **沒有破壞任何東西**——欄位之間夾空行的合規紀錄 | 不 BLOCK（正向對照） |
+| `f8-duplicate-task-number` | `tasks.md` 裡任務編號 `1.1` 出現兩次（兩個不同任務共用同一個編號） | check 12 BLOCK，具名重複鍵 `1.1` |
+| `f9-duplicate-plan-key` | `plan.md` 裡 `## 2.3` 這個 entry key 出現兩次 | check 12 BLOCK，具名重複鍵 `2.3` |
+| `f10-subject-without-separator` | RED/GREEN 的 `subject:` 只有測試名、沒有 `::` 分隔符與檔案路徑 | check 11（`subject:` 語法）BLOCK |
+| `f11-duplicate-subject-one-side` | 同一任務下兩筆 RED 記錄的 `subject:` 值逐字相同（GREEN 只有一筆） | check 11（per-subject 唯一性／cardinality）BLOCK |
+| `f12-two-subjects-paired` | **沒有破壞任何東西**——同一任務下兩個不同 `subject:`，各自完整配對一組 RED＋GREEN | 不 BLOCK（正向對照） |
+| `f13-deferred-task-in-tasks` | `tasks.md` 有一個 `[~]` deferred 任務、`plan.md` 為一個沒有任務列的合規 v2 entry | check 7 應找到該筆 deferred 任務（舊措辭下讀 `plan.md` 找任務列，什麼都找不到） |
 
-`f6` 與 `f7` 是這批裡最重要的兩個，理由相反：`f6` 證明「檢查通過 ≠ 判斷通過」，`f7` 證明檢查**不會誤擋合規品**。六個證明「違規會被擋」的 fixture，對「合規不會被誤擋」一句話都沒說——沒有 `f7`，這組防呆就是單向的。
+`f6` 與 `f7` 是這批裡最重要的兩個，理由相反：`f6` 證明「檢查通過 ≠ 判斷通過」，`f7` 證明檢查**不會誤擋合規品**。六個證明「違規會被擋」的 fixture，對「合規不會被誤擋」一句話都沒說——沒有 `f7`，這組防呆就是單向的。`f12` 是 `f7` 之後的第二個正向對照，理由同構：`f10`、`f11` 證明「subject 語法／cardinality 違規會被擋」，但單靠它們無法排除「檢查會不會連合法的雙 subject 配對都一併誤擋」——沒有 `f12`，這條防呆一樣是單向的。
+
+⚠️ **`f8`–`f13` 這六個是目標 change `fix-v2-blocking-defects`（修正措辭後）的行為，且從未進過任何盲測**——見下一節。
 
 ## 證據來源：哪幾個是盲測的，哪一個不是
 
@@ -69,6 +77,8 @@
 
 **另一項範圍限制：** 盲測驗的是 R25 / R26 兩項修正**之前**的檢查措辭。之後 check 12 的表述與空行處理有變動，而**變動後沒有再跑第二次盲測**。`f7` 正是會測到新行為的那個 fixture。
 
+**`f8`–`f13` 沒有盲測判定，句點。** 這六個是 change `fix-v2-blocking-defects` 修正五個 P1 缺陷後才新增的 fixture，鎖定的是修正**後**的檢查措辭；上面兩張表（判定者、盲測名稱對照）只涵蓋 `f1`–`f7`，`f8`–`f13` 不在其中，也不該被讀成隱含通過了某種盲測。它們目前唯一的判定依據是本檔第一張表所寫的預期判定，尚未經任何獨立執行者驗證。
+
 ## 怎麼重跑
 
 決定性檢查是 **agent 執行**的（instruction-mediated），不是腳本——所以「重跑」是把指令與受測物交給一個沒有脈絡的執行者，不是跑一支程式。
@@ -78,8 +88,8 @@
    openspec instructions verify --change <某個 active change> --schema superpowers-bridge
    ```
    ⚠️ 這條指令**需要一個 active change 存在**，兩種失敗訊息不同（皆為實測，測時 repo 內 0 個 change）：完全沒有 change → `✖ Error: No changes found. Create one with: openspec new change <name>`；`--change` 指到不存在的名字 → `✖ Error: Change '<名字>' not found. No changes exist. …`（後半句是「repo 內 0 個 change」這個狀態造成的，換個狀態會不同）。**兩者都不是壞了。** 單純要讀條文時直接看 `schema.yaml` 即可。
-2. 把 `fixtures/` 複製一份，**用中性名稱重新打亂**（`case-A`、`case-B`…），順序自己重排。
+2. 把 `fixtures/` 複製一份，**用中性名稱重新打亂**（`case-A`、`case-B`…），順序自己重排。**現在共十三個 fixture（`f1`–`f13`），全部一起打亂**——不要只打亂 `f1`–`f7` 或只打亂 `f8`–`f13`，兩批分開重跑量不到「新舊檢查混在一起會不會互相干擾」。
 3. 把指令與打亂後的目錄交給一個對本 change 無脈絡的執行者，請它對每個 case 回報「哪一條 check BLOCK、或不 BLOCK」。
-4. 用本檔第一張表比對。⚠️ 若把 `f7` 併進去，**它的正確答案是「不 BLOCK」**——把正向對照判成 BLOCK 才是失敗。
+4. 用本檔第一張表比對。⚠️ 若把 `f7` 或 `f12` 併進去，**它們的正確答案都是「不 BLOCK」**——把正向對照判成 BLOCK 才是失敗。
 
-fixtures 是純 markdown，沒有任何工具依賴；`plan.md` 除 `f5` 外全部相同（`f5` 蓄意改了 entry key）。
+fixtures 是純 markdown，沒有任何工具依賴；`f1`–`f7` 的 `plan.md` 除 `f5` 外全部相同（`f5` 蓄意改了 entry key）；`f8`–`f13` 各自的 `plan.md` 依其破壞的東西各不相同，見第一張表逐項對照。
