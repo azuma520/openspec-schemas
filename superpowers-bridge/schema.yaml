@@ -158,7 +158,14 @@ artifacts:
 
       Guidelines:
       - Group related tasks under ## numbered headings
-      - Each task MUST be a checkbox: `- [ ] X.Y Task description`
+      - Each task MUST be a checkbox: `- [ ] X.Y Task description` —
+        the number is separated from the `]` by whitespace, and NO task
+        number repeats anywhere in this file. That number is also the
+        key of the corresponding plan.md entry: verify compares the two
+        collections in two stages, first rejecting a number carried by
+        two task lines (or a key leading two plan entries), then
+        requiring the two sets to be equal in both directions. A
+        renumbering here is a renumbering there.
       - Tasks should be small enough to complete in one session
       - Order tasks by dependency (what must be done first?)
 
@@ -213,6 +220,18 @@ artifacts:
         character to the trimmed `subject:` of the RED record it pairs
         with.
 
+      A FIELD IS ONE LINE. Its value runs to the end of that line and no
+      further. A line that continues it by WRAPPING is not part of the
+      field and is not an error either — it is simply not read, so the
+      wrapped text stays visible in the file but is absent from the
+      record. Splitting the text across a second `- <same key>:` line
+      does not join them: that is a repeated key, which makes the record
+      malformed (see the cardinality rule with `invocation:` below).
+      What decides is the FORM, not the intent: a wrapped line that
+      itself happens to read `- <key>: <value>` is read as a field of
+      that key, never as continuation. Condense a long `failure:`
+      excerpt onto the one line.
+
       SUBJECT — the value names a test, and the format this schema
       requires is `test-file::test-name` (its first convention for
       this, not an architecture invariant). The grammar, stated as the
@@ -244,7 +263,10 @@ artifacts:
 
       The invocation (the command that was run) is supporting evidence:
       recommended for reproducibility, NOT required. If you record it,
-      add it as a further `- invocation: <command>` field. A SyntaxError,
+      add it as a further `- invocation: <command>` field — ONE such
+      field, like every other: within a single record each field key
+      appears at most once, and a record carrying two lines with the
+      same key is malformed (verify check 9 blocks it). A SyntaxError,
       import error, missing dependency or test-harness error is not a
       valid RED outcome — but that, like the `n/a` reason, is a REVIEW
       judgement; the deterministic checks see only a non-`PASS` marker.
@@ -364,6 +386,12 @@ artifacts:
       snippet (state machine, schema, type shape) MAY be included where
       it encodes a decision more precisely than prose can.
 
+      Do NOT carry task-level state markers into plan.md — a `[~]`
+      deferral marker, a `[x]` completion marker, or any other
+      per-task status. tasks.md is their carrier: verify's deferral
+      check reads tasks.md and nothing else, so a state marker written
+      here records nothing and is seen by nothing.
+
       TDD stays in tasks.md: the applicability annotation and the
       RED/GREEN evidence live under the task checkboxes there. An entry
       MAY echo a task's applicability but MUST NOT redefine it, and
@@ -375,8 +403,11 @@ artifacts:
       block on failure. That enforcement is instruction-mediated — an
       agent following the verify instruction — not a mechanically
       enforced gate, so passing this list is not a guarantee.
-      1. Entry keys — does the set of entry keys equal the set of
-         tasks.md task numbers exactly, in both directions?
+      1. Entry keys — does every entry key occur exactly once, does
+         every tasks.md task number occur exactly once, and are the
+         two sets equal in both directions? All three, not the last
+         alone: a repeated key on either side is a defect a set
+         comparison cannot see.
       2. Acceptance criteria — is every one of them checkable by someone
          who did not write it? Rewrite any that are not.
       3. Interfaces — does every task that couples with another task
@@ -575,12 +606,47 @@ artifacts:
           conforming; nothing extra is picked up either way, because
           the field keys are literal).
 
+          A FIELD IS EXACTLY ONE LINE, and its value ends where that
+          line ends. A line inside the record's range that is NOT of
+          the form `- <key>: <value>` is not a field and is not a
+          continuation of the field above it: it contributes nothing
+          and is not itself an error — so a `failure:` excerpt whose
+          text is wrapped onto a second line records only what stands
+          on the `- failure:` line, and a second `- failure:` line
+          carrying the rest is a repeated key (see FIELD CARDINALITY
+          below), not a longer value. Record a multi-line excerpt
+          condensed onto the one line.
+
           `- RED:` requires the fields `subject:`, `outcome:` and
           `failure:`. `- GREEN:` requires `subject:` and `outcome:`.
           `invocation:` is supporting evidence and is never required.
           EVERY record belonging to the task is examined: a defect in
           a task's second RED record is reported exactly as one in its
           first.
+
+          FIELD CARDINALITY — within ONE record, each field key
+          appears AT MOST ONCE. A record carrying more than one line
+          with the same field key is malformed → BLOCK, naming the
+          repeated key and the record it belongs to; this holds for
+          every key, required or not. It is the record-level analogue
+          of check 8's "more than one" rule for the annotation, and it
+          is what keeps checks 10 and 11 decidable: each of those
+          reads a record's `outcome:` or `subject:` as ONE value, so a
+          repeated key would leave one executor taking the first line
+          and another taking both, reaching opposite verdicts on the
+          same input. This check is the sole owner of the rule; checks
+          10 and 11 route such a record back here rather than deciding
+          it themselves.
+
+          NO PER-VALUE RULE OF THIS CHECK RUNS ON A REPEATED KEY. Its
+          presence is satisfied and its cardinality is the finding, so
+          neither the non-empty requirement nor — for `subject:` — the
+          SUBJECT GRAMMAR below is evaluated on it: no executor has to
+          choose which of the two values to read, and the record yields
+          exactly ONE finding for that key. Only the repeated key is
+          exempted: a record blocked for a repeated `failure:` still
+          carries one `subject:`, whose grammar IS evaluated, and both
+          findings are reported.
 
           SUBJECT GRAMMAR — a `subject:` field is satisfied when it
           is present AND its value conforms to the grammar below; a
@@ -597,7 +663,10 @@ artifacts:
           characters of the test name — so
           `tests/api_test.go::TestRejectsEmptyEmail/subcase-2` and
           `a:::b` both conform, while `rejects empty email` (no
-          sequence) and `a::b::c` (two) do not.
+          sequence) and `a::b::c` (two) do not. A record carrying more
+          than one `- subject:` line is not examined here at all — see
+          FIELD CARDINALITY above, which is the whole of this check's
+          report about that record's subject.
 
           A task annotated `TDD: n/a` owes no records; if it carries
           them anyway, checks 9-11 do not apply to it — what reports
@@ -612,7 +681,10 @@ artifacts:
           MARKER ONLY — whether a RED `failure:` excerpt is a
           behavioural failure rather than a harness error is review
           judgement R1 below, never this check. It is applied to EVERY
-          record belonging to the task, however many there are. Each
+          record belonging to the task, however many there are. A
+          record carrying more than one `- outcome:` line yields NO
+          outcome verdict here — that record is malformed and its
+          malformation is check 9's finding, never this check's. Each
           GREEN record's `outcome:` value must be exactly the token
           `PASS`. Each RED record's must be a single token of
           uppercase letters A-Z with no whitespace, and must not be
@@ -639,7 +711,11 @@ artifacts:
           character as opaque strings; whether a value conforms to
           check 9's grammar is check 9's finding, and a malformed
           value still takes part here — so one task can yield a
-          finding from both checks, and each is reported.
+          finding from both checks, and each is reported. A
+          record carrying no `subject:` field at all, and a record
+          carrying more than one, each contribute nothing to either
+          list: an absent `subject:` and a repeated one are alike
+          check 9's finding, never this check's.
 
           STAGE ONE — UNIQUENESS WITHIN EACH SIDE, before either
           list is reduced to a set. A value appearing more than once
@@ -647,7 +723,10 @@ artifacts:
           failure of this check on its own, whatever the other side
           holds. Report EVERY repeated value by name and by the side
           it repeats on — "`auth.test.js::rejects empty email` occurs
-          twice among this task's RED records" — and BLOCK.
+          more than once among this task's RED records" — and BLOCK.
+          The message says "more than once" because the rule does: a
+          value appearing three times is one repeated value reported
+          once, not a value that "occurs twice".
           Uniqueness is what makes the pairing decidable: two
           identically named subjects each carrying a RED and a GREEN
           leave no way to say which pairs with which. Re-running a
@@ -700,14 +779,21 @@ artifacts:
           whitespace following it, when that token matches
           `\d+(\.\d+)*` — a task line whose first token there is not a
           number has no task number, and that is itself a defect of
-          this check (the plan cannot be keyed 1:1 to it).
+          this check (the plan cannot be keyed 1:1 to it). AT LEAST
+          ONE whitespace character must follow the `]`: with none,
+          `- [x]1.1 Foo` carries NO task number — it is the same
+          defect as a non-numeric token, never a task numbered `1.1`.
           Collect the ENTRY KEY of every plan.md contract entry. The
           `plan` artifact's instruction is what REQUIRES the entry
           form — each entry a `##` heading whose text begins with the
           tasks.md task number, e.g. `## 1.1 — <title>`; this check
           implements that requirement and introduces nothing of its
           own. So: the leading `\d+(\.\d+)*` token of each `##` heading
-          in plan.md whose text begins with such a token. Headings
+          in plan.md whose text begins with such a token — a heading
+          at EXACTLY that level. `###` or deeper is a sub-heading
+          INSIDE an entry, not an entry: it is not collected, so a
+          `### 1.1 — <detail>` sitting under `## 1.1 — <title>` does
+          not make `1.1` a repeated key. Headings
           that do not begin with a number (the plan header, a
           self-review section) are not entries and are not collected.
 
@@ -724,8 +810,11 @@ artifacts:
           an entry key leading more than one `##` entry heading in
           plan.md, are each a failure of this check on their own,
           whatever the other side holds. Report EVERY repeated key by
-          name and by the side it repeats on — "`1.1` occurs twice in
-          tasks.md", "`2.3` occurs twice in plan.md" — and BLOCK. Two
+          name and by the side it repeats on — "`1.1` occurs more
+          than once in tasks.md", "`2.3` occurs more than once in
+          plan.md" — and BLOCK. The messages say "more than once"
+          because the rule does: a key appearing three times is one
+          repeated key, not a key that "occurs twice". Two
           entries keyed alike are duplicates whether or not their
           titles differ; the key is what must be unique.
 
@@ -780,7 +869,15 @@ artifacts:
         a SyntaxError, import error, missing dependency or other
         test-harness error? An error-output RED does not satisfy the
         evidence contract even though check 10 sees a conforming
-        non-`PASS` marker.
+        non-`PASS` marker. Judge the `failure:` excerpt, not the
+        marker: an outcome other than `FAIL` does not by itself make a
+        RED a harness error. Where the subject under test is a rule
+        executed by READING rather than code — these checks
+        themselves, when a change edits them — a RED recording
+        `INDETERMINATE` because the rule AS WRITTEN could not decide
+        the case is the target property (decidability) going
+        unsatisfied: a behavioural failure under this judgement,
+        deliberate rather than malformed.
       - R2. Does the cited `subject:` actually test the behaviour the
         task claims to deliver? Checks 9-11 decide the subject's FORM
         (check 9's grammar) and how records sharing one subject VALUE

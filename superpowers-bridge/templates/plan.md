@@ -18,8 +18,9 @@
 <!--
 entry key 必須放在每個 `##` heading 最前面（`## <task-number> — <title>`），
 因為 verify 的 entry-key 檢查讀的就是這個位置；key 對應 tasks.md 的任務
-編號，1 對 1，兩邊集合必須完全相同（tasks.md 少一個或 plan.md 多一個都
-會擋在 verify）。**這份範例的 entry key 集合 {1.1, 1.2, 2.1} 刻意對齊
+編號，1 對 1 是兩個條件：先確認任一邊都沒有重複的 key（同一個編號出現
+兩次就是 BLOCK，訊息與「少一個 / 多一個」不同），再把兩邊化為集合、雙向
+比對必須完全相同（tasks.md 少一個或 plan.md 多一個都會擋在 verify）。**這份範例的 entry key 集合 {1.1, 1.2, 2.1} 刻意對齊
 templates/tasks.md 範例的任務編號集合——兩份範例本身就是配對的種子，不是
 各自獨立的示範。**
 -->

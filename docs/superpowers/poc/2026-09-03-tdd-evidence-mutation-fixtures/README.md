@@ -34,7 +34,7 @@
 | Fixture | 破壞的東西 | 應得判定 |
 |---|---|---|
 | `f1-missing-annotation` | 任務 2 沒有 `TDD:` 標註 | check 8 BLOCK |
-| `f2-missing-green` | 任務 1 是 applicable、有 RED 沒 GREEN | check 9 BLOCK |
+| `f2-missing-green` | 任務 1 是 applicable、有 RED 沒 GREEN | check 9 BLOCK（連帶 check 11 stage two：RED 側有該 subject、GREEN 側集合為空，兩側集合不相等）——`f2` 是這批裡刻意的例外,**同時**觸發兩條檢查，不是單一檢查的獨立樣本 |
 | `f3-pass-marker-on-red` | RED 的 `outcome` 寫成 `PASS` | check 10 BLOCK |
 | `f4-subject-mismatch` | RED 指 `auth.test.js`、GREEN 指 `signup.test.js` | check 11 BLOCK |
 | `f5-key-set-mismatch` | tasks `{1,2,3}` 對 plan `{1,2,9}`（**數量相同、集合不同**） | check 12 BLOCK |
@@ -45,7 +45,7 @@
 | `f10-subject-without-separator` | RED/GREEN 的 `subject:` 只有測試名、沒有 `::` 分隔符與檔案路徑 | check 9（`subject:` 語法）BLOCK |
 | `f11-duplicate-subject-one-side` | 同一任務下兩筆 RED 記錄的 `subject:` 值逐字相同（GREEN 只有一筆） | check 11（per-subject 唯一性／cardinality）BLOCK |
 | `f12-two-subjects-paired` | **沒有破壞任何東西**——同一任務下兩個不同 `subject:`，各自完整配對一組 RED＋GREEN | 不 BLOCK（正向對照） |
-| `f13-deferred-task-in-tasks` | `tasks.md` 有一個 `[~]` deferred 任務、`plan.md` 為一個沒有任務列的合規 v2 entry | check 7 應找到該筆 deferred 任務（舊措辭下讀 `plan.md` 找任務列，什麼都找不到） |
+| `f13-deferred-task-in-tasks` | `tasks.md` 有一個 `[~]` deferred 任務、`plan.md` 為一個沒有任務列的合規 v2 entry | 兩種讀法皆不 BLOCK,BLOCK/不 BLOCK 無法區分——改記有鑑別力的結果:現行 check 7(讀 `tasks.md`)找到**1 筆** deferred 任務、需列入 §7;舊 check 7(讀 `plan.md` 找 `[~]` 列)找到 **0 筆**、合法留空 §7(舊測 BLOCK 條件「§7 空且 `plan.md` 有 `[~]` 列」不成立;新測條件「§7 空且 `tasks.md` 有 deferred 任務」因 §7 非空也不成立)。這個 fixture 驗的是讀哪個檔、找到幾筆,不是 BLOCK 與否 |
 
 `f6` 與 `f7` 是這批裡最重要的兩個，理由相反：`f6` 證明「檢查通過 ≠ 判斷通過」，`f7` 證明檢查**不會誤擋合規品**。六個證明「違規會被擋」的 fixture，對「合規不會被誤擋」一句話都沒說——沒有 `f7`，這組防呆就是單向的。`f12` 是 `f7` 之後的第二個正向對照，理由同構：`f10`、`f11` 證明「subject 語法／cardinality 違規會被擋」，但單靠它們無法排除「檢查會不會連合法的雙 subject 配對都一併誤擋」——沒有 `f12`，這條防呆一樣是單向的。
 
@@ -89,7 +89,7 @@
    ```
    ⚠️ 這條指令**需要一個 active change 存在**，兩種失敗訊息不同（皆為實測，測時 repo 內 0 個 change）：完全沒有 change → `✖ Error: No changes found. Create one with: openspec new change <name>`；`--change` 指到不存在的名字 → `✖ Error: Change '<名字>' not found. No changes exist. …`（後半句是「repo 內 0 個 change」這個狀態造成的，換個狀態會不同）。**兩者都不是壞了。** 單純要讀條文時直接看 `schema.yaml` 即可。
 2. 把 `fixtures/` 複製一份，**用中性名稱重新打亂**（`case-A`、`case-B`…），順序自己重排。**現在共十三個 fixture（`f1`–`f13`），全部一起打亂**——不要只打亂 `f1`–`f7` 或只打亂 `f8`–`f13`，兩批分開重跑量不到「新舊檢查混在一起會不會互相干擾」。
-3. 把指令與打亂後的目錄交給一個對本 change 無脈絡的執行者，請它對每個 case 回報「哪一條 check BLOCK、或不 BLOCK」。
+3. 把指令與打亂後的目錄交給一個對本 change 無脈絡的執行者,請它對每個 case 回報「哪一條 check BLOCK、或不 BLOCK」。**額外針對 check 7**:BLOCK/不 BLOCK 兩種讀法在 `f13` 上答案相同、這題不能拿來鑑別新舊行為,所以再請執行者回報 check 7 找到的 deferred 任務**數量與識別(哪一筆)**——這才是能區分「讀 `tasks.md`」與「讀 `plan.md`」兩種讀法的結果。其餘每個 fixture 仍只需回答 BLOCK/不 BLOCK。
 4. 用本檔第一張表比對。⚠️ 若把 `f7` 或 `f12` 併進去，**它們的正確答案都是「不 BLOCK」**——把正向對照判成 BLOCK 才是失敗。
 
 fixtures 是純 markdown，沒有任何工具依賴；`f1`–`f7` 的 `plan.md` 除 `f5` 外全部相同（`f5` 蓄意改了 entry key）；`f8`–`f13` 各自的 `plan.md` 依其破壞的東西各不相同，見第一張表逐項對照。

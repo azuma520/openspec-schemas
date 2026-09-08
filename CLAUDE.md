@@ -21,7 +21,7 @@ openspec-schemas/                     ← 本 repo
 │   └── version-check.yml             ← 每週驗證 upstream OpenSpec / Superpowers,落後就開 issue
 ├── docs/
 │   ├── roadmap.md / .zh-TW.md        ← 公開 roadmap
-│   └── superpowers/                  ← 維護者開發本 repo 時的 superpowers 產出(本 repo 無 openspec/,不跑自己的 bridge 流程)
+│   └── superpowers/                  ← 維護者開發本 repo 時的 superpowers 產出(design spec / plan / PoC / research / retrospective;本 repo的 schema 優化工作走 openspec/ 底下的 OpenSpec change,見下方「本 repo 自己吃自己的 schema」節)
 │       ├── specs/                    ← 設計 spec(brainstorming 產出)
 │       ├── plans/                    ← 實作 plan(writing-plans 產出)
 │       ├── poc/                      ← PoC / capability spike 報告(實測取事實)
@@ -108,7 +108,7 @@ Orca 已經確定是 bridge 未來的正式 execution runtime,相關架構方向
 
 **歷史紀錄(已失效):** 雙 YES 前的守門是「兩個事件全 YES 之前不做正式 schema 實作;單一 YES 不解鎖」(2026-08-28 曾有「PoC 過了就能動 schema.yaml」的放寬解讀,已被使用者否決)。當時唯一的例外是 **corrective fix(修錯例外,2026-08-28 拍板)**——只允許刪除或修正已被證偽的既有宣稱(唯一適用案 `fix-tdd-transitive-claim`,已 archive)。**雙 YES 成立後該例外已失效**(2026-09-01 拍板:例外唯一適用案已 archive、雙 YES 後無存在必要);其「修錯走完整 opsx change 流程與審查鏈」的要求,現由一般 change 流程涵蓋。
 
-Orca 方向的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k 行 ChatGPT 匯出)、`2026-08-25-brainstorm-派工模式判準.md`、`2026-08-26-監督式協調-攜出討論包.md`。三份都未進版控。
+Orca 方向的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k 行 ChatGPT 匯出)、`2026-08-25-brainstorm-派工模式判準.md`、`2026-08-26-監督式協調-攜出討論包.md`。三份都未進版控,因此在全新 clone 或 git worktree 底下看不到——worktree 不會拿到未追蹤檔案,這正是本節曾被誤讀為「檔案不存在」的成因。
 
 ### 核心設計原則:規定證據,不規定步驟
 

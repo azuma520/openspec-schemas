@@ -93,3 +93,36 @@ grep -rn "silently relax" --include=*.md .    # 全 repo
 **為什麼值得記一筆**：與 E1 同型，但更接近本 change 的核心。§11.3 是報告裡專門講「契約文字不誠實」的那一節，而它自己對受測物的描述沒有回頭核對——**兩位評分者的結論（契約缺 fallback）是對的，敘述那個結論時附帶的行為描寫是錯的**。它在收工保存資產、被迫逐行比對產出物時才浮出來。
 
 **更正的落點**：`docs/superpowers/poc/2026-09-03-plan-contract-producer-smoke/README.md`「這次真的抓到的東西」一節已載明本更正並註「以該段為準」。
+
+---
+
+## E3 — 本 change 交付的 v2 決定性檢查有五處正確性缺陷（**由 archive 後的獨立複審發現**）
+
+**這一條與 E1、E2 不同型**：E1、E2 更正的是本 change 自己**紀錄**裡的敘述，這一條指出的是本 change **交付出去的 schema 條文**本身有錯——`verify` 的決定性檢查所斷言的內容，與它們名稱宣稱的範圍對不上。
+
+**怎麼發現的**：2026-09-07，archive 之後，一次獨立複審在 schema v2 的決定性檢查及其耦合文件裡找出**五處 blocking 等級的正確性缺陷**（P1）。本 change 的 `verify.md` 全數通過、沒有任何一層抗議——症狀又是「形式上完全成立」，與 E1、E2 同源。
+
+**缺陷落在哪裡**（五處，摘要）：
+
+| 檢查 | 名稱宣稱的 | 實際斷言的 |
+|---|---|---|
+| 第 12 項 | tasks.md 編號與 plan.md 條目鍵 1:1 | 只比兩個集合是否相等，**沒查任一側的重複鍵**——有重複也算「相等」 |
+| 第 9–11 項 | 每個 task 的 RED/GREEN 證據成對且決定性 | 以**位置（序數）**配對而非以 `subject:` 值配對；`subject:` 文法未受約束 |
+| 第 7 項 | 讀 deferred task 的狀態 | 去 **`plan.md`** 找 `[~]`——但 Plan Contract 已規定 `plan.md` 不得承載 task 狀態，該載體根本不存在 |
+
+**更正由誰承載**：不在本檔、也不改本 change 的任何 artifact。修正走獨立的 change **`fix-v2-blocking-defects`**（schema major 維持 `2`，bundle 維持 `2.0.0`），該 change 的 `brainstorm.md` §已查證依據 記載每一處缺陷的逐行查證，`design.md` 記載決策 D1–D6。
+
+**本 change 的既有 artifact 一律維持原文不動**——依本檔開頭的 append-only 原則，`verify.md`、`retrospective.md` 記錄的是當時的狀態。只讀 archive 的人請以本條為指路標：**本 change 交付的 v2 檢查條文已被後續 change 修正，勿直接照 archive 內的條文實作或引用。**
+
+*記於 2026-09-08。*
+
+---
+
+**對 E3 本身的更正**（2026-09-08，`fix-v2-blocking-defects` 的最終複審發現）：上面 E3 表格
+第二列「第 9–11 項」欄把舊版缺陷寫成「以**位置（序數）**配對而非以 `subject:` 值配對」——這個
+描述不準確。查 `git show 22c15cf:superpowers-bridge/schema.yaml` 第 11 項條文全文：「within
+one task, the RED record's `subject:` value and the GREEN record's `subject:` value must be
+identical character for character…」，用的是單數定冠詞（「那筆 RED」「那筆 GREEN」），一個 task
+帶兩組以上 RED/GREEN 時，條文根本沒有規則可以決定誰配誰——這是**配對規則未定義**，不是「以序
+數配對」。`fix-v2-blocking-defects` 自己的 f12 RED 紀錄（`docs/superpowers/poc/2026-09-03-tdd-evidence-mutation-fixtures/`）也正確記為 `INDETERMINATE`，與「未定義」一致，而非「以序數配對」
+所暗示的「有規則、但用的是序數」。以此則為準。

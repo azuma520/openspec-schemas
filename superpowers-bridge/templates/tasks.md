@@ -31,7 +31,9 @@ GREEN 是明文禁止的）。一個任務可以帶**多個 subject**：該任�
 重跑測試不會多一筆紀錄（一個 subject 永遠一 RED 一 GREEN）。
 
 `subject:` 的文法：去掉頭尾空白後，值裡**恰好出現一次** `::`，且左右兩側
-去空白後都非空。除此之外不限制——路徑寫法、副檔名、測試名稱的字元都不管
+去空白後都非空。`::` 由左往右數、比對到就消耗，不重疊——所以
+`a:::b` 算**一次**（合規），`a::b::c` 算兩次（不合規）。
+除此之外不限制——路徑寫法、副檔名、測試名稱的字元都不管
 （`tests/api_test.go::TestRejectsEmptyEmail/subcase-2` 合規）。
 
 `- RED:` 必須有 `subject:`、`outcome:`、`failure:`；`- GREEN:` 必須有
@@ -39,7 +41,13 @@ GREEN 是明文禁止的）。一個任務可以帶**多個 subject**：該任�
 `PASS` 以外的單一大寫 token（`FAIL` / `ERROR` / `FAILED`）。
 `- invocation: <command>`（實際跑過的指令）是**佐證**欄位：建議寫下來以利
 重現，但**規格從不要求**。要寫就在該筆紀錄底下、與其他欄位同層級再加一個
-`- invocation: <command>`。
+`- invocation: <command>`——**一個就好**，跟其他欄位一樣。
+
+同一筆紀錄裡，**每個欄位鍵最多只能出現一次**（包含 `invocation:` 這種
+非必填欄位）；同一個鍵寫兩行就是壞掉的紀錄，verify 的 check 9 會 BLOCK。
+要記兩個 subject 就寫**兩筆紀錄**，不是在一筆紀錄裡疊兩行 `subject:`。
+另外，**一個欄位就是一行**：值寫到行尾為止，換行續寫的那行不算這個欄位的
+內容（也不算錯，只是不被讀入）。`failure:` 的錯誤摘錄請整理成一行。
 -->
 
 - [ ] 2.1 Login error handling

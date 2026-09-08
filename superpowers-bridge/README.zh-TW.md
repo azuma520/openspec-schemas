@@ -383,7 +383,7 @@ skill 缺失 → STOP 並通知使用者,不靜默 fallback,本 schema 內也沒
 
 Main agent 讀 `plan.md`,為每個 task 派發 fresh subagent。每個 subagent 照自己那條契約條目工作 —— 那條寫的是這個 task 的「做完」代表什麼,不是一串規定好的步驟:
 
-- **TDD 紀律**(靠 `tasks.md` 註記):每個 task 都在自己的 checkbox 底下帶一個 `- TDD:` 條目宣告 TDD 適不適用,而 `tasks.md` 是這件事的**唯一事實來源** —— `plan.md` 的條目可以複述,但永遠不會重新定義它。每個標為 `TDD: applicable` 的 task,都必須在同一個 checkbox 底下附上一筆 RED 紀錄與一筆 GREEN 紀錄,這是它「宣告完成」的一部分。註記語法與紀錄格式只定義在一個地方,就是 [schema.yaml](./schema.yaml) 的 `tasks` artifact instruction;schema 不會 invoke `superpowers:test-driven-development` 本身——實作者可能自行觸發該 skill
+- **TDD 紀律**(靠 `tasks.md` 註記):每個 task 都在自己的 checkbox 底下帶一個 `- TDD:` 條目宣告 TDD 適不適用,而 `tasks.md` 是這件事的**唯一事實來源** —— `plan.md` 的條目可以複述,但永遠不會重新定義它。每個標為 `TDD: applicable` 的 task,都必須在同一個 checkbox 底下附上至少一筆 RED 紀錄與一筆 GREEN 紀錄——每個 `subject:` 各恰好一組,而一個 task 可以帶多個 subject,這是它「宣告完成」的一部分。註記語法與紀錄格式只定義在一個地方,就是 [schema.yaml](./schema.yaml) 的 `tasks` artifact instruction;schema 不會 invoke `superpowers:test-driven-development` 本身——實作者可能自行觸發該 skill
 - **code review**(`superpowers:requesting-code-review`):結構性——執行過程中派發 reviewer subagent(數個同形小 task 可能合併成一次 diff 審);Critical 級問題通常會擋下進度,但上游允許 controller 在第 5 輪後 park 仍未解的 finding(見下方重驗表)
 
 完成 coarse task 就更新 `tasks.md` checkbox。所有 task 跑完後,對整個 implementation 再做一次 final code review。
