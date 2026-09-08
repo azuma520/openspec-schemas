@@ -42,7 +42,7 @@
 | `f7-blank-spaced-record` | **沒有破壞任何東西**——欄位之間夾空行的合規紀錄 | 不 BLOCK（正向對照） |
 | `f8-duplicate-task-number` | `tasks.md` 裡任務編號 `1.1` 出現兩次（兩個不同任務共用同一個編號） | check 12 BLOCK，具名重複鍵 `1.1` |
 | `f9-duplicate-plan-key` | `plan.md` 裡 `## 2.3` 這個 entry key 出現兩次 | check 12 BLOCK，具名重複鍵 `2.3` |
-| `f10-subject-without-separator` | RED/GREEN 的 `subject:` 只有測試名、沒有 `::` 分隔符與檔案路徑 | check 11（`subject:` 語法）BLOCK |
+| `f10-subject-without-separator` | RED/GREEN 的 `subject:` 只有測試名、沒有 `::` 分隔符與檔案路徑 | check 9（`subject:` 語法）BLOCK |
 | `f11-duplicate-subject-one-side` | 同一任務下兩筆 RED 記錄的 `subject:` 值逐字相同（GREEN 只有一筆） | check 11（per-subject 唯一性／cardinality）BLOCK |
 | `f12-two-subjects-paired` | **沒有破壞任何東西**——同一任務下兩個不同 `subject:`，各自完整配對一組 RED＋GREEN | 不 BLOCK（正向對照） |
 | `f13-deferred-task-in-tasks` | `tasks.md` 有一個 `[~]` deferred 任務、`plan.md` 為一個沒有任務列的合規 v2 entry | check 7 應找到該筆 deferred 任務（舊措辭下讀 `plan.md` 找任務列，什麼都找不到） |

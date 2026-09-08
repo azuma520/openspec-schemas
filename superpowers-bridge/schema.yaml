@@ -193,28 +193,54 @@ artifacts:
       redefine it, and plan.md MUST NOT hold a second copy of the
       evidence.
 
-      EVIDENCE FOR APPLICABLE TASKS — a RED record and a GREEN record,
-      written in tasks.md, nested under the same task checkbox beside
-      its `TDD:` annotation (same two-space indent), as part of that
-      task's completion claim (written when the task completes, not
-      when the list is drafted). Each record is a `- RED:` / `- GREEN:`
-      list item whose fields are nested one level further, indented four
+      EVIDENCE FOR APPLICABLE TASKS — RED and GREEN records written in
+      tasks.md, nested under the same task checkbox beside its `TDD:`
+      annotation (same two-space indent), as part of that task's
+      completion claim (written when the task completes, not when the
+      list is drafted). A task annotated `TDD: applicable` MUST carry
+      AT LEAST ONE `- RED:` record and AT LEAST ONE `- GREEN:` record.
+      Each record is a `- RED:` / `- GREEN:` list
+      item whose fields are nested one level further, indented four
       spaces from the `- [ ]` marker, each written as a `- <key>: <value>`
       list item using these literal keys:
 
-      - `- RED:` requires `subject:` (the test's identifier; the format
-        this schema requires is `test-file::test-name` — its first
-        convention for this, not an architecture invariant), `outcome:`,
-        and `failure:` —
-        a failure output excerpt sufficient to show the target behaviour
-        was not yet satisfied.
+      - `- RED:` requires `subject:` (the test's identifier — see
+        SUBJECT below), `outcome:`, and `failure:` — a failure output
+        excerpt sufficient to show the target behaviour was not yet
+        satisfied.
       - `- GREEN:` requires `subject:` and `outcome:`. Its `subject:`
-        value MUST be identical to RED's, character for character.
+        value MUST, after trimming, be identical character for
+        character to the trimmed `subject:` of the RED record it pairs
+        with.
 
-      OUTCOME MARKERS: `outcome:` takes a single uppercase token.
-      GREEN's MUST be the literal `PASS`. RED's MUST be any token other
-      than `PASS`; write `FAIL` unless your runner's own word is more
-      accurate (`ERROR`, `FAILED`).
+      SUBJECT — the value names a test, and the format this schema
+      requires is `test-file::test-name` (its first convention for
+      this, not an architecture invariant). The grammar, stated as the
+      deterministic check reads it: after leading and trailing
+      whitespace is trimmed, the value holds EXACTLY ONE `::` sequence,
+      and the remainder on each side of it is non-empty after trimming.
+      Sequences are counted left to right and consumed as found, so
+      they never overlap — `a:::b` holds ONE, not two. NOTHING FURTHER
+      is constrained — not path syntax, not file extension, not the
+      characters of the test name.
+
+      HOW MANY RECORDS — a task MAY carry evidence for SEVERAL
+      subjects, and records pair BY THEIR `subject:` VALUE, never by
+      position or by order of appearance. Within one task: every
+      `subject:` value appearing under it has EXACTLY ONE RED record
+      and EXACTLY ONE GREEN record, and no `subject:` value is repeated
+      among that task's RED records or among its GREEN records. So a
+      task with one behavioural subject carries one RED and one GREEN;
+      a task with three subjects carries three of each, one pair per
+      subject. Re-running a test does not add a further record — one
+      subject carries one RED and one GREEN however many times it was
+      executed.
+
+      OUTCOME MARKERS: `outcome:` takes a single uppercase token, and
+      the rule applies to EVERY record the task carries. Every GREEN
+      record's MUST be the literal `PASS`. Every RED record's MUST be
+      any token other than `PASS`; write `FAIL` unless your runner's
+      own word is more accurate (`ERROR`, `FAILED`).
 
       The invocation (the command that was run) is supporting evidence:
       recommended for reproducibility, NOT required. If you record it,
@@ -224,7 +250,12 @@ artifacts:
       judgement; the deterministic checks see only a non-`PASS` marker.
 
       SHAPE — this block is normative, not illustrative. Reproduce its
-      keys, nesting and indentation exactly; only the values change.
+      keys and nesting exactly, at the indent shown. The values change,
+      and so does the NUMBER of pairs: it follows the task's subjects. Two
+      pairs are shown to make the multi-subject shape explicit — a task
+      with one subject carries one pair, and that is equally conforming.
+      The ORDER of the records carries no meaning, since pairing is by
+      `subject:`; grouping all REDs before all GREENs conforms equally.
 
         - [ ] 2.1 Login error handling
           - TDD: applicable
@@ -234,6 +265,13 @@ artifacts:
             - failure: expected 'Email required', got undefined
           - GREEN:
             - subject: test/auth.test.js::rejects empty email
+            - outcome: PASS
+          - RED:
+            - subject: test/auth.test.js::rejects malformed email
+            - outcome: FAIL
+            - failure: expected 'Email invalid', got undefined
+          - GREEN:
+            - subject: test/auth.test.js::rejects malformed email
             - outcome: PASS
 
       tasks.md is the FIRST STORAGE LOCATION for this evidence, not an
@@ -282,14 +320,21 @@ artifacts:
            once, binding on every entry below.
 
       2. One contract entry per task in tasks.md, keyed by the tasks.md
-         task number (1:1 — the set of entry keys and the set of task
-         numbers must be identical in both directions; a task with no
-         entry and an entry keyed to no task are both defects). Write
-         each entry as a `##` heading whose text BEGINS with that task
-         number, e.g. `## 1.1 — Login error handling`; the title after
-         the number is free. The key must LEAD so the entry-key set is
-         readable without interpretation — verify's deterministic
-         key-set check reads exactly this form. A `##` heading that
+         task number. The correspondence is 1:1, which is TWO
+         conditions and not one: no key repeats on either side, AND
+         the set of entry keys and the set of task numbers are
+         identical in both directions. A repeated key — two tasks
+         numbered alike, or two entries keyed alike — is a defect, and
+         a DIFFERENT defect from a task with no entry or an entry
+         keyed to no task: a repeat is repaired by renumbering one of
+         the two, a missing or extra key by adding or removing an
+         entry. Write each entry as a `##` heading whose text BEGINS
+         with that task number, e.g. `## 1.1 — Login error handling`;
+         the title after the number is free — two entries carrying the
+         same key are a repeat even when their titles differ. The key
+         must LEAD so the keys are readable without interpretation —
+         verify's deterministic 1:1 check reads exactly this heading
+         form, in both of its stages. A `##` heading that
          does not begin with a number is not an entry (this plan's own
          header, a self-review section). Each entry states:
 
@@ -418,10 +463,23 @@ artifacts:
 
       7. **Deferred dogfood vs automated-test equivalence**:
 
-         If plan.md has any tasks marked `[~]` deferred (manual smoke /
+         A DEFERRED TASK is a task line in tasks.md whose checkbox
+         marker is `~` — a line whose first non-space characters are
+         `- [~]`. Only such lines count: the characters `[~]` occurring
+         inside a title, prose or a record field are not a deferral
+         marker. This check reads tasks.md and nothing else, because
+         the Plan Contract makes tasks.md the carrier of task-level
+         state; a `[~]` marker sitting in any other file — including a
+         non-conforming plan that carries task rows the Plan Contract
+         forbids it to carry — is outside this check's inputs and does
+         not make it fire.
+
+         If tasks.md has any tasks marked `[~]` deferred (manual smoke /
          dogfood / live-environment checks that weren't run in this
          cycle), enumerate each in verify.md §7 and identify the
          equivalent automated test that covers the same assertions.
+         EVERY deferred task is enumerated, not merely the first: two
+         deferred tasks yield two §7 rows.
 
          If no equivalent automated test exists for a deferred manual
          check, that row is a real coverage gap — record in
@@ -430,13 +488,30 @@ artifacts:
 
          The decision table makes "deferred-but-covered" vs "deferred-
          and-gapped" visible at archive time, so reviewers can audit
-         completeness without re-deriving the rationale from plan +
+         completeness without re-deriving the rationale from tasks +
          test files.
+
+         If tasks.md does not exist at all, this check cannot be
+         evaluated. Record it as "tasks.md absent — deferral state
+         undetermined", NEVER as "no deferred tasks": the two are
+         different results and only one of them is a finding about
+         deferrals. It does not BLOCK on that basis — an absent
+         required artifact is a different defect, and the surfaces
+         that DO catch it are check 12 (its key-set comparison has no
+         task numbers to collect) and this artifact's PRECHECK, whose
+         `grep -c '^- [x]'` on tasks.md returns 0 and STOPs before
+         verify.md is produced at all. Do not expect the other checks
+         that read tasks.md to catch it: check 2 and checks 8-11 are
+         each quantified over task lines, so with no task lines they
+         are all satisfied vacuously. That is exactly why this check
+         must record the absence rather than let it pass unremarked —
+         the undetermined result must not be recorded as a pass.
 
          Non-blocking on its own — Overall Decision remains PASS even
          with identified gaps, provided they're recorded as follow-up.
-         Blocks only if §7 is empty AND plan.md has `[~]` rows (means
-         the gap analysis was skipped, not that gaps don't exist).
+         Blocks only if §7 is empty AND tasks.md has at least one
+         DEFERRED TASK as defined above (means the gap analysis was
+         skipped, not that gaps don't exist).
 
       CHECKS 8-12 — TDD EVIDENCE CONTRACT AND PLAN/TASK KEY SET.
       These five are DETERMINISTIC: each decides its verdict by
@@ -480,48 +555,145 @@ artifacts:
           matching lines, more than one, any other form, or an `n/a`
           whose reason is empty after trimming → BLOCK.
 
-       9. **RED and GREEN records present with required fields**
+       9. **RED and GREEN records present, required fields present
+          and non-empty, and every `subject:` value well-formed**
           (deterministic):
 
           For every task annotated `TDD: applicable`, the lines
-          belonging to it must include one `- RED:` line and one
-          `- GREEN:` line. Let R be a record line's indent; a FIELD of
-          that record is a line written `- <key>: <value>` that comes
-          after it with indent strictly greater than R, before the
-          next NON-BLANK line whose indent is <= R (the same nesting
-          rule, one level deeper — again any greater indent, not a
-          fixed width, and again blank lines are transparent: a blank
-          line between two fields does NOT end the record. A record
-          hand-formatted with spacing is conforming; nothing extra is
-          picked up either way, because the field keys are literal).
+          belonging to it must include AT LEAST ONE `- RED:` line and
+          AT LEAST ONE `- GREEN:` line. This check decides PRESENCE:
+          how many records a task may carry, and how they pair, is
+          check 11's question — no sentence here presumes a single
+          RED or a single GREEN. Let R be a record line's indent; a
+          FIELD of that record is a line written `- <key>: <value>`
+          that comes after it with indent strictly greater than R,
+          before the next NON-BLANK line whose indent is <= R (the
+          same nesting rule, one level deeper — again any greater
+          indent, not a fixed width, and again blank lines are
+          transparent: a blank line between two fields does NOT end
+          the record. A record hand-formatted with spacing is
+          conforming; nothing extra is picked up either way, because
+          the field keys are literal).
 
           `- RED:` requires the fields `subject:`, `outcome:` and
           `failure:`. `- GREEN:` requires `subject:` and `outcome:`.
           `invocation:` is supporting evidence and is never required.
+          EVERY record belonging to the task is examined: a defect in
+          a task's second RED record is reported exactly as one in its
+          first.
+
+          SUBJECT GRAMMAR — a `subject:` field is satisfied when it
+          is present AND its value conforms to the grammar below; a
+          `subject:` whose value fails that grammar is NOT a satisfied
+          field, and this check reports it. No other field has a
+          grammar here. Take the value with leading and trailing
+          whitespace trimmed, and scan it left to right for the
+          two-character sequence `::`, consuming each match as it is
+          found so that matches never overlap (`a:::b` therefore holds
+          ONE such sequence, not two). The value conforms when it
+          holds EXACTLY ONE such sequence AND the remainder on each
+          side of it is non-empty after trimming. NOTHING FURTHER is
+          constrained — not path syntax, not file extension, not the
+          characters of the test name — so
+          `tests/api_test.go::TestRejectsEmptyEmail/subcase-2` and
+          `a:::b` both conform, while `rejects empty email` (no
+          sequence) and `a::b::c` (two) do not.
+
           A task annotated `TDD: n/a` owes no records; if it carries
-          them anyway, checks 9-11 do not apply to it. A missing
-          record, a missing required field, or a required field whose
-          value is empty after trimming → BLOCK.
+          them anyway, checks 9-11 do not apply to it — what reports
+          such a task is review judgement R4, never a check. A missing
+          record, a missing required field, a required field whose
+          value is empty after trimming, or a `subject:` value that
+          fails the grammar → BLOCK, naming the offending value and
+          the record it belongs to. Every such finding is reported,
+          not just the first.
 
       10. **Outcome markers** (deterministic): this check reads the
           MARKER ONLY — whether a RED `failure:` excerpt is a
           behavioural failure rather than a harness error is review
-          judgement R1 below, never this check. GREEN's `outcome:`
-          value must be exactly the token `PASS`. RED's must be a
-          single token of uppercase letters A-Z with no whitespace,
-          and must not be `PASS` (`FAIL`, `ERROR`, `FAILED` all
-          conform). A GREEN outcome other than `PASS`, or a RED
-          outcome that is `PASS` or does not match that token form
-          → BLOCK.
+          judgement R1 below, never this check. It is applied to EVERY
+          record belonging to the task, however many there are. Each
+          GREEN record's `outcome:` value must be exactly the token
+          `PASS`. Each RED record's must be a single token of
+          uppercase letters A-Z with no whitespace, and must not be
+          `PASS` (`FAIL`, `ERROR`, `FAILED` all conform). Any GREEN
+          outcome other than `PASS`, and any RED outcome that is
+          `PASS` or does not match that token form → BLOCK, naming
+          the record; every offending record is reported, not just the
+          first.
 
-      11. **RED subject equals GREEN subject** (deterministic): within
-          one task, the RED record's `subject:` value and the GREEN
-          record's `subject:` value must be identical character for
-          character after leading and trailing whitespace is trimmed.
-          Any difference → BLOCK.
+      11. **Records pair by `subject:` value — unique on each side,
+          then one RED and one GREEN per subject** (deterministic,
+          two stages):
 
-      12. **tasks.md task-number set equals plan.md entry-key set**
-          (deterministic):
+          Records pair by their `subject:` VALUE, never by position.
+          Ordinal pairing (the n-th RED with the n-th GREEN) is NOT
+          used, because inserting one record silently re-pairs every
+          record after it.
+
+          For each task annotated `TDD: applicable`, collect the
+          trimmed `subject:` value of every `- RED:` record belonging
+          to it as a LIST in order of appearance, and the trimmed
+          `subject:` value of every `- GREEN:` record belonging to it
+          as a second list. Values are compared character for
+          character as opaque strings; whether a value conforms to
+          check 9's grammar is check 9's finding, and a malformed
+          value still takes part here — so one task can yield a
+          finding from both checks, and each is reported.
+
+          STAGE ONE — UNIQUENESS WITHIN EACH SIDE, before either
+          list is reduced to a set. A value appearing more than once
+          in the RED list, or more than once in the GREEN list, is a
+          failure of this check on its own, whatever the other side
+          holds. Report EVERY repeated value by name and by the side
+          it repeats on — "`auth.test.js::rejects empty email` occurs
+          twice among this task's RED records" — and BLOCK.
+          Uniqueness is what makes the pairing decidable: two
+          identically named subjects each carrying a RED and a GREEN
+          leave no way to say which pairs with which. Re-running a
+          test is not recorded as a further record: one subject
+          carries one RED and one GREEN however many times it was
+          executed.
+
+          STAGE TWO — PAIRING. Now reduce both lists to sets and
+          compare them in BOTH directions, reporting each difference
+          individually: a subject with a RED record and no GREEN
+          record, and a subject with a GREEN record and no RED record.
+          Equal counts do not pass this stage — REDs `{A,B}` against
+          GREENs `{A,C}` fails in both directions.
+
+          A stage-one BLOCK does NOT end the check. Stage one does not
+          short-circuit: stage two is evaluated whatever stage one
+          found, and each stage reports its own findings, so an input
+          carrying BOTH a duplicate and an unpaired subject yields
+          both sets of findings in ONE run rather than revealing the
+          second only after the first is repaired. The two messages
+          are DISTINCT because the defects are: a duplicate is
+          repaired by removing or renaming one record, an unpaired
+          subject by supplying the missing side. A set comparison
+          cannot see a duplicate at all — the set absorbs it — which
+          is why this stage runs first.
+
+          ANY of the following → BLOCK, and every one that holds is
+          reported, not just the first: a repeated value on either
+          side (stage one), or either direction of the set comparison
+          non-empty (stage two).
+
+          BOUNDARY OF CHECKS 9-11 — state it in verify.md as written
+          here and claim no more: these three checks decide STRUCTURE,
+          FORMAT and CARDINALITY only. They NEVER decide evidence
+          truth. That a named test exists, that it tests the behaviour
+          the task claims to deliver, that the recorded outcomes are
+          the outcomes that actually occurred, and that the RED was
+          obtained before the implementation, are none of them decided
+          here: R1 and R2 below carry the first two as review
+          judgements, and the ENFORCEMENT BOUNDARY paragraph below
+          carries the rest — no result of checks 9-11 is evidence
+          about any of them.
+
+      12. **tasks.md task numbers and plan.md entry keys correspond
+          1:1 — no duplicate on either side, then equal sets**
+          (deterministic, two stages):
 
           Collect the TASK NUMBER of every task line in tasks.md: the
           token IMMEDIATELY after the `]` of its checkbox and the
@@ -545,15 +717,58 @@ artifacts:
           pass. Report it as "plan.md absent — no entry keys to
           compare" rather than as a set difference.
 
-          Compare the two sets in BOTH directions and report each
-          difference individually: a task number with no entry key,
+          STAGE ONE — DUPLICATES, before either collection is reduced
+          to a set. Keep both collections as LISTS in order of
+          appearance and examine each side INDEPENDENTLY: a task
+          number carried by more than one task line in tasks.md, and
+          an entry key leading more than one `##` entry heading in
+          plan.md, are each a failure of this check on their own,
+          whatever the other side holds. Report EVERY repeated key by
+          name and by the side it repeats on — "`1.1` occurs twice in
+          tasks.md", "`2.3` occurs twice in plan.md" — and BLOCK. Two
+          entries keyed alike are duplicates whether or not their
+          titles differ; the key is what must be unique.
+
+          A stage-one BLOCK does NOT end the check. Stage one does not
+          short-circuit: stage two is evaluated whatever stage one
+          found, and each stage reports its own findings, so an input
+          that carries BOTH a duplicate and a set difference yields
+          both sets of findings in ONE run rather than revealing the
+          second only after the first is repaired. Evaluating stage
+          two on duplicated input is safe and costs nothing: reducing
+          each collection to a set cannot invent a difference that was
+          not already there.
+
+          Stage one's message is DISTINCT from stage two's
+          missing/extra-key message because the two are different
+          defects with different repairs: a duplicate is repaired by
+          renumbering one of the two, a missing or extra key by adding
+          or removing one. A set comparison cannot see a duplicate at
+          all — the set absorbs it — which is why this stage runs
+          first and why the set comparison alone does not establish
+          the 1:1 this check is named for.
+
+          STAGE TWO — SET EQUALITY. Now reduce both collections to
+          sets. Compare the two sets in BOTH directions and report
+          each difference individually: a task number with no entry key,
           and an entry key matching no task number. Equal counts do
           not pass this check — tasks `{1,2,3}` against plan `{1,2,9}`
           fails in both directions. If plan.md exists but no entry key
           can be collected from it, the plan is not keyed 1:1 to the
-          tasks and that is itself a failure of this check. Either
-          difference non-empty, a task line carrying no task number,
-          no collectable entry key, or no plan.md → BLOCK.
+          tasks and that is itself a failure of this check.
+
+          ANY of the following → BLOCK, and every one that holds is
+          reported, not just the first: a repeated key on either side
+          (stage one), either difference non-empty, a task line
+          carrying no task number, no collectable entry key, or no
+          plan.md.
+
+          The two stages together are the whole of the 1:1 claim in
+          this check's name, and they claim nothing beyond it: unique
+          on each side plus equal as sets is exactly a bijection
+          between the two key collections. This check reads keys
+          only — that an entry's contract text actually describes its
+          task is review judgement, never this check.
 
       REVIEW JUDGEMENTS — NOT deterministic. Checks 8-12 above cannot
       decide these, and a check reporting no failure says nothing
@@ -567,8 +782,9 @@ artifacts:
         evidence contract even though check 10 sees a conforming
         non-`PASS` marker.
       - R2. Does the cited `subject:` actually test the behaviour the
-        task claims to deliver? Checks 9-11 read the subject as an
-        opaque string and compare it to itself.
+        task claims to deliver? Checks 9-11 decide the subject's FORM
+        (check 9's grammar) and how records sharing one subject VALUE
+        pair (check 11), never what the named test exercises.
       - R3. Does each `TDD: n/a` reason hold for that task? Check 8
         reads presence and format only.
       - R4. Does any task annotated `TDD: n/a` nonetheless carry RED
@@ -602,11 +818,11 @@ artifacts:
         result is recorded, that result is STALE: the affected checks
         MUST be re-run and verify.md updated before archive.
       - The affected set is derived from INPUTS, not from which checks
-        are newest: check 2 and checks 8-11 read `tasks.md`; check 7
-        reads `plan.md`; check 12 reads BOTH. An edit to either file
+        are newest: check 2, check 7 and checks 8-11 read `tasks.md`;
+        check 12 reads BOTH. An edit to either file
         staleness-invalidates every result computed from it, so an
-        edit to `tasks.md` reaches check 2, 8, 9, 10, 11 and 12, and
-        an edit to `plan.md` reaches check 7 and 12.
+        edit to `tasks.md` reaches check 2, 7, 8, 9, 10, 11 and 12,
+        and an edit to `plan.md` reaches check 12 only.
       - Scope is deliberately those two files. The other checks read
         `specs/`, `design.md`, commit state or `docs/`; staleness for
         those is not addressed here and MUST NOT be claimed to be.
