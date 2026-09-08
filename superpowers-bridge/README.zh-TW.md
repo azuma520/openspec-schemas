@@ -392,14 +392,14 @@ Main agent 讀 `plan.md`,為每個 task 派發 fresh subagent。每個 subagent 
 
 #### 3. Verification — `openspec-verify-change`
 
-產出 `verify.md`,跑 12 項檢查。第 1–7 項是 cycle 完整性那一組:結構驗證(`openspec validate --all --json`)、task 完成度、delta-spec sync 狀態、design/specs 一致性(non-blocking warning)、實作信號(commit 狀態)、front-door routing leak detector(non-blocking warning)、以及 deferred-dogfood vs automated-test 等價性。第 7 項僅在 `plan.md` 有 `[~]` 但等價性章節空白(gap 分析被跳過)時才 block,其他情境屬 informational。
+產出 `verify.md`,跑 12 項檢查。第 1–7 項是 cycle 完整性那一組:結構驗證(`openspec validate --all --json`)、task 完成度、delta-spec sync 狀態、design/specs 一致性(non-blocking warning)、實作信號(commit 狀態)、front-door routing leak detector(non-blocking warning)、以及 deferred-dogfood vs automated-test 等價性。第 7 項只讀 `tasks.md`、不讀別的檔——依 Plan Contract,`tasks.md` 才是 task 層級狀態的載體——並且僅在 `tasks.md` 至少帶一條 `- [~]` 延後 task 行、而等價性章節空白(gap 分析被跳過)時才 block,其他情境屬 informational。
 
-第 8–12 項是 schema v2 新增的 TDD 證據契約與 plan/task 對鍵組。每一項都**以決定性的方式判定結果**——按固定規則讀文字,沒有主觀判斷的餘地——而且失敗一律 block:每個 task 的 `TDD:` 註記都存在且格式正確(8);每個標為適用的 task 都帶著 `- RED:` 與 `- GREEN:` 紀錄且必填欄位齊全(9);結果標記符合規定,GREEN 必須恰好是 `PASS`、RED 則是除此之外的任何值(10);RED 的 `subject:` 與 GREEN 的逐字元相同(11);以及 `tasks.md` 的 task 編號集合與 `plan.md` 的條目鍵集合相等,雙向比對(12)。
+第 8–12 項是 schema v2 新增的 TDD 證據契約與 plan/task 對鍵組。每一項都**以決定性的方式判定結果**——按固定規則讀文字,沒有主觀判斷的餘地——而且失敗一律 block:每個 task 的 `TDD:` 註記都存在且格式正確(8);每個標為適用的 task 都帶著 `- RED:` 與 `- GREEN:` 紀錄、必填欄位齊全,且每個 `subject:` 值都合乎文法——trim 之後恰好一個 `::`、兩側各自非空,除此之外不再多加限制(不限制路徑寫法、不限制副檔名、不限制測試名稱用什麼字元)(9);結果標記符合規定,GREEN 必須恰好是 `PASS`、RED 必須是 `PASS` 以外的單一大寫 token(10);紀錄以 `subject:` 值配對、絕不以位置配對,分兩階段——同一個 task 內每一側的 subject 值必須唯一,然後每個 subject 恰好一筆 RED 與一筆 GREEN(11);以及 `tasks.md` 的 task 編號與 `plan.md` 的條目鍵 1:1 對應,同樣分兩階段——先各側各自查重複鍵,逐一點名重複的鍵,訊息與「缺鍵/多鍵」的訊息不同,再把兩個鍵集合雙向比對(12)。這兩項兩階段檢查的第一階段都**不會** short-circuit:不論第一階段查到什麼,第二階段照跑,所以一次執行就把兩類缺陷都報出來。
 
 **第 8–12 項確立了什麼、沒確立什麼** —— 邊界照 schema 的講法陳述:
 
 - 它們在**判定什麼**這件事上是決定性的,在**怎麼跑**這件事上是 **agent 執行**的:執行者就是那個照 verify instruction 走的 verify agent。schema 要求這些檢查在 archive 之前跑、且失敗要 block,但這**不是** Harness 層級、機械強制、無法繞過的 archive-time gate。如果 verify agent 沒有執行其中某一項,本 schema 沒有任何機制會攔截這個遺漏 —— 對 `verify.md` 的 review 是唯一的後盾。
-- 它們讀的是註記與紀錄的**存在與結構**。它們不確立證據是真的(證據由 agent 自行提交;那份保證落在 review 層,也隨著 review 層一起打折),不證明開發過程真的是測試先行,也不評斷語意品質。
+- 它們判定的只有**結構、格式與基數(cardinality)**,**絕不判定證據的真假**。它們讀的是註記與紀錄的存在與結構;它們不確立證據是真的(證據由 agent 自行提交;那份保證落在 review 層,也隨著 review 層一起打折),不證明開發過程真的是測試先行,也不評斷語意品質。
 - 語意層面的問題 —— RED 的 `failure:` 摘錄到底是行為失敗還是 harness 錯誤、被引用的 subject 是否真的在測這個 task 所宣稱的東西、`n/a` 的理由站不站得住、以及標為 `n/a` 的 task 是不是反而帶了紀錄 —— 在 instruction 裡被列為 **review 判斷**(R1–R4),是以 review 的 blocking finding 回報,而不是某一項檢查的結果。
 
 失敗會回到對應 artifact 修正後重跑 verify。
@@ -585,7 +585,7 @@ Brainstorming 是多輪互動對話,需要使用者參與。把它做為第一�
 - `tasks.md` → 追蹤整體進度(apply phase 的 `tracks` 欄位解析 checkbox),並且是 TDD 適用性與證據的唯一事實來源
 - `plan.md` → 告訴 executor 每個 task 必須交出什麼、會怎麼被判定,而不規定路徑(executor 的輸入)
 
-apply 要求 `plan` 而非 `tasks`,因為 executor 需要的是每個 task 的驗收條件,不只是那個 checkbox;`tracks: tasks.md` 確保進度仍由粗粒度 checkbox 追蹤。也因為兩個檔案彼此對鍵,verify 第 12 項會雙向比對 task 編號集合與條目鍵集合。
+apply 要求 `plan` 而非 `tasks`,因為 executor 需要的是每個 task 的驗收條件,不只是那個 checkbox;`tracks: tasks.md` 確保進度仍由粗粒度 checkbox 追蹤。也因為兩個檔案彼此對鍵,verify 第 12 項會先各側查重複鍵,再雙向比對 task 編號集合與條目鍵集合。
 
 ### 降級策略
 

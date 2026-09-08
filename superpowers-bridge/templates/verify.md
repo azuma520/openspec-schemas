@@ -99,52 +99,92 @@ ls docs/superpowers/specs/*.md 2>/dev/null
 
 ---
 
-## 7. Deferred Manual Dogfood vs Automated Test Equivalence
+## 7. Deferred Dogfood vs Automated-Test Equivalence
 
-對 plan.md 中標 `[~]` deferred 的手動 dogfood / smoke task,逐項列出
-等價的自動化測試覆蓋。若沒有等價自動化測試,該項應視為**真正的 gap**
-而非合理 deferral,建議在 retrospective Misses 中記錄。
+對 **tasks.md** 中標 `[~]` deferred 的手動 dogfood / smoke 任務,逐項列出
+等價的自動化測試覆蓋。DEFERRED TASK 的定義:tasks.md 裡首個非空白字元為
+`- [~]` 的任務行才算——標題、內文或紀錄欄位裡出現的 `[~]` 不是 deferral
+marker。本檢查只讀 tasks.md:Plan Contract 讓 tasks.md 成為 task-level
+state 的載體,其他檔案裡的 `[~]`(包含不合規、仍帶 task row 的 plan.md)
+不在本檢查的輸入範圍內,也不會讓它 fire。若沒有等價自動化測試,該項應視為
+**真正的 gap** 而非合理 deferral,建議在 retrospective Misses 中記錄。
 
-| Deferred dogfood (plan §) | Equivalent automated test | Coverage assessment | 真正 gap? |
+| Deferred task (tasks.md) | Equivalent automated test | Coverage assessment | 真正 gap? |
 |---|---|---|---|
-| 例:§11.3 `compose up + curl /actuator/health` | `LinebcIntegrationApplicationTests` (Testcontainers,24s) | Spring context boot + Flyway 跑完 + 主要 bean 注入 | ❌ 已等價覆蓋 |
+| 例:3.4 `compose up + curl /actuator/health` | `LinebcIntegrationApplicationTests` (Testcontainers,24s) | Spring context boot + Flyway 跑完 + 主要 bean 注入 | ❌ 已等價覆蓋 |
 | — | — | — | — |
 
 > **判讀規則**:
 > - 「等價」= 自動化測試的 assertion 集合是手動 dogfood 預期 assertion 的超集
 > - 「Coverage assessment」= 列出實際被觸及的 layer (context / DB schema / wiring / HTTP path / etc.)
 > - 任何「真正 gap = ✅」的列,Overall Decision 仍可 PASS,但須在 retrospective 留 follow-up 條目
+> - **每一個** deferred 任務各佔一列,不是只列第一個
 
-> **何時可以整節空白**:plan.md 完全沒有 `[~]` 標記的 row 時,本節不需要填(空白即 PASS)。
-> 只要 plan.md 出現任何 `[~]`,本節必須逐項列出,否則 Overall Decision 應降為 FAIL。
+> **何時可以整節空白**:tasks.md 完全沒有 `- [~]` 任務行時,本節不需要填
+> (空白即 PASS)。只要 tasks.md 出現任何 `- [~]` 任務行,本節必須逐項列出,
+> 否則 Overall Decision 應降為 FAIL。
+>
+> **tasks.md 整個不存在時**:記為「tasks.md absent — deferral state
+> undetermined」,**不得**記成「沒有 deferred task」——兩者是不同的結果。
+> 本檢查不因此 BLOCK(缺少必要 artifact 是另一種缺陷,由 check 12 與本
+> artifact 的 PRECHECK 攔);但這個 undetermined 結果不得被記成 pass。
 
 ---
 
 ## 8. TDD Evidence Contract — Deterministic Checks 8–12
 
-Reports the verify instruction's deterministic checks 8–12 per task. Checks 8–11
-are per task; check 12 is per change. Any BLOCK here means the change is not
+Reports the verify instruction's deterministic checks 8–12. Checks 8–11 are
+per task; check 12 is per change. Any BLOCK here means the change is not
 verified for archive.
+
+Check titles, copied from the schema's check list — do not paraphrase:
+
+8. **TDD annotation present and well-formed** (deterministic)
+9. **RED and GREEN records present, required fields present and non-empty, and every `subject:` value well-formed** (deterministic)
+10. **Outcome markers** (deterministic)
+11. **Records pair by `subject:` value — unique on each side, then one RED and one GREEN per subject** (deterministic, two stages)
+12. **tasks.md task numbers and plan.md entry keys correspond 1:1 — no duplicate on either side, then equal sets** (deterministic, two stages)
 
 **Per-task results** (one row per `- [ ]` / `- [x]` / `- [~]` task line in `tasks.md`):
 
-| Task | Annotation (check 8) | Records + fields (9) | Outcome markers (10) | Subject equality (11) | Review judgement (R1–R4) |
+| Task | Annotation (8) | Records, fields + subject grammar (9) | Outcome markers (10) | Subject pairing (11) | Review judgement (R1–R4) |
 |---|---|---|---|---|---|
-| e.g. 2.1 | ✓ `TDD: applicable` | ✓ RED + GREEN complete | ✓ FAIL / PASS | ✓ identical | ✓ behavioural failure, subject fits |
+| e.g. 2.1 | ✓ `TDD: applicable` | ✓ 2 subjects, each RED + GREEN complete, `::` grammar OK | ✓ FAIL / PASS on every record | ✓ unique per side; 1 RED + 1 GREEN per subject | ✓ behavioural failure, subject fits |
 | e.g. 2.2 | ✓ `TDD: n/a — <reason>` | N/A (not applicable) | N/A | N/A | ✓ reason holds (R3) |
 | — | — | — | — | — | — |
 
 Legend: ✓ pass · ⛔ BLOCK (checks 8–11) · N/A (task annotated `n/a`, records not owed).
+Checks 9–11 examine **every** record a task carries, however many subjects it has —
+a defect in the second RED is reported exactly like one in the first. Check 11 runs
+two stages and stage one does **not** short-circuit: record both the duplicate-subject
+findings (naming the repeated value and the side it repeats on) and the two-direction
+set comparison (a subject with a RED and no GREEN, and one with a GREEN and no RED),
+even when both hold.
 A review-judgement violation (R1 error-output RED, R2 subject does not test the claimed
 behaviour, R3 `n/a` reason does not hold, R4 an `n/a` task carrying RED/GREEN records)
 is a **blocking finding of the review**, not of a check — record it in the same row and
 list it below.
 
-**Check 12 — task-number set vs plan.md entry-key set** (both differences must be empty):
+**Check 12, stage one — duplicate keys per side** (each side examined independently;
+a repeated key BLOCKs on its own, whatever the other side holds):
+
+| Side | Repeated keys (name each) | Verdict |
+|---|---|---|
+| `tasks.md` task numbers | — | ✓ / ⛔ BLOCK |
+| `plan.md` entry keys | — | ✓ / ⛔ BLOCK |
+
+**Check 12, stage two — set equality in both directions** (both differences must be empty):
 
 | `tasks.md` task numbers | `plan.md` entry keys | Only in tasks (no entry) | Only in plan (no task) | Verdict |
 |---|---|---|---|---|
 | `{...}` | `{...}` | — | — | ✓ / ⛔ BLOCK |
+
+> Stage one does **not** short-circuit — stage two is evaluated and recorded whatever
+> stage one found, and the two messages stay distinct because the repairs differ
+> (renumber one of two duplicates; add or remove a key for a missing/extra one).
+> Also BLOCK: a task line carrying no task number, no collectable entry key, or no
+> plan.md at all — record the last as "plan.md absent — no entry keys to compare",
+> never as a set difference.
 
 **Blocking findings** (deterministic checks and review judgements):
 
@@ -156,17 +196,21 @@ list it below.
 > instruction. This schema requires them to run before archive and to block on
 > failure, but this is **not** a Harness-level, mechanically enforced, non-bypassable
 > archive-time gate — if the verify agent skips one, no mechanism in this schema
-> intercepts the omission, and review of this file is the only backstop. The checks
+> intercepts the omission, and review of this file is the only backstop. Checks 9–11
+> decide **structure, format and cardinality only** — never evidence truth. The checks
 > verify the **presence and structure** of the annotations and records; they do not
 > establish that the evidence is authentic (the evidence is agent-submitted), do
 > not prove a test-first development history, and do not assess semantic quality.
 
 > **Freshness.** Every result above describing `tasks.md` or `plan.md` describes it
 > as it was when that check ran. If either file is modified afterwards, the results
-> computed from it are **STALE** and those checks must be re-run before archive:
-> an edit to `tasks.md` reaches **§2 and §8's checks 8–11 and 12**; an edit to
-> `plan.md` reaches **§7 and check 12**. This is agent-executed like the checks
-> themselves: **nothing in this schema detects a stale result.**
+> computed from it are **STALE** and those checks must be re-run before archive.
+> The affected set derives from each check's **inputs**: an edit to `tasks.md` reaches
+> **§2, §7 and §8's checks 8–11 and 12**; an edit to `plan.md` reaches **check 12 only**.
+> Scope is deliberately those two files — staleness for the checks reading `specs/`,
+> `design.md`, commit state or `docs/` is not addressed here and must not be claimed
+> to be. This is agent-executed like the checks themselves: **nothing in this schema
+> detects a stale result.**
 
 ---
 

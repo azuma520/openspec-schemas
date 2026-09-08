@@ -19,9 +19,12 @@ automatically or unconditionally downstream — including the forms "internally 
 "every task follows RED-GREEN-REFACTOR", "you do NOT need to invoke", and the compressed
 pseudo-identifier `TDD-via-subagents`. Statements reporting a **conditional** or
 already-falsified status (e.g. rows marked ❌ False / ⚠️, and the factual description that
-`writing-plans`' task format contains TDD micro-steps) are conforming. Record-class files
-(handoffs, discussion material, `openspec/changes/**/archive`) are exempt as append-only
-records.
+applicability is declared per task in tasks.md and carries no guarantee for tasks annotated
+`TDD: n/a`) are conforming. A surface MUST NOT cite `writing-plans`' micro-step task format as
+the description of where TDD comes from: under the evidence contract the carrier is the
+tasks.md annotation plus its RED/GREEN evidence, and `writing-plans` is not a normative
+dependency of any artifact. Record-class files (handoffs, discussion material,
+`openspec/changes/**/archive`) are exempt as append-only records.
 
 #### Scenario: Falsified guarantee segments are corrected
 
@@ -56,9 +59,13 @@ The apply instruction in `schema.yaml` SHALL state where TDD actually comes from
 The rationale SHALL rest on verified structural facts everywhere the bridge explains why
 `superpowers:executing-plans` is not supported as an apply fallback — it dispatches no
 independent reviewer, and upstream itself directs users to subagent-driven-development when
-subagents exist — and SHALL NOT use TDD transitivity as a differentiator (when a task
-requires TDD, both executors receive that requirement through plan.md task content;
-neither path guarantees it otherwise).
+subagents exist — and SHALL NOT use TDD transitivity as a differentiator. TDD is not a
+differentiator between the two executors because it does not travel through either of them:
+applicability is declared per task in tasks.md and evidenced by the RED/GREEN records the
+tdd-evidence-contract capability defines, so the requirement reaches an executor through the
+task list it is given, whichever executor that is. Surfaces SHALL NOT describe plan.md task
+content as the carrier of that requirement — under the Plan Contract plan.md holds contract
+entries and no task list.
 
 #### Scenario: Old TDD-based comparison is gone
 
