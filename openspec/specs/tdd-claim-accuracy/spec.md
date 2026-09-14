@@ -6,9 +6,7 @@ Keep every bridge-owned statement about TDD execution honest: TDD is task-list-c
 never guaranteed by the schema or any downstream layer. Established by change
 `fix-tdd-transitive-claim` (2026-08-31), which removed the falsified "upstream automatically
 enforces TDD" claims.
-
 ## Requirements
-
 ### Requirement: No unconditional TDD guarantee
 
 Bridge-owned normative surfaces MUST NOT state or imply — the surfaces being
@@ -39,6 +37,12 @@ dependency of any artifact. Record-class files (handoffs, discussion material,
   (positive "always happens" or mirror-image "never happens")
 - **THEN** every claim about TDD execution is conditional on the task list, and the
   negative claim is scoped as "no layer **guarantees** to add it", not "no layer will"
+
+#### Scenario: writing-plans is no longer cited as the carrier
+
+- **WHEN** a bridge-owned normative surface is read for how a task acquires its TDD requirement
+- **THEN** it names the tasks.md annotation and the RED/GREEN evidence contract, and no
+  surface presents `writing-plans`' micro-step task format as that answer
 
 ### Requirement: Honest statement of the TDD carrier
 
@@ -75,6 +79,13 @@ entries and no task list.
   review-structure rationale, with the code-review comparison scoped honestly (structural
   dispatch, not one-reviewer-per-task)
 
+#### Scenario: Carrier named consistently across the spec
+
+- **WHEN** this capability's own requirements are read together
+- **THEN** every statement of where a TDD requirement reaches an executor names the tasks.md
+  annotation and evidence contract, and none names plan.md task content, so the spec presents
+  a single answer rather than two conflicting ones
+
 ### Requirement: Retrospective template does not induce unverifiable attestation
 
 `superpowers-bridge/templates/retrospective.md` SHALL keep the skill-compliance table but
@@ -88,3 +99,4 @@ reasons (such as "不需要") for a ✗.
   skill was legitimately not used
 - **THEN** the template's instructions permit recording ✗ with an honest reason, and no
   instruction tells the agent that all-✓ is the expected default
+
