@@ -15,7 +15,7 @@
 | 席位 | 時間 | 載體 | 報告位置 |
 |---|---|---|---|
 | Codex 外部審（code plane，0907） | 2026-09-07 | `gpt-5.6-sol` | 五 P1 逐條查證見 `brainstorm.md` §已查證依據；handoff 20260907 二 |
-| SDD 內部席位（11 review + 4 re-review + 1 whole-branch） | 09-07～08 | Opus subagents | ledger `progress.md`；`.superpowers/sdd/plan/review-*.md`、`final-review.md` |
+| SDD 內部席位（11 review + 4 re-review + 1 whole-branch） | 09-07～08 | Opus subagents | ledger `progress.md`；`docs/superpowers/retrospectives/2026-09-03-loosen-plan-sdd-reports/review-*.md`、`docs/superpowers/retrospectives/2026-09-03-loosen-plan-sdd-reports/final-review.md` |
 | Codex doc gate（change artifacts 兩批） | 09-07、09-08 | `gpt-5.6-sol` | ledger `progress.md:167-183`；handoff 20260907 四、20260908 四 |
 | fallback code gate r1–r4 | 2026-09-08 | contract-neutral-reviewer（Opus） | `docs/superpowers/retrospectives/2026-09-08-fix-v2-review-reports/{codegate-fixes-report,code-rereview-fallback-3}.md`（2026-09-10 自 ledger 逐位元組複製進 repo 路徑，**尚未追蹤**：要等本 change 的 commit 納入版控才算永久；commit 前仍只在 worktree 磁碟）；r1 原報告 `code-review-fallback.md` 僅存 ledger |
 | Pilot 2 fallback r1 / r2 | 2026-09-10 | contract-neutral-reviewer（Opus） | `文檔/handoff/attachments/20260910-pilot2/pilot2-fallback-r{1,2}.md` |

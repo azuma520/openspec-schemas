@@ -126,3 +126,24 @@ identical character for character…」，用的是單數定冠詞（「那筆 R
 帶兩組以上 RED/GREEN 時，條文根本沒有規則可以決定誰配誰——這是**配對規則未定義**，不是「以序
 數配對」。`fix-v2-blocking-defects` 自己的 f12 RED 紀錄（`docs/superpowers/poc/2026-09-03-tdd-evidence-mutation-fixtures/`）也正確記為 `INDETERMINATE`，與「未定義」一致，而非「以序數配對」
 所暗示的「有規則、但用的是序數」。以此則為準。
+
+---
+
+## E4 — 本 change 引用的兩份 SDD 工作區報告已改存永久路徑（**relocation，非內容更正**）
+
+**本則不更正任何當時的敘述或判定。** 上面 E1–E3 與本 change 的其他 artifact 一律維持原文;
+本則只說明它們引用的那兩份檔案**現在在哪**。
+
+本檔引用 `progress.md` 與 `task-4.1-4.2-report.md` 時,寫的是它們當時的位置 `.superpowers/sdd/plan/`
+——一個 git-ignored 的 SDD 工作區。該工作區於 2026-09-14 teardown 時移除。移除前已把所有「被永久文件引用」
+的檔案保存為**逐位元組相同**的副本（SHA-256 逐檔比對）:
+
+| 當時的路徑 | 現在的路徑 |
+|---|---|
+| `.superpowers/sdd/plan/progress.md` | `docs/superpowers/retrospectives/2026-09-03-loosen-plan-sdd-reports/progress.md` |
+| `.superpowers/sdd/plan/task-4.1-4.2-report.md` | `docs/superpowers/retrospectives/2026-09-03-loosen-plan-sdd-reports/task-4.1-4.2-report.md` |
+
+行號引用（例 `progress.md:53`）仍然有效——副本與原檔逐位元組相同。保存範圍與判準見該目錄的 `README.md`。
+
+⚠️ 這**不改變** E1 與本檔其他各則對「不可複驗」的描述:那些說的是**盲測無法重跑**,不是檔案不存在;
+兩件事互相獨立,保存副本不會讓一次沒有留下紀錄的盲測變得可複驗。

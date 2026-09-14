@@ -36,3 +36,12 @@ docs/superpowers/poc/**/*.json text eol=lf
 superpowers-bridge/**/*.md text eol=lf
 superpowers-bridge/**/*.yaml text eol=lf
 superpowers-bridge/VERSION text eol=lf
+
+# 保存的 SDD 工作區報告（docs/superpowers/retrospectives/*-reports/）：這些檔案被保存下來的
+# 唯一理由,就是它們與 teardown 前的原檔**逐位元組相同**——永久文件以行號引用它們。
+# core.autocrlf=true 會在 `git add` 時把 CRLF 正規化成 LF,存進去的 blob 就不再等於原檔,
+# 而那正是保存所宣稱的那個性質。用 `-text` 而不是 `text eol=lf`:上面 POC 段的目的是「釘成 LF」,
+# 這裡的目的是「一個位元組都不要動」——這批檔案換行符本來就不一致（11 份 LF、1 份 CRLF）,
+# `-text` 兩個方向都不轉換,各自照原樣存取。
+docs/superpowers/retrospectives/2026-09-03-loosen-plan-sdd-reports/*.md -text
+docs/superpowers/retrospectives/2026-09-08-fix-v2-review-reports/*.md -text

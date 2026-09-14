@@ -2,7 +2,7 @@
 
 > 寫於 2026-09-03。語言用繁中，理由與 `CLAUDE.md` 同一條：讀者是維護者與 Claude。
 > Commit 範圍：`5aa19bf..84df208`（4 個 commit，18 檔，+1614 / −184），branch `worktree-loosen-plan`。
-> 逐輪原始紀錄是 SDD ledger（`.superpowers/sdd/plan/progress.md`，經 repo 的 `.git/info/exclude` 第 9 行排除 —— 見 §6 E4，**不是** `.gitignore`；注意在 worktree 裡 `.git` 是檔案不是目錄，該路徑要從主 checkout 讀；branch 收尾時刪除）；
+> 逐輪原始紀錄是 SDD ledger（`docs/superpowers/retrospectives/2026-09-03-loosen-plan-sdd-reports/progress.md`(原 `.superpowers/sdd/plan/progress.md`)，經 repo 的 `.git/info/exclude` 第 9 行排除 —— 見 §6 E4，**不是** `.gitignore`；注意在 worktree 裡 `.git` 是檔案不是目錄，該路徑要從主 checkout 讀；branch 收尾時刪除）；
 > 本檔是它的可讀化萃取，**寫出來就是為了在那份 ledger 消失後仍然存在**。
 
 ## 0. 這份跟 `openspec/changes/loosen-plan/retrospective.md` 差在哪
