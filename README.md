@@ -8,7 +8,7 @@ Community-contributed [OpenSpec](https://github.com/Fission-AI/OpenSpec) schemas
 
 | Bridge | Purpose | Status |
 |--------|---------|--------|
-| [`superpowers-bridge`](./superpowers-bridge/) | Bridges OpenSpec's artifact governance with [obra/superpowers](https://github.com/obra/superpowers) execution skills (brainstorming, writing-plans with TDD micro-steps, subagent execution with structural code review, finishing). Adds an evidence-first `retrospective` artifact filling a gap Superpowers does not natively cover. | v1 |
+| [`superpowers-bridge`](./superpowers-bridge/) | Bridges OpenSpec's artifact governance with [obra/superpowers](https://github.com/obra/superpowers) execution skills (brainstorming, subagent execution with structural code review, finishing). Each task carries a TDD applicability annotation and RED/GREEN evidence; verify's deterministic checks read the presence and structure of that evidence before archive, instruction-mediated rather than a mechanically enforced, non-bypassable gate. Adds an evidence-first `retrospective` artifact filling a gap Superpowers does not natively cover. | v2 |
 
 ## Why a separate repository?
 

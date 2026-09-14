@@ -56,12 +56,13 @@ Commit chain (時序):
 | superpowers:writing-plans                        |      |
 | superpowers:using-git-worktrees                  |      |
 | superpowers:subagent-driven-development          |      |
-| superpowers:test-driven-development (✓ only if the skill was explicitly invoked; write `N/A — plan-step TDD only` when TDD discipline came from plan steps alone) |      |
+| superpowers:test-driven-development (✓ only if the skill was explicitly invoked; write `N/A — annotation-driven` when TDD discipline came from the `TDD:` annotations in `tasks.md` and their RED/GREEN evidence instead) |      |
 | (structural via SDD) superpowers:requesting-code-review |      |
 | superpowers:finishing-a-development-branch       |      |
 
 > 如實勾選。TDD 與 code-review 兩列依上方標註本就是條件性/結構性的——
-> 任務單沒要求 TDD 就不算跳過。確實被跳過的項目在下方
+> `tasks.md` 裡標為 `TDD: n/a` 的 task 不算跳過:那個註記就是宣告本身,
+> 它帶的理由由 review 那層判斷。確實被跳過的項目在下方
 > `### Deliberately Skipped Skills` subsection 記錄原因與預防方案。
 
 ### Deliberately Skipped Skills

@@ -1,6 +1,38 @@
 # sd0x-dev-flow 安裝物：manifest（.sd0x/install-state.json）記錄的是 LF 內容的 blob hash。
 # core.autocrlf=true 若把工作區換成 CRLF,雜湊會全部對不上,未來 install-rules 會把
 # 每一份規則誤判成「使用者改過」而靜默跳過升級。釘住 LF。
+# 這份規則檔自己也釘住——否則它是唯一不受自己治理的檔案，會靜默漂移成 CRLF。
+.gitattributes text eol=lf
+
 .claude/rules/** text eol=lf
 .claude/scripts/** text eol=lf
 .sd0x/** text eol=lf
+
+# POC 資產（docs/superpowers/poc/）：這些檔案被保存下來的理由，就是它們與原檔
+# 逐位元組相同、可以直接重跑。core.autocrlf=true 會在 checkout 時把工作區換成
+# CRLF —— blob 仍是 LF，但**工作區裡的檔案不再等於當初量過的那一份**，於是
+# 「byte-stable」這個保存理由在最需要它的地方（拿去重跑的那一份）失效，
+# 而且不會有任何錯誤訊息。與上面三行同一個道理。
+#
+# 逐副檔名列舉、不用 `**` 萬用：POC 目錄未來可能放進截圖或其他 binary，
+# 被強制當 text 會損毀它們。新增文字型資產時在這裡補一行。
+#
+# ⚠️ 這幾行只治理 **checkout**，不會修正已經存在的工作區。git 不會重新 checkout
+# 它認為已是最新的檔案，而 `text` 又會把工作區的 CRLF 正規化回 LF 進 index，
+# 所以一個 CRLF 的工作區檔案對上 LF blob 時 `git status` 依然顯示乾淨。
+# 既有 clone 要一次校正：`rm -r <path> && git checkout -- <path>`。
+docs/superpowers/poc/**/*.md text eol=lf
+docs/superpowers/poc/**/*.txt text eol=lf
+docs/superpowers/poc/**/*.sh text eol=lf
+docs/superpowers/poc/**/*.py text eol=lf
+docs/superpowers/poc/**/*.json text eol=lf
+
+# superpowers-bridge：bundle 文字內容以 LF 進 blob（2026-09-10，fix-v2 branch review）。core.autocrlf=true 下
+# 每次編輯會把一個模板從 CRLF 靜默正規化成 LF、產生整檔幻影 diff。與上面 POC 段同一套做法：
+# 逐副檔名列舉、不用 `**` 萬用，未來放進 bundle 的 binary 不會被強制當 text。
+# ⚠️ 同上：這幾行只治理未來的 checkout / add，不會回頭正規化 index 裡既有的 CRLF blob——
+# 本行加入時 templates/design.md、plan.md、spec.md 三個 blob 仍是 CRLF，要一次校正得跑
+# `git add --renormalize superpowers-bridge/`（需使用者執行）。
+superpowers-bridge/**/*.md text eol=lf
+superpowers-bridge/**/*.yaml text eol=lf
+superpowers-bridge/VERSION text eol=lf

@@ -8,6 +8,10 @@
 
 - [x] **`superpowers-bridge`** — 串接 OpenSpec ↔ obra/superpowers,自帶 `retrospective` artifact
 
+## v2 — 已釋出
+
+- [x] **Plan Contract + TDD evidence contract** — 把步驟導向的 `plan` artifact 換成逐任務的執行契約(寫的是「完成的定義」,不是「怎麼做」);TDD 適用性標註(`TDD: applicable` / `TDD: n/a — <原因>`)與 RED/GREEN 紀錄現在跟著 `tasks.md` 走,verify 只檢查有沒有存在、結構對不對,不是不可繞過的強制關卡(schema major 2、bundle 2.0.0)
+
 ## v1.x — 後續 backlog
 
 這些項目記錄在 `~/.claude/plans/pr-quizzical-oasis.md`(實作 plan):

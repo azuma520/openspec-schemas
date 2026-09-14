@@ -197,12 +197,28 @@
 - **Blocked by:** 10.1, 10.3.
 - **Interfaces:** none.
 
+
+## 11.1 — remove the superseded v1 TDD framing, and extend the detector that missed it
+
+- **Delivers:** Three retrospective surfaces stop describing TDD as arriving from plan steps or from "a task list that did not require TDD" — categories v2 does not have, since every task carries an applicability annotation — plus the change to task 10.2's class (a) that makes this class catchable by the sweep rather than by a reader.
+- **Acceptance:** `templates/retrospective.md`'s §4 TDD row label and its zh-TW note, and the `retrospective` instruction in `schema.yaml`, each state the v2 category (`TDD: n/a` in tasks.md is the declaration; its reason is judged by review) and no longer name plan steps or a task list that did or did not require TDD; task 10.2's class-(a) phrase list is extended so that each of the three sites **would have matched before it was repaired** — verified against the pre-fix text rather than the repaired text; the class is swept across all bridge-owned surfaces and any further instance is either fixed or ruled a record with the reason stated; the extended sweep returns 0 and the result is recorded in verify.md.
+- **Blocked by:** 10.2 — the class-(a) phrase list this task extends must exist first.
+- **Interfaces:** consumes the `TDD:` annotation vocabulary defined at 2.1 (`applicable` / `n/a — <reason>`) — the replacement wording must name that vocabulary and no other; produces the extended class-(a) phrase list that task 10.2's sweep runs.
+
+## 11.2 — make the retrospective PRECHECK fail-closed
+
+- **Delivers:** The `retrospective` PRECHECK stops treating "no failure evidence" as permission to proceed, and requires positive evidence of an acceptable verdict instead.
+- **Acceptance:** the PRECHECK requires **exactly one** of verify.md's three Overall Decision boxes to be checked **and** that one not to be FAIL; zero checked, more than one checked, and FAIL each STOP; the instruction states why the count check cannot be simplified away, in terms of the fail-open it closes; the behaviour is demonstrated by running the amended check against a verdict-less fixture, a two-box fixture and a real verify.md, and by showing that the **previous** single command passes the verdict-less one; both bridge READMEs' design-touch description of this PRECHECK is updated in the same change, since it documents the command being replaced.
+- **Blocked by:** none.
+- **Interfaces:** consumes verify.md's Overall Decision checkbox shape as fixed by the `verify` template (the three literals `✅ PASS`, `⚠️ PASS WITH WARNINGS`, `❌ FAIL`) — a change to those literals breaks this check; produces the PRECHECK wording that both bridge READMEs' design-touch #5 must mirror.
+
 ---
 
 ## Self-review (generation-time, per D5 — earlier feedback, not the required control)
 
-- Entry keys: 1.1 1.2 2.1 2.2 3.1 3.2 4.1 4.2 5.1 5.2 6.1 6.2 7.1 7.2 7.3 7.4 8.1 8.2 8.3 8.4 9.1 10.1 10.2 10.3 10.4 — 25 entries; tasks.md has 25 checkboxes with the same numbers; both differences empty.
+- Entry keys: 1.1 1.2 2.1 2.2 3.1 3.2 4.1 4.2 5.1 5.2 6.1 6.2 7.1 7.2 7.3 7.4 8.1 8.2 8.3 8.4 9.1 10.1 10.2 10.3 10.4 11.1 11.2 — 27 entries; tasks.md has 27 checkboxes with the same numbers; both differences empty.
+  - **11.1 and 11.2 were added after group 11 reopened the task list**, and the gap between the two is the reason this line is worth reading twice. The reopen added the tasks and not the entries, so for one commit the change violated its own check 12 (27 task numbers, 25 entry keys) — caught by an independent review of the execution record, not by any gate, because every gate had run *before* the reopen and none re-ran after it. Recorded here rather than only in verify.md because this file is where the key sets are asserted.
 - No acceptance criterion reads "works correctly" / "handles properly"; each names an observable (grep result, diff shape, CLI output, table cell, fixture outcome).
-- Interfaces stated on every entry that produces or consumes a shared shape (annotation grammar, record shape, entry-key rule, skill list, version pair, Compatibility row); omitted on the five entries with no cross-task coupling (1.2, 2.2, 10.1, 10.3, 10.4). Set check re-run after doc-gate round 1: 25 tasks.md keys, 25 plan.md keys, both differences empty.
+- Interfaces stated on every entry that produces or consumes a shared shape (annotation grammar, record shape, entry-key rule, skill list, version pair, Compatibility row); the five entries with no cross-task coupling (1.2, 2.2, 10.1, 10.3, 10.4) state `**Interfaces:** none.` explicitly rather than dropping the field — the spec's wording is "MAY be omitted", so an explicit `none` is conforming and distinguishes "no coupling" from "field forgotten". Both group-11 entries state Interfaces: 11.1 consumes 2.1's annotation vocabulary and produces 10.2's phrase list; 11.2 consumes the verify template's three checkbox literals and produces the wording both READMEs mirror. Set check re-run after the group-11 entries landed: 27 tasks.md keys, 27 plan.md keys, both differences empty.
 - No entry prescribes an edit sequence, tool, or commit point; where a path appears it identifies *what must be true*, not *how to get there*.
 - TDD applicability is not restated here — tasks.md is the SSOT; evidence, when any task is applicable, lives there.

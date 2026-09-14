@@ -1,0 +1,14 @@
+{
+  "pairs": {},
+  "rounds": [
+    {
+      "candidates": [],
+      "coverage_complete": false,
+      "input_digest": "0cc66cec11c808273db707268b340914b2da8c94abf0fe7454a4925db32afed5",
+      "new_pairs": 0,
+      "scanner_version": "1.0.0",
+      "target_week": "2026-W37"
+    }
+  ],
+  "schema_version": 2
+}

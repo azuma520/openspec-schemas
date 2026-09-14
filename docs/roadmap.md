@@ -8,6 +8,10 @@ This repository is actively maintained as a side project. The roadmap below sket
 
 - [x] **`superpowers-bridge`** — bridges OpenSpec ↔ obra/superpowers + native `retrospective` artifact
 
+## v2 — Released
+
+- [x] **Plan Contract + TDD evidence contract** — replaced the step-prescribing `plan` artifact with a per-task execution contract (what "done" means, not how to get there); TDD applicability (`TDD: applicable` / `TDD: n/a — <reason>`) and RED/GREEN records now travel with `tasks.md`, checked by verify for presence and structure only, not enforced as a non-bypassable gate (schema major 2, bundle 2.0.0)
+
 ## v1.x — In follow-up backlog
 
 These items are tracked in `~/.claude/plans/pr-quizzical-oasis.md` (the implementation plan):

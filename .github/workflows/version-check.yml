@@ -41,7 +41,7 @@ jobs:
       - name: Read pinned versions from README
         id: pinned
         run: |
-          line=$(grep -E '^\| v1 \| `' superpowers-bridge/README.md | head -1)
+          line=$(grep -E '^\| v2 \| `' superpowers-bridge/README.md | head -1)
           if [ -z "$line" ]; then
             echo "::error::Could not find Compatibility table row in superpowers-bridge/README.md"
             exit 1

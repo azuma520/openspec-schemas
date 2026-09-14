@@ -81,6 +81,9 @@ effort（多難）/ impact（多重要）metadata MUST NOT 以 tag 形式存在�
 - [bug] [P2] `fallback.py` reconfigure stdout
 - [優化建議] [case-count: 4] fast-track 閾值案例
 - [SOP 候選] [done: 2026-05-19] 2026-05-19 backlog tag 系統設計
-- [優化建議] [case-count: 4] 讀了名字沒讀它實際說什麼——規矩已在全域 CLAUDE.md,但擋不住復發
+- [優化建議] [case-count: 5] [mature: 2026-09-07] 讀了名字沒讀它實際說什麼——規矩已在全域 CLAUDE.md,但擋不住復發
   → handoff 20260827 四（讀了 doc-review profile 表的名字就下結論,沒讀它實作第一關就濾掉非 .md）
+  → handoff 20260907 四（check 12 自稱 keyed 1:1、實際只驗集合相等;check 9 名為 with required fields、實際只驗非空——載體從文件換成檢查器,而雙 gate 與 fallback 審查都信了那個名字）
 - [構想] [P3] 審查路由自動判斷版:依改動性質選 sd0x 的哪一種審查
+- [構想] [P3] 裝 smart-commit 的兩支執行腳本(`/install-scripts --skill smart-commit`)——本 repo 的 .claude/scripts/ 缺 smart-commit-execute.sh 與 smart-commit-inspect.sh,所以 `/smart-commit --execute` 跑不了、只能走 manual 模式由使用者貼指令
+  → handoff 20260907 三-F（.claude/scripts/ 是進版控的,裝了會多三個檔進 repo;loosen-plan branch 正要開 PR、當時判定摻工具腳本會讓 PR 變雜,故延後）

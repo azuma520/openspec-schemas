@@ -21,7 +21,7 @@ openspec-schemas/                     ← 本 repo
 │   └── version-check.yml             ← 每週驗證 upstream OpenSpec / Superpowers,落後就開 issue
 ├── docs/
 │   ├── roadmap.md / .zh-TW.md        ← 公開 roadmap
-│   └── superpowers/                  ← 維護者開發本 repo 時的 superpowers 產出(本 repo 無 openspec/,不跑自己的 bridge 流程)
+│   └── superpowers/                  ← 維護者開發本 repo 時的 superpowers 產出(design spec / plan / PoC / research / retrospective;本 repo的 schema 優化工作走 openspec/ 底下的 OpenSpec change,見下方「本 repo 自己吃自己的 schema」節)
 │       ├── specs/                    ← 設計 spec(brainstorming 產出)
 │       ├── plans/                    ← 實作 plan(writing-plans 產出)
 │       ├── poc/                      ← PoC / capability spike 報告(實測取事實)
@@ -29,7 +29,7 @@ openspec-schemas/                     ← 本 repo
 │       └── retrospectives/           ← 結案複盤
 └── superpowers-bridge/                ← 第一個 bridge,自包式 schema bundle
     ├── README.md / .zh-TW.md         ← 完整 bridge 文件(含 install/upgrade + integration runbook)
-    ├── VERSION                       ← bundle SemVer(1.0.1),與 schema.yaml 的 version: 1 是兩回事
+    ├── VERSION                       ← bundle SemVer(2.0.0),與 schema.yaml 的 version: 2 是兩回事
     ├── schema.yaml                   ← 唯一的行為來源:artifacts DAG + instruction prompts + apply 編排
     └── templates/                    ← artifact 模板(8 個 artifact 各一份)
         ├── brainstorm.md / proposal.md / design.md / spec.md
@@ -104,11 +104,11 @@ Orca 已經確定是 bridge 未來的正式 execution runtime,相關架構方向
 解鎖後能不能繞過 change 流程與 §9 治理? → NO
 ```
 
-第一個落地的 schema change 是 `loosen-plan`(`openspec/changes/loosen-plan/`,Plan Contract + TDD 證據契約,schema major → 2)。
+第一個落地的 schema change 是 `loosen-plan`(已 archive,見 `openspec/changes/archive/2026-09-04-loosen-plan/`,Plan Contract + TDD 證據契約,schema major → 2)。
 
 **歷史紀錄(已失效):** 雙 YES 前的守門是「兩個事件全 YES 之前不做正式 schema 實作;單一 YES 不解鎖」(2026-08-28 曾有「PoC 過了就能動 schema.yaml」的放寬解讀,已被使用者否決)。當時唯一的例外是 **corrective fix(修錯例外,2026-08-28 拍板)**——只允許刪除或修正已被證偽的既有宣稱(唯一適用案 `fix-tdd-transitive-claim`,已 archive)。**雙 YES 成立後該例外已失效**(2026-09-01 拍板:例外唯一適用案已 archive、雙 YES 後無存在必要);其「修錯走完整 opsx change 流程與審查鏈」的要求,現由一般 change 流程涵蓋。
 
-Orca 方向的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k 行 ChatGPT 匯出)、`2026-08-25-brainstorm-派工模式判準.md`、`2026-08-26-監督式協調-攜出討論包.md`。三份都未進版控。
+Orca 方向的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k 行 ChatGPT 匯出)、`2026-08-25-brainstorm-派工模式判準.md`、`2026-08-26-監督式協調-攜出討論包.md`。三份都未進版控,因此在全新 clone 或 git worktree 底下看不到——worktree 不會拿到未追蹤檔案,這正是本節曾被誤讀為「檔案不存在」的成因。
 
 ### 核心設計原則:規定證據,不規定步驟
 
@@ -182,9 +182,9 @@ Orca 方向的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k �
 
 | 你改了什麼 | 必須同步改什麼 | 不改的後果 |
 |---|---|---|
-| `superpowers-bridge/README.md` 的 Compatibility 表格格式 | `version-check.yml` 的 `Read pinned versions` step | **CI 直接 fail**。它用 ``grep -E '^\| v1 \| `'`` 抓那一行,再用 ``awk -F'`'`` 取第 2、4 個 backtick 欄位 —— 表格必須維持「第一欄 `v1`、OpenSpec 版本與 Superpowers 版本各自包在單一 backtick 裡」的形狀 |
+| `superpowers-bridge/README.md` 的 Compatibility 表格格式 | `version-check.yml` 的 `Read pinned versions` step | **CI 直接 fail**。它用 ``grep -E '^\| v2 \| `'`` 抓那一行(取第一筆),再用 ``awk -F'`'`` 取第 2、4 個 backtick 欄位 —— 表格必須維持「第一欄 `v2`、OpenSpec 版本與 Superpowers 版本各自包在單一 backtick 裡」的形狀 |
 | `schema.yaml` 的 verify / retrospective 時序或 PRECHECK | README「六個值得記住的設計觸點」#5 #6 + 繁中版 | 已知限制的文件化失效(這是 PR #970 顧慮 #2 的唯一應對) |
-| `schema.yaml` 的 artifact 增刪 / `requires:` 邊 | bridge README 的 Artifact DAG + Lifecycle 段、`templates/` 對應模板、`docs/roadmap.md` | schema major 需從 1 bump,且 README 要新增 migration guide(見 Versioning 段) |
+| `schema.yaml` 的 artifact 增刪 / `requires:` 邊 | bridge README 的 Artifact DAG + Lifecycle 段、`templates/` 對應模板、`docs/roadmap.md` | schema major 需從 2 bump,且 README 要新增 migration guide(見 Versioning 段) |
 | 新增 bridge 目錄 | `validate-schemas.yml` 的 `matrix.bridge` + 頂層 `README.md` 的 bridges 表(en + zh-TW) | 新 bridge 完全不進 CI,沒人驗 |
 | bridge README 的 routing / 前門規則 | `templates/adopters/CLAUDE.md.fragment.md` + `.zh-TW.md` | 採用者貼進自己 CLAUDE.md 的規則與 README 說法不一致 |
 | CLI 指令、slash command 名稱 | bridge README 的「CLI cheat sheet」 | 使用者照抄跑不動 |
@@ -193,10 +193,10 @@ Orca 方向的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k �
 
 | 識別碼 | 位置 | 什麼時候動 |
 |---|---|---|
-| schema major | `schema.yaml: version: 1` | 只有 schema graph 契約破壞(artifact 增刪、`requires:` 改、PRECHECK 形狀改)才 bump |
-| bundle release | `superpowers-bridge/VERSION` + git tag(`v1.x.y`,發版時打) | 這包的 SemVer 發版,包含純文字修訂;`1.x.y` 都屬 schema major 1 |
+| schema major | `schema.yaml: version: 2` | 只有 schema graph 契約破壞(artifact 增刪、`requires:` 改、PRECHECK 形狀改)才 bump |
+| bundle release | `superpowers-bridge/VERSION` + git tag(`v2.x.y`,發版時打) | 這包的 SemVer 發版,包含純文字修訂;`2.x.y` 都屬 schema major 2 |
 
-Compatibility 表的列鍵用的是 **schema major(`v1`)**,不是 bundle 版本 —— 改 VERSION 不要順手去動那張表的第一欄(會打爆上面的 CI grep)。
+Compatibility 表的列鍵用的是 **schema major(`v2`)**,不是 bundle 版本 —— 改 VERSION 不要順手去動那張表的第一欄(會打爆上面的 CI grep)。
 
 ## CI / 自動化的既有約定
 
