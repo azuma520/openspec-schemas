@@ -352,8 +352,11 @@ artifacts:
          the two, a missing or extra key by adding or removing an
          entry. Write each entry as a `##` heading whose text BEGINS
          with that task number, e.g. `## 1.1 — Login error handling`;
-         the title after the number is free — two entries carrying the
-         same key are a repeat even when their titles differ. The key
+         the number is followed by whitespace (or the end of the line)
+         and the title after it is free — two entries carrying the
+         same key are a repeat even when their titles differ. Written
+         `## 1.1a — …` or `## 1x — …`, a heading begins with no number
+         and keys nothing. The key
          must LEAD so the keys are readable without interpretation —
          verify's deterministic 1:1 check reads exactly this heading
          form, in both of its stages. A `##` heading that
@@ -452,9 +455,13 @@ artifacts:
          return to fix the underlying artifact before proceeding.
 
       2. **Task completion**: Confirm every checkbox in tasks.md is
-         `- [x]`. For any `- [ ]` remaining, document the reason
-         (e.g. manual / out-of-scope / blocked) and whether it blocks
-         archive.
+         `- [x]` or `- [~]`. For any `- [ ]` remaining, document the
+         reason (e.g. manual / out-of-scope / blocked) and whether it
+         blocks archive. A `- [~]` is a DEFERRED TASK in the sense
+         check 7 defines, not an incomplete task: it does not fail
+         this check, and whether its deferral is adequately accounted
+         for is check 7's subject, not this one's. This check and
+         check 7 therefore never disagree about the same task line.
 
       3. **Delta spec sync state**: For each directory under
          `openspec/changes/<name>/specs/`, compare against the
@@ -684,7 +691,10 @@ artifacts:
           record belonging to the task, however many there are. A
           record carrying more than one `- outcome:` line yields NO
           outcome verdict here — that record is malformed and its
-          malformation is check 9's finding, never this check's. Each
+          malformation is check 9's finding, never this check's. A
+          record carrying no `- outcome:` line at all likewise yields
+          NO outcome verdict here: its absence is check 9's
+          missing-required-field finding, never this check's. Each
           GREEN record's `outcome:` value must be exactly the token
           `PASS`. Each RED record's must be a single token of
           uppercase letters A-Z with no whitespace, and must not be
@@ -790,7 +800,14 @@ artifacts:
           implements that requirement and introduces nothing of its
           own. So: the leading `\d+(\.\d+)*` token of each `##` heading
           in plan.md whose text begins with such a token — a heading
-          at EXACTLY that level. `###` or deeper is a sub-heading
+          at EXACTLY that level. The token is DELIMITED on both sides:
+          it starts at the first non-space character after `##`, and
+          the character right after its last digit must be whitespace
+          or the end of the line. A heading whose leading token is
+          `1x`, `1.1a` or `1.` therefore begins with NO number and
+          carries NO entry key — the same result as a non-numeric
+          task-line token above, never the key `1` or `1.1` with a
+          suffix ignored. `###` or deeper is a sub-heading
           INSIDE an entry, not an entry: it is not collected, so a
           `### 1.1 — <detail>` sitting under `## 1.1 — <title>` does
           not make `1.1` a repeated key. Headings
@@ -1174,9 +1191,10 @@ apply:
        declaring whether TDD applies to it, and tasks.md is the
        single source of truth for that. A plan.md entry may echo a
        task's applicability but never redefines it.
-       Every task annotated `TDD: applicable` owes a RED record and
-       a GREEN record under its own checkbox in tasks.md as part of
-       that task's completion claim. The `tasks` artifact's
+       Every task annotated `TDD: applicable` owes, for each subject
+       it names, exactly one RED record and one GREEN record under its
+       own checkbox in tasks.md as part of that task's completion
+       claim — the pairing unit is the subject, not the task. The `tasks` artifact's
        instruction is the definition of the annotation grammar and
        the record shape — read it there and have the executor do the
        same; do not restate it here or in plan.md.

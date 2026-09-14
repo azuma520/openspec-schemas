@@ -26,3 +26,13 @@ docs/superpowers/poc/**/*.txt text eol=lf
 docs/superpowers/poc/**/*.sh text eol=lf
 docs/superpowers/poc/**/*.py text eol=lf
 docs/superpowers/poc/**/*.json text eol=lf
+
+# superpowers-bridge：bundle 文字內容以 LF 進 blob（2026-09-10，fix-v2 branch review）。core.autocrlf=true 下
+# 每次編輯會把一個模板從 CRLF 靜默正規化成 LF、產生整檔幻影 diff。與上面 POC 段同一套做法：
+# 逐副檔名列舉、不用 `**` 萬用，未來放進 bundle 的 binary 不會被強制當 text。
+# ⚠️ 同上：這幾行只治理未來的 checkout / add，不會回頭正規化 index 裡既有的 CRLF blob——
+# 本行加入時 templates/design.md、plan.md、spec.md 三個 blob 仍是 CRLF，要一次校正得跑
+# `git add --renormalize superpowers-bridge/`（需使用者執行）。
+superpowers-bridge/**/*.md text eol=lf
+superpowers-bridge/**/*.yaml text eol=lf
+superpowers-bridge/VERSION text eol=lf
