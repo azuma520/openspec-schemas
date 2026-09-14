@@ -59,16 +59,18 @@ P1-1 與 P1-2 屬同一類：**檢查的名稱宣稱的範圍，大於它實際�
 ### D2：Evidence 的配對單位從「task」改為「subject」
 
 - **選擇**：一個 task 底下可以有多個 subject。RED / GREEN 紀錄**以其 `subject:` 值配對**，
-  每個 subject 必須恰好有一個 RED 與一個 GREEN。同一 task 內 subject 值必須唯一。
+  每個 subject 必須恰好有一個 RED 與一個 GREEN。同一 task 內，subject 值在**每一側各自唯一**
+  ——至多一筆 RED、至多一筆 GREEN 帶同一個 subject（RED 與 GREEN 本來就共用同一個 subject，
+  所以唯一性不能跨側要求）。
 - **理由**：現行 check 11（「RED 的 subject 必須等於 GREEN 的 subject」）隱含了「一 task 只有一組配對」
   的前提，一旦允許多個測試就無法決定要拿哪個 RED 比哪個 GREEN。**改用 subject 當配對鍵，
   多對紀錄的配對關係才是唯一確定的**——這正是「決定性」這個宣稱的要求。
-  「同一 task 內 subject 唯一」是配對可解的前提：兩個同名 subject 各帶一組 RED/GREEN 時，
+  「同一側內 subject 唯一」是配對可解的前提：同一側出現兩筆同名 subject 時，
   配對又回到不確定。
 - **已考慮 alternative**：
   - *維持一 task 一組配對*——最小，但把「一個任務要寫多個測試」這個常態排除在契約外，
     逼使用者把一個任務硬拆成多個。
-  - *以出現順序配對（第 n 個 RED 對第 n 個 GREEN）*——不需要 subject 唯一，
+  - *以出現順序配對（第 n 個 RED 對第 n 個 GREEN）*——不需要 subject 每側唯一，
     但順序是脆弱的隱含契約：中間插入一筆就全錯位，且錯位後仍可能通過檢查。
 
 ### D3：subject grammar 採最小可判定形式
@@ -151,7 +153,7 @@ P1-1 與 P1-2 屬同一類：**檢查的名稱宣稱的範圍，大於它實際�
 
 **本 repo 內的落地順序：**
 
-1. 改 `superpowers-bridge/schema.yaml`（checks 7、9–12 ＋ 任務指令段）
+1. 改 `superpowers-bridge/schema.yaml`（checks 2、7、9–12 ＋ 任務指令段；check 2 為 2026-09-11 追加，理由見 proposal §Impact）
 2. 同步 `superpowers-bridge/templates/`（`verify.md`、`tasks.md`）與雙語 README
 3. 補 mutation fixture 的正負案例
 4. 修 `openspec/specs/tdd-claim-accuracy/spec.md` 的 stale clause

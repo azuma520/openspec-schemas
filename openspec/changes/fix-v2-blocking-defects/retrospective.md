@@ -18,7 +18,7 @@
   without it every line of every touched file reports as changed. Largest single file:
   `superpowers-bridge/schema.yaml` at +392/−79.
 - **Tasks done**: **15/15** (`grep -cE '^\s*- \[x\]' tasks.md` → 15; `- [ ]` → 0; `- [~]` → 0)
-- **Active hours**: ~9h of a ~24h wall-clock span. First artifact `.superpowers/sdd/plan/task-1.1-brief.md`
+- **Active hours**: ~9h of a ~24h wall-clock span. First artifact `.superpowers/sdd/plan/task-1.1-brief.md`（git-ignored 工作區，teardown 後不可複驗）
   at 2026-09-07 16:17; last at 2026-09-08 16:04. The ledger has one overnight gap (task 2.1 review
   17:04 → task 2.2 review 07:57), so the span crosses a date boundary but the work does not fill it.
 - **Subagent dispatches**: **42 named agent seats** (implementers, reviewers, re-reviewers, the four
@@ -32,7 +32,7 @@
   Current state: `openspec validate --all` → `Totals: 5 passed, 0 failed (5 items)`.
 - **Test coverage signal**: no test framework exists. The equivalent is the mutation-fixture set:
   **13 fixtures, 13/13 verdicts re-derived independently** by the round-4 code reviewer against the
-  new check text (`.superpowers/sdd/plan/code-rereview-fallback-3.md` § Regression), plus
+  new check text (`docs/superpowers/retrospectives/2026-09-08-fix-v2-review-reports/code-rereview-fallback-3.md` § Regression, byte-identical copy of the SDD workspace report), plus
   `openspec schema validate superpowers-bridge` → `✓`.
 
 Commit chain (時序):
@@ -64,7 +64,7 @@ No archive commit exists. That is the change's current terminal state, by ruling
   conforming to the `::` grammar it introduced. Dogfooding worked as the design intended: had the
   new rules rejected the change that wrote them, that would itself have been the signal.
 
-- [evidence: ledger 2026-09-07/08, `.superpowers/sdd/plan/progress.md:53`] **Fixtures first was
+- [evidence: ledger 2026-09-07/08, `.superpowers/sdd/plan/progress.md:53`（git-ignored 工作區，teardown 後不可複驗）] **Fixtures first was
   the right inversion.** The plan ordered fixtures before checker edits so every RED could be
   obtained against pre-edit wording (`22c15cf` is the cited baseline in all six RED records in
   `tasks.md`, lines 61, 70, 81, 90, 99 and 110 — and the final reviewer re-ran every citation and
@@ -152,6 +152,7 @@ No archive commit exists. That is the change's current terminal state, by ruling
 |-----------|--------------|-----|
 | 2.1 | Scope grew by one sentence: `schema.yaml:285`, the `plan` artifact instruction's definition of "1:1" as set identity, was folded in although no task owned it | The task's own edit created the contradiction — after 2.1 landed, that sentence would have told authors 1:1 means set identity while the checker blocks duplicates. Not one of the six enumerated P2s, so the "no P2 pulled in" non-goal is not engaged (ledger `progress.md:82`) |
 | 2.2 | The R2 review-judgement amendment was folded into 2.2's fix round instead of being routed to 2.4 | The reviewer established that 2.4's residual-wording grep list does not match R2's phrasing — routing it to 2.4 meant nothing would catch it. The earlier routing decision had been made without that fact (ledger `progress.md:98`) |
+| 2.2 / code-plane fix round (`e38e817`) | R1 review judgement widened: a RED recording `INDETERMINATE` for a rule executed by reading counts as a behavioural failure | Needed by f12's positive-control RED (`tasks.md` 2.2). Landed in the code-plane fix commit without a proposal / delta-spec declaration; declared post-hoc on 2026-09-10 after branch review r2 (fallback) flagged it as undeclared scope. `INDETERMINATE` stays RED-side only: never PASS, never a substitute for GREEN |
 | 2.3 | The absent-`tasks.md` branch's stated justification was rewritten mid-task | The original premise was false (see §2). The fix names check 12 and the verify PRECHECK explicitly rather than gesturing at "the checks that read tasks.md" |
 | 3.1 | `superpowers-bridge/templates/plan.md` was edited although task 3.1's text names only `templates/tasks.md` and `templates/verify.md` | The two-stage entry-key wording had to reach the plan-side author surface. Direction is consistent with D1/D6; recorded in `verify.md` §4 as "a coupled surface the task text did not name", non-blocking |
 | 4.1+4.2 | Batched into one implementer dispatch rather than one each | Small, prose-only, single-file each, no shared file and no dependency — the SDD batching rule's exact case (ledger `progress.md:137`) |
@@ -230,7 +231,7 @@ No archive commit exists. That is the change's current terminal state, by ruling
 | **D2** — check 8 blocks on more than one `- TDD:` line while neither author surface states it | `code-rereview-fallback-3.md` § D2 characterisation: instruction `schema.yaml:175-181` says "exactly one of these two **forms**" (a form choice, not a cardinality); `templates/tasks.md:20` is silent; check 8 at `:576`, `:586-587` blocks on "more than one" | User ruling `progress.md:203`: real, but not caused by the five P1s and not a precondition of fixing them. The matrix found **nine gaps of the same family**, so it is a topic — "do all author-facing surfaces completely reflect the actual gate rules" — not two sentences. Pulling D2 in invites D3 next round |
 | **The nine matrix gaps** (D1 separators, D4 blank-line transparency, row 15 `n/a`-by-design, the fifth recurrence at `templates/tasks.md:49-50`, and the rest) | `code-rereview-fallback-3.md` § Matrix audit, five rows audited cell by cell | Same family as D2, same ruling. Standing boundary for the rest of the change: no further scope expansion unless a gap is shown to affect the correctness of the five P1 fixes themselves |
 | **Three latent ambiguities verify recorded rather than silently resolved** | `verify.md` §3 note, §5 note, §8 note 1 | (1) check 3 lists three outcomes but never says whether ✗ blocks — ruled non-blocking; (2) check 5 says "confirm all code changes are committed" but never says whether uncommitted files are FAIL or warning — ruled warning; (3) checks 8–12 define TASK LINE and `#` heading by first-non-space characters with **no exclusion for HTML comments or fenced code blocks** — this change's own `tasks.md` opens with a 40-line HTML comment, confirmed line by line to contain no `- [` or `#`-leading line, so it did not fire. A `tasks.md` with `- [ ] 1.1 …` inside a comment or a fence **would** be miscounted |
-| **Three rules that now block with no fixture behind them** | `code-rereview-fallback-3.md` § Deferred observation | `###` in a plan, whitespace-after-`]`, and repeated-field-key were verified **by reading only**. Three rules the corrected checker blocks on with no mutation fixture exercising them |
+| **Four rules that now block with no fixture behind them** | `code-rereview-fallback-3.md` § Deferred observation; 2026-09-10 Codex branch review r1 (plan-key delimiter) | `###` in a plan, whitespace-after-`]`, and repeated-field-key were verified **by reading only**; the plan-key delimiter rule added to check 12 on 2026-09-10 (a `##` heading's leading number must be followed by whitespace or end of line — `## 1x` keys nothing) joins them. Four rules the corrected checker blocks on with no mutation fixture exercising them; a fixture for each is part of the same follow-up |
 | **Candidate f14** — a fixture carrying both a duplicate *and* a set difference | ledger `progress.md:88` | The only input that distinguishes short-circuit from no-short-circuit in check 12. Not added: this change's own check 12 demands equal key sets, so adding one fixture means adding a task *and* a matching plan entry — a structural edit to the change's artifacts mid-implementation |
 | **The outstanding external code review** | `verify.md` § Overall Decision warning 1 | See §2 and §4. The change does not archive until it clears |
 | **`CLAUDE.md:187`'s `需從 2 bump`** | ledger `progress.md:142` | Hard-codes today's schema major and goes stale at the next bump. Left minimal-and-flagged; a version-independent rewording would have been a fourth unauthorised correction failing task 4.2's containment acceptance |

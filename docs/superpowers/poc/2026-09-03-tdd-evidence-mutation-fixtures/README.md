@@ -45,7 +45,7 @@
 | `f10-subject-without-separator` | RED/GREEN 的 `subject:` 只有測試名、沒有 `::` 分隔符與檔案路徑 | check 9（`subject:` 語法）BLOCK |
 | `f11-duplicate-subject-one-side` | 同一任務下兩筆 RED 記錄的 `subject:` 值逐字相同（GREEN 只有一筆） | check 11（per-subject 唯一性／cardinality）BLOCK |
 | `f12-two-subjects-paired` | **沒有破壞任何東西**——同一任務下兩個不同 `subject:`，各自完整配對一組 RED＋GREEN | 不 BLOCK（正向對照） |
-| `f13-deferred-task-in-tasks` | `tasks.md` 有一個 `[~]` deferred 任務、`plan.md` 為一個沒有任務列的合規 v2 entry | 兩種讀法皆不 BLOCK,BLOCK/不 BLOCK 無法區分——改記有鑑別力的結果:現行 check 7(讀 `tasks.md`)找到**1 筆** deferred 任務、需列入 §7;舊 check 7(讀 `plan.md` 找 `[~]` 列)找到 **0 筆**、合法留空 §7(舊測 BLOCK 條件「§7 空且 `plan.md` 有 `[~]` 列」不成立;新測條件「§7 空且 `tasks.md` 有 deferred 任務」因 §7 非空也不成立)。這個 fixture 驗的是讀哪個檔、找到幾筆,不是 BLOCK 與否 |
+| `f13-deferred-task-in-tasks` | `tasks.md` 有一個 `[~]` deferred 任務、`plan.md` 為一個沒有任務列的合規 v2 entry | 兩種讀法皆不 BLOCK,BLOCK/不 BLOCK 無法區分——改記有鑑別力的結果:現行 check 7(讀 `tasks.md`)找到**1 筆** deferred 任務、需列入 §7;舊 check 7(讀 `plan.md` 找 `[~]` 列)找到 **0 筆**、合法留空 §7(舊測 BLOCK 條件「§7 空且 `plan.md` 有 `[~]` 列」不成立;新測條件「§7 空且 `tasks.md` 有 deferred 任務」因 §7 非空也不成立)。這個 fixture 驗的是讀哪個檔、找到幾筆,不是 BLOCK 與否。**check 2 的預期判定（2026-09-14 追加）**:修訂後的 check 2 接受 `- [x]` 或 `- [~]`,所以本 fixture 的 `[~]` 任務**不使 check 2 失敗**;修訂前的 check 2 要求每個 checkbox 皆為 `- [x]`,同一份輸入會失敗——這是本 fixture 對 check 2 修訂的鑑別力所在。⚠️ 此列為**作者推導**、尚未經獨立執行者複驗:2026-09-08 的獨立再推導只實作 checks 8–12,不涵蓋 check 2 |
 
 `f6` 與 `f7` 是這批裡最重要的兩個，理由相反：`f6` 證明「檢查通過 ≠ 判斷通過」，`f7` 證明檢查**不會誤擋合規品**。六個證明「違規會被擋」的 fixture，對「合規不會被誤擋」一句話都沒說——沒有 `f7`，這組防呆就是單向的。`f12` 是 `f7` 之後的第二個正向對照，理由同構：`f10`、`f11` 證明「subject 語法／cardinality 違規會被擋」，但單靠它們無法排除「檢查會不會連合法的雙 subject 配對都一併誤擋」——沒有 `f12`，這條防呆一樣是單向的。
 
@@ -77,7 +77,7 @@
 
 **另一項範圍限制：** 盲測驗的是 R25 / R26 兩項修正**之前**的檢查措辭。之後 check 12 的表述與空行處理有變動，而**變動後沒有再跑第二次盲測**。`f7` 正是會測到新行為的那個 fixture。
 
-**`f8`–`f13` 沒有盲測判定，句點。** 這六個是 change `fix-v2-blocking-defects` 修正五個 P1 缺陷後才新增的 fixture，鎖定的是修正**後**的檢查措辭；上面兩張表（判定者、盲測名稱對照）只涵蓋 `f1`–`f7`，`f8`–`f13` 不在其中，也不該被讀成隱含通過了某種盲測。它們目前唯一的判定依據是本檔第一張表所寫的預期判定，尚未經任何獨立執行者驗證。
+**`f8`–`f13` 沒有盲測判定，句點。** 這六個是 change `fix-v2-blocking-defects` 修正五個 P1 缺陷後才新增的 fixture，鎖定的是修正**後**的檢查措辭；上面兩張表（判定者、盲測名稱對照）只涵蓋 `f1`–`f7`，`f8`–`f13` 不在其中，也不該被讀成隱含通過了某種盲測。它們**沒有**盲測判定這件事不變；但「尚未經任何獨立執行者驗證」已不再成立——2026-09-08 的第 3 輪 code re-review（fallback reviewer）對 13 個 fixture 做過一次**獨立再推導**，13/13 與預期判定一致，報告保存在 `docs/superpowers/retrospectives/2026-09-08-fix-v2-review-reports/code-rereview-fallback-3.md` § Regression。兩者的差別要留著：再推導是知道預期答案後重新導一次，盲測是不知道預期答案的執行者跑一次；**只有後者能反駁預期判定本身**，而 `f8`–`f13` 仍然沒有後者。
 
 ## 怎麼重跑
 

@@ -14,7 +14,7 @@
 - "The correspondence between tasks.md task numbers and plan.md entry keys SHALL be one-to-one, and the deterministic verify check SHALL establish it in two stages: first that neither side contains a duplicate key, then that the two key sets are equal in both directions."
 - "A duplicate on either side SHALL be reported as a blocking finding naming the repeated key, distinctly from a missing or extra key, because the two are different defects with different repairs."
 - "plan.md SHALL NOT carry task-level state markers (deferral and the like); tasks.md is their carrier. Any deterministic check concerning task state SHALL therefore read tasks.md, and a check that searches plan.md for task rows is non-conforming"
-- "Records SHALL pair by their `subject:` value, and each subject appearing under a task SHALL have exactly one RED record and exactly one GREEN record. Subject values SHALL be unique within a task"
+- "Records SHALL pair by their `subject:` value, and each subject appearing under a task SHALL have exactly one RED record and exactly one GREEN record. Subject values SHALL be unique within each side of a task — at most one RED record and at most one GREEN record per subject"
 - "Ordinal pairing (the n-th RED with the n-th GREEN) SHALL NOT be used, because inserting one record silently re-pairs every record after it."
 - "A `subject:` value SHALL, after trimming, match `<test-file>::<test-name>`: exactly one `::` separator, with a non-empty remainder on each side after trimming. The check SHALL NOT constrain path syntax, file extension, or test-name characters beyond that"
 - "The deterministic checks SHALL verify structure, format and cardinality only, and bridge-owned surfaces SHALL NOT claim they verify evidence truth."

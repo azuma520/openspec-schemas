@@ -77,6 +77,9 @@ check 9 叫「必要欄位齊備」卻只驗非空）。此類缺陷的症狀是
   1. 一個 task **可以有多個** Evidence subject；
   2. subject 必須符合既定 `file::test` grammar；
   3. 同一 task 內 subject **必須唯一**；
+     <!-- superseded 2026-09-11：當時的措辭。定案條文收斂為「每一側各自唯一」
+          （RED 與 GREEN 共用同一個 subject，跨側唯一性不成立）。
+          現行規則見 specs/tdd-evidence-contract/spec.md:7。此行保留當時想法、不改寫。 -->
   4. 每個 subject 必須**恰好有一個 RED 與一個 GREEN**；
   5. 多次執行歷史**不納入** completion evidence；
   6. checker **只驗結構、格式與 cardinality**，不宣稱驗證 evidence truth。
