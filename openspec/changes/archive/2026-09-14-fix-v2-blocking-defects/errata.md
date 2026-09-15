@@ -41,3 +41,21 @@
   所以這一半保存救不回來。
 
 原文維持不動（append-only）,以本則為準。其餘沒有被保存的工作區檔案,該句整句仍然成立。
+
+---
+
+## E2 — `retrospective.md:35` 的「byte-identical copy」宣稱強於現可驗證的範圍（**限制說明，非內容更正**）
+
+**原文怎麼寫的**：`retrospective.md:35` 稱 `docs/superpowers/retrospectives/2026-09-08-fix-v2-review-reports/code-rereview-fallback-3.md`
+為「byte-identical copy of the SDD workspace report」。
+
+**實際情況**（2026-09-15 量測）：那兩份報告在 `bfc8660` 進版控時 `.gitattributes` 的 `-text` 規則尚未加入（`45b6858` 才加），
+`core.autocrlf=true` 在 `git add` 時做了 CRLF→LF 正規化；`git ls-files -s` 的 blob hash 與 `git hash-object --no-filters <工作區檔>` 不相等。
+原檔已隨 2026-09-14 teardown 刪除，因此「blob 等於當時原檔」**現在不可驗**——不是已證明不相等，是無法再證明相等。
+2026-09-10 複製進工作區當下與原檔逐位元組相同這件事，仍以當時的紀錄為準。
+
+**不受影響的部分**：該句引用的實質內容（§ Regression 的 13 個 fixture 獨立再推導）與行號引用不受換行符正規化影響。
+
+**原文維持不動（append-only），以本則為準。** 該目錄 `README.md` 已同步補記。
+
+*記於 2026-09-15。*
