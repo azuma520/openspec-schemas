@@ -22,6 +22,11 @@ workflow-harness — Handoff template
 - **Issue #4 外部審**：r2（`01a0cc1f`、gpt-6-sol，09-23 20:11 重派）⛔ Blocked——前輪 5 條中 3 條獨立驗證已解；新 P2（no-spawn 靜態守門漏 `import os as _os` 別名，自行重現且同類 `_os.popen` 亦漏）＋Nit（`decision-matrix.md` 結語 fixture 說法殘留）。**已修（bounded，使用者指示不擴相鄰問題）**：別名追蹤＋雙向測試（負向 +2、正向參數化 3 條）；雙向變異各轉紅（拿掉別名追蹤 → 2 紅；放寬比對 → 1 紅）；全套 7 failed／3229 passed／4 xfailed、無 error，7 條與 baseline 相同；`validate --strict` 通過；tasks.md 記 3.14。**r3 已派**（同 thread 第 2 次續審）。
 - 09-23 16:47 那次重派因額度中途耗盡（約 40 萬 token）無 verdict，不算輪次。
 
+- **15:55 收工補記**：
+  - **正式設計核可版 commit `8002fa0`**（正式設計＋修訂對照表＋本 handoff 的核可紀錄；三檔，其餘 dirty 檔未收）。
+  - **研究文件三處加註 commit `1879bd8`**（`2026-09-23-requirement-traceability-current-state.md`，+5 行、不改寫原推導）：①§2 表後註＋§7 第 5 題註：Proposal → Requirement ID 已撤回（Proposal 維持 capability 粒度；指向 09-23 快照與正式設計 §1，並明寫正式設計本身無 Proposal 粒度條文）②§7 第 7 題註：Scenario 層 v1 仍必做（指向快照與正式設計 §4.2、§9.3）③§8 RENAMED 推論註：已被 09-23 實測推翻（順序保留，跨 capability 未測）。Codex record-diff 審 ✅ Mergeable、零 finding（thread `01a0d261`）。
+  - 工作地圖結算：`task-20260923-formal-design-revision-map`、`task-20260901-design-223-convergence` 標 DONE（證據：`8002fa0`）。
+
 ### 三、未完事項 / 接力棒
 
 - [#接力] **Issue #4 程式面外部審 ①：第 3 輪（`01a0cc1f`、gpt-6-sol）✅ Ready**（08:3x 補記）——r2 兩條經審查者獨立驗證已解（含在記憶體中拿掉別名追蹤、兩條新斷言轉紅）、無新 finding；它收集到 3240 個測試、`validate --strict` 通過；唯讀環境無暫存目錄，**全套測試結果未能獨立驗證**（本地實跑：7 failed／3229 passed／4 xfailed）。結果檔同目錄 `r3-result.md`。**①取得有效 PASS；但 tasks.md 4.4a 要求程式與文件各補一輪外部審——原計畫的 ②（Codex-specific 兩 batch）仍未派，未過前不得 commit／PR／archive。**
@@ -84,5 +89,8 @@ git status 中其餘 dirty 檔（`backlog-crosscheck-shadow.json`、Q8 報告與
 
 ### 六、下一步建議
 
-1. **收 Issue #4 第 3 輪 verdict**，逐條實跑驗證；Blocked 則先查是否本輪修法半修。PASS 後依使用者 09-24 定的順序**回正式設計**；原計畫的 ②③ 外部審（②Codex-specific 兩 batch、③Q8 報告 doc review）仍待排，何時插入由使用者決定。
-2. Issue #4 r3 PASS 後：**依 revision map ＋ 上面三的 9 筆，一次修訂 9/1 正式設計**，再送正式設計完整文件審與新一輪核可。
+（15:55 收工改寫；前版內容已被本 session 後續進度取代——Issue #4 r3 已過、正式設計已核可並 commit。）
+
+1. **Issue #4 收尾**（使用者另外指示才動）：程式面 ①、文件面 ② 全過；依 tasks 4.4a 打勾（記兩面 verdict）→ worktree `/smart-commit --execute` → **使用者**在 `D:\workflow-harness` 跑 `/push-ci`、確認 `origin/main == main` → PR（關聯 Issue #4）→ merge → 更新 plugin cache → 真實 linked worktree dogfood → 標 `task-20260915-stop-hook-worktree-root` 完成。延後 3 筆：matrix :6、:39，brainstorm :22。
+2. **正式設計文件頭狀態句**：仍寫「須另經使用者核可;核可前以 9/1 原版為準」，核可後已過時；使用者指示核可版不再修改，是否以一行狀態更新處理待裁。
+3. **下一個 traceability implementation change**：依核可版正式設計，由使用者決定何時開、範圍多大（本 session 不自行開始）。③（Q8 報告 doc review）仍未派。
