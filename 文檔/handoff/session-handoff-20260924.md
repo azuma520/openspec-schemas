@@ -94,3 +94,71 @@ git status 中其餘 dirty 檔（`backlog-crosscheck-shadow.json`、Q8 報告與
 1. **Issue #4 收尾**（使用者另外指示才動）：程式面 ①、文件面 ② 全過；依 tasks 4.4a 打勾（記兩面 verdict）→ worktree `/smart-commit --execute` → **使用者**在 `D:\workflow-harness` 跑 `/push-ci`、確認 `origin/main == main` → PR（關聯 Issue #4）→ merge → 更新 plugin cache → 真實 linked worktree dogfood → 標 `task-20260915-stop-hook-worktree-root` 完成。延後 3 筆：matrix :6、:39，brainstorm :22。
 2. **正式設計文件頭狀態句**：仍寫「須另經使用者核可;核可前以 9/1 原版為準」，核可後已過時；使用者指示核可版不再修改，是否以一行狀態更新處理待裁。
 3. **下一個 traceability implementation change**：依核可版正式設計，由使用者決定何時開、範圍多大（本 session 不自行開始）。③（Q8 報告 doc review）仍未派。
+
+## Session 17:49
+
+### 一、本 session 主題
+
+開工後三件事：①work-map 的 `evidence` 未知欄位調整 ②兩條「正在做」狀態查證（Task Context 觀察期、B 小實驗 Q8）③Issue #4 收尾——commit、推送、PR、合併、真實 worktree 實測；與 workflow-harness session（`workflow-harness-20`）跨 session 分工完成。
+
+### 二、完成事項
+
+- **work-map `evidence` 欄位**：位於 `task-20260901-guarantee-spikes`（9/1、`bd71f3a` 寫入，**非**上個 session）；原文整句移入工具支援的 `description`（前綴「完成證據:」），只改一行，doctor 完整性警告消失。
+- **兩條狀態查證**（結論已端給使用者，**尚未裁定**，見六）：
+  - Task Context 觀察期：實際做了 Pilot 1–4（達 2–3 次約定），但約定的收尾「一次更新 `2026-09-09-review-provenance-analysis.md`」未做（該檔 0 處提到 pilot、最後修改 9/14）；記憶的「A1 9/14 結案」只是子項。
+  - B 小實驗（Q8）：實驗與報告完成（9/21 收 7 條 blocking），缺：③ doc review 9/22 撞額度後未重派、報告＋`evidence/` 29 檔＋`recompute-correctness.py` 未 commit、§9 甲乙丙三條路與「規範權威 vs 事實來源」待使用者拍板。狀態建議改 BLOCKED（等使用者）。
+- **Issue #4 收尾**（workflow-harness）：
+  - tasks 4.4a 打勾並記兩面 Codex verdict（程式 `01a0cc1f` r3 ✅ Ready；文件 batch1 `01a0d1cf` r2 ✅ Mergeable、batch2 `01a0d1d6` ✅ Mergeable；延後 3 筆 nit）。使用者指示此紀錄編輯**不送審**。
+  - `/smart-commit --execute`（使用者文字同意）兩個 commit：`3238853`（程式 8 檔）、`b0813db`（文件 9 檔）；無 AI 署名、`verify-last` 通過。
+  - 使用者親手推分支；`workflow-harness-20` 經使用者 `/push-ci` 推 main（`fac2c1a..9e07085`，fast-forward）。
+  - **PR #6**（https://github.com/azuma520/workflow-harness/pull/6，`Refs #4`、不自動關 Issue）由 workflow-harness-20 評估後經使用者批准 `gh pr merge --merge` → **merge commit `4af3f6a`**。其評估：語意無衝突（三個 change 的 session-onboarding requirement 名不重疊）；兩個乾淨 worktree 全套測試比對，合併前後同樣 **3 failed**（皆 main 既有、屬 rework 規格先行）、新 118 條全過。
+  - **tasks 4.5 實測（使用者選 B：不發版）**：openspec-schemas 開 detached worktree 於 `08983ee`（主目錄有今天 handoff、worktree 沒有）。舊版 alpha.18：SessionStart 讀到 0923 舊 handoff、Stop **block「今日 handoff 未建立」**（重現 Issue #4）；新版 main：SessionStart 讀主目錄 0924（絕對路徑）、Stop **放行**。實測 worktree 已移除。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **Issue #4 狀態：修正已合併、實測通過，但尚未上線**——live hook 仍是 alpha.18（`cfc8a17`，8/31）；plugin 快取只在版本號改變時更新。在 alpha.19 發版前，worktree 內仍可能出現「今日 handoff 未建立」誤報：**handoff 一律建在主目錄、不要照提示建在 worktree**。Issue #4 **維持 open**、work-map `task-20260915-stop-hook-worktree-root` **維持 DOING**，等 alpha.19 上線再結（使用者 17:4x 定）。
+- [#接力] **alpha.19 發版條件（workflow-harness-20 評估）**：`cfc8a17..main` 有一條半成品——第 4 個 backlog 掃描器（`add-backlog-reconciliation-scanner`，tasks 5.3、12.5 外部審未完，紀錄明寫補完前 MUST NOT 出貨）。其餘：rework runtime 未進 main（僅 xfail 規格先行）；3 條紅燈是規格先行落差、不影響行為。**發版歸 workflow-harness 那條線**，本線不催。
+- [#接力] **Issue #4 收尾雜事（未做）**：tasks.md 4.5 打勾並記「未更新快取（理由：main 含未過審掃描器）、以 main 程式在真實 worktree 實測通過」；`openspec archive fix-worktree-canonical-root`；移除 `.worktrees/fix-issue-4-worktree-canonical-root`（內有一個未追蹤的 `.claude/scripts/commit-msg-guard.sh`，是從 `fac2c1a` 取出供 smart-commit 用，可隨 worktree 刪）與本機分支；Issue #4 留言實測結果。這些會在 workflow-harness 產生 commit。
+- [#接力] **design.md:79 寫「dogfood 步驟要明寫更新 cache」**，這次刻意偏離（使用者裁定 B）——記 4.5 時要寫明偏離理由。
+- [#待確認] Task Context 觀察期收法（甲：補寫研究文件再標 DONE／乙：直接標 DONE、註明不更新研究文件）；Q8 是否改 BLOCKED。
+- [#不重議] tasks.md 4.4a 紀錄編輯不送審（使用者）；Issue #4 等 alpha.19 上線再關（使用者）；序 0 的 13 條原子工作不開子項（使用者）。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **手動跑 hook 做實測，沒把失敗紀錄導到別處，汙染了正式紀錄。** 假 session 編號（非 UUID）被判 malformed，寫進 `~/.claude/logs/workflow-harness-hook-failures.log` 兩筆——不處理的話 24 小時內每次開工都會出現假的「hook 失效」警告。與 7/27 事故同類（`hooks/lib/fallback.py` 註解有載），且早有隔離用的 `WORKFLOW_HARNESS_HOOK_FAILURE_LOG`。靠 hook 輸出的時間戳恰是「剛剛」才察覺；已備份（scratchpad `hook-failures.backup.log`）並只刪那 2 筆（26→24 行）。⇒ 動作版：在測試框架外手動跑 hook 時，**一律設 `WORKFLOW_HARNESS_HOOK_FAILURE_LOG=<scratchpad>`、session 編號用 UUID**，跑完先核對正式紀錄行數沒變。
+
+**【當日洞見】**
+
+- **我說「evidence 欄位是上個 session 寫的」是猜的、錯了**（實為 9/1 `bd71f3a`）。講出處前應該先用 `git log -S` 查。
+- **修好 ≠ 上線**：plugin 快取只在版本號改變時更新，main 合併了 live hook 也不會換；這次若發版會把未過外部審的 backlog 掃描器一起帶上線（這是 workflow-harness-20 評估出來的，不是我查到的）。
+- **分支比某個工具腳本進版控還早開時，worktree 裡就沒有那個腳本**：smart-commit 找不到 commit-msg-guard 而 fail closed（正確）；從 `fac2c1a` 取出同一份即解（注意用 `git show` 取 LF 版、不要 `cp` 工作目錄的 CRLF 版）。smart-commit 的 `alloc` 預設落在 `/tmp`，被 hook 擋，用 `TMPDIR=<scratchpad>` 解。
+- **跨 session 分工這次運作得很好**：推 main、合併評估、合併本身交給負責那個 repo 的 session；它的判斷（語意衝突、半成品清單）是這邊查不到的。
+
+**【學習候選】**
+
+1. **Case**：手動跑 hook 做實測，汙染了正式的失敗紀錄。
+2. **Candidate Pattern**：在測試框架外手動執行會寫共享狀態的工具時，先找它有沒有隔離用的環境變數再跑。
+3. **Evidence**：本次 1 例，加上 `fallback.py` 註解記載的 7/27 同類 1 例（那次是測試造成）。**Hypothesis**：缺的是「手動跑」情境的提醒，測試框架本身已有隔離。
+4. **Minimum Sufficient Intervention**：不新增規則。可考慮 workflow-harness 的 hook 對格式不對的 session 編號不寫入失敗紀錄——屬 workflow-harness 那邊的決定。
+5. **Promotion**：History only。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（cc409a6、開工於 2026-09-24T16:39:24）——列 cc409a6..HEAD：**openspec-schemas 本 session 零 commit**。working tree 中本 session 的改動：
+
+- `workflow-harness/work-map.jsonl`：`task-20260901-guarantee-spikes` 的 `evidence` → `description`（一行）
+- 本 handoff 檔（append 本區塊）
+
+**workflow-harness**（另一 repo）：`3238853`、`b0813db`（分支 `fix/issue-4-worktree-canonical-root`）→ PR #6 → merge `4af3f6a`（在 main、已推）。
+
+其餘 dirty 檔（`backlog-crosscheck-shadow.json`、Q8 報告與 `evidence/`、`recompute-correctness.py`、`session-handoff-20260921.md`、產品承諾 brainstorm）早於本 session，不記在本 session 帳上。
+
+非 repo：`~/.claude/logs/workflow-harness-hook-failures.log` 刪除本 session 誤寫的 2 筆；`~/.claude/state/workflow-harness/` 留下兩個以已刪 worktree 為對象的狀態檔（`*-d2398dca8834.txt`），不會再被讀到。
+
+### 六、下一步建議
+
+1. **Task Context 與 Q8 兩題**（兩秒可決）：Task Context 甲／乙；Q8 改 BLOCKED 與否。Q8 若要推進，下一步是重派 ③ doc review、再 commit 報告與 evidence。
+2. **Issue #4 收尾雜事**（見三）：4.5 打勾記偏離理由 → archive → 清 worktree／分支 → Issue 留言。可在 workflow-harness 那邊做，或這邊做完請使用者核可 commit。
+3. **下一個 traceability implementation change**：依核可版正式設計，由使用者決定何時開、範圍多大（沿用上一區塊）；正式設計文件頭那句過時狀態句仍待裁。
