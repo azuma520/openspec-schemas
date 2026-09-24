@@ -5,6 +5,8 @@
 > **定位:定義完成契約系統的責任邊界與判定規則,不是 implementation spec。**schema.yaml 欄位形狀、proposal override 語法、Scenario 載體等,一律由 §9 的 bounded capability spike 在實作前確認,本文件不預設 OpenSpec / Harness / Orca 已原生支援任何特定欄位。
 >
 > **狀態:核可後即為事件閘門的第二個 YES**(第一個 YES = PoC 通過,2026-08-28),雙 YES 後 schema 實作解鎖;實作仍逐塊走各自的 OpenSpec change 流程。
+>
+> **2026-09-24 修訂**:依[章節修訂對照表](./2026-09-23-formal-design-revision-map.md)修訂(需求身分生命週期、驗證證據落點、freshness、Verification target 等 2026-09-23 裁定,並收 9/1 文件審的 9 筆 deferred findings)。**本次修訂須另經使用者核可;核可前以 9/1 原版為準**,核可後亦不使事件閘門退回 NO。9/1 原版見 commit `f80fc7b`,歷史引用一律回看該 commit。章節號不動;新增內容以節尾新小節承載(§3.5),各節改動逐條記於附錄「2026-09-24 修訂拍板紀錄」。
 
 ---
 
@@ -14,11 +16,15 @@
 
 - CLAUDE.md 的事件閘門與 corrective-fix exception 已存在且已履行(`fix-tdd-transitive-claim` 已 archive),本設計不得重新解釋或擴張其歷史語意。
 - 方向文件十條設計護欄全數繼承;本文件特別依賴:Evidence 不當主系統(#3)、Contract Verification 不退化成「又跑一次測試」(#4)、Gate 不變成 Agent prompt(#5)、traceability 夠用就好(#6)、PASS 必須有 freshness(#7)、`verify.md` 暫不重構(#8)。
-- 附註(非本設計章節):主 spec `repo-guidance` 尚未載明 corrective-fix 例外,為既有審查黃燈,後續以獨立小 delta 補字。
+- 附註(非本設計章節):主 spec `repo-guidance` 尚未載明 corrective-fix 例外,為既有審查黃燈。2026-09-01 結算已將其降級為 deferred spec cleanup,併入 CLAUDE.md 治理語言改寫批(`task-20260901-claudemd-governance-rewrite`),不另開獨立小 delta。
 
 **設計吸收與 record 處置(A′ 原則)**:本設計吸收「TDD 證據契約」與「apply 階段交件證據」兩條 record 的**設計責任**(分別落在 §4、§5);核可後該二 record 標 absorbed/resolved by Formal Design。其中殘餘的**實作責任**(schema 實作、CLAUDE.md 治理語言改寫、spike 執行)轉成後續 OpenSpec change/tasks——**設計完成 ≠ 能力已交付**。
 
 **總原則(主軸句的落點)**:一份設計文件定義「完成系統」;後面的 change 逐塊實作。Complete 要變成一個可以被證明的狀態;模型仍擁有解題路徑,Harness 只接管不能靠模型自我宣稱的完成邊界。
+
+**上位原則(Artifact 責任先於結構,2026-09-23 拍板)**:設計任何 traceability 載體時,依序問——這個 Artifact 在流程中負責什麼 → 為履行責任要表達哪些資訊 → 適合什麼語言/結構 → 這項資訊在哪裡出生、owner 是誰 → 最後才決定是否需要 ID、reference 或機械檢查。**結構化副本仍是副本**:已有 owner 的資訊,其他 Artifact 沒有新責任時,優先引用、讀取或重算,不再抄一份、再想辦法同步。
+
+- **Plan 的適用**:Plan 不得成為既有 Contract constraint 的第二個 owner。需要自包含內容時,應由 authoritative source 動態產生/擷取;否則直接引用 authoritative source。不得人工維護一份聲稱逐字同步的副本。**這是新的 normative direction,下游尚未對齊**:現行 `openspec/specs/plan-contract/spec.md`(plan header 的 global constraints「copied verbatim from the specs」)、`superpowers-bridge/schema.yaml` 的 plan instruction 與 `templates/plan.md` 仍要求逐字照抄,由後續 OpenSpec change 修正(含對 plan-contract requirement 的 MODIFIED delta);reference 與 source-derived snapshot 二者擇一,由該 change 實測 reviewer/executor 是否需要內嵌內容後選型。在那之前,現況**不**符合本原則。
 
 ## 2. Completion Contract:Complete 的定義
 
@@ -32,13 +38,17 @@
 
 | # | Invariant |
 |---|---|
-| I1 | Requirement / Scenario 有足以支撐其追蹤層級的 stable identity;缺 ID、重複 ID、dangling reference → fail-closed 報錯 |
+| I1 | Requirement / Scenario 有足以支撐其追蹤層級的 stable identity(capability 範圍內唯一、退休 ID 不得重用,見 §3.1);缺 ID、重複 ID(同一 ID 指向不同契約)、dangling reference、未正式處置而消失的 ID → fail-closed 報錯 |
 | I2 | 每條被接受的 Requirement 有 Task 承接 |
-| I3 | 每條必要 Scenario 有 Verification coverage |
+| I3 | 每條必要 Scenario 有 Verification coverage(coverage 由 Verification Result 建立,見 §4.2) |
 | I4 | Expansion scan 已執行且有紀錄;所有列出的疑似項已 disposition |
 | I5 | STALE Result 不可使用;CONFLICT fail-closed |
-| I6 | Blocking Verification Result 全為 PASS,且 required Evidence 存在並符合結構要求 |
+| I6 | 每個必要驗收標的(必要 Scenario)都有可用於判定的有效結果,且其判定為 PASS;required Evidence(含 Result 引用的 Task 內 RED/GREEN)存在並符合結構要求 |
 | I7 | 所有 authoritative tasks 均已完成(`tasks.md` 全 `[x]`) |
+
+**I6 的判定單位是「每個必要 Scenario 的有效判定」,不是台帳裡的每一筆紀錄**(機械導出、非語意判斷;必要驗收標的即 §4.2 所定「所有被接受的 Scenario」)。對某個必要 Scenario,**有效結果**是指向它、FRESH、未被 invalidation 標為無效的 Result;在有效結果中,已有 PASS / FAIL 時 BLOCKED 不參與判定(§6)。判定:有效結果中的結論只有 PASS → PASS;只有 FAIL → FAIL;PASS 與 FAIL 並存 → CONFLICT;只有 BLOCKED 或沒有有效結果 → 尚未形成判定。I6 只在每個必要 Scenario 的判定皆為 PASS 時成立。9/1 版的用語「Blocking Verification Result」即指這些支撐必要 Scenario 的 Result。Result 引用 Task 時,I6 的結構檢查沿引用延伸到 Task 內的 RED/GREEN;對 applicable task 的 RED/GREEN 結構,同時是 §2.2「TDD Evidence」這項 assurance condition 的判定內容。
+
+**驗收標的與完成保障條件分屬兩層**(2026-09-23 拍板):Requirement / Scenario 是**契約標的**(Spec 擁有),Verification Result 對它們給出結論;I1–I7 與生效契約的 assurance conditions 是**完成保障條件**(Gate / Completion Contract 擁有),由 Gate 直接判定,不經 Verification Result。matrix row、fixture、test case 是**驗證材料**,不升格為正式驗收標的(其內部覆蓋完整性不由 Gate 保證,見 §8)。
 
 不設「無 unresolved blocker」類萬用條款:Gate 條件就是 I1–I7 加生效契約的 assurance conditions,不留語意判斷口袋。若日後出現正式的 blocker 狀態,列成明確條件再進表。
 
@@ -49,14 +59,15 @@
 - **required**:該能力不可用 → BLOCK,除非回 proposal 修改本 change 的 Completion Contract 並重新核可。
 - **degradable**:該能力不可用 → 可依預先定義的 fallback 繼續,但**必須留下 degradation record**(留痕是 degradation 的義務,與 default 是哪個無關)。
 
-**v1 預設表**(只列目前確實存在、Gate 判得動的機制,不預鋪):
+**v1 預設表**(不預鋪;每列寫明 v1 Gate 實際判得動什麼——degradable 列至少判得動**留痕**:正常執行的紀錄或 degradation record 存在且格式有效;執行者獨立性本身能否機械證明,取決於該列的 provenance 載體,逐列說明):
 
 | Assurance | v1 預設 | 說明 |
 |---|---|---|
-| Independent Review(含 expansion scan 的獨立性) | **degradable** | 降級 ≠ 不做:review 照做、同一套 procedure,降的是執行者獨立性,且必留降級紀錄(§5) |
+| Independent Review(含 expansion scan 的獨立性) | **degradable** | 降級 ≠ 不做:review 照做、同一套 procedure,降的是執行者獨立性,且必留降級紀錄(§5)。**v1 Gate 判**:review 與 implementation 為兩筆 Orca supervised dispatch 紀錄、`dispatchId` 與 `agentTerminalHandle` 相異(S6 已實測,runtime 核發、非 self-claim);無 Orca 或非 supervised → 依 G3 降級(degradation record) |
+| Verification executor independence(驗收結論不由實作者產生) | **degradable** | Verification Result 由 verify / review 階段產生,不由 implementer 自我驗收;無獨立 verifier → 同一套 verification procedure 由非獨立執行者執行 + degradation record(§5)。**provenance 載體未實測**:S6 只證實 review / implementation 兩類 dispatch 的身分區分,verify 階段是否有同等可靠的載體,實作前須先確認(§9.2);在此之前 v1 Gate 對本列只判得動留痕,不宣稱判得動獨立性本身 |
 | TDD Evidence(對 applicable executable-behavior code task) | **required** | v1 verification policy,非 Bridge Guarantee 本身;證據要求見 §4.3 |
 
-「Verification executor independence」(驗證由非實作者執行)為 **known assurance candidate**:與 Independent Review 概念相近但非同一事,v1 尚無可被 Harness 機械辨識的執行者身分能力,依「不把還沒證明能管的事寫成系統已經會管」原則暫不進表;前置事實由 Spike S6 取得(§9)。
+「Verification executor independence」在 9/1 版為 known assurance candidate、暫不進表;2026-09-23 拍板「Result 不由 implementer 自我驗收,無獨立 verifier 時依 G3 降級並留紀錄」後,它已是實際規則,故列入上表。它與 Independent Review 概念相近但非同一事:前者管驗收結論由誰產生,後者管 review 由誰執行。本次拍板的是**規範責任**,不是「provenance 已可機械判定」。
 
 ### 2.3 Effective Completion Contract(生效契約)
 
@@ -67,33 +78,38 @@ Proposal 固定區段「Completion Contract Overrides」(本次明確例外)
         ↓
 Effective Completion Contract(本次真正要遵守的規則)
         ↓
-Gate 只讀這份
+Gate 的 assurance 判定只讀這份(Core invariants I1–I7 恆常適用,不經此合成)
 ```
 
 - 無 override 區段或無對應項目 = 吃 schema 預設,這是唯一允許的「沒寫」。
 - **加嚴**(degradable → required):一般 override,直接寫。
-- **放寬**(required → degradable):**change-local degradation**——必須顯式附理由,並隨 proposal 的接受流程取得使用者接受。這即是 G3 已定的「修改該 change 的 Completion Contract 並重新核可」,不另建 waiver / override 子系統。
+- **放寬**(required → degradable):**change-local degradation**——必須顯式附理由,並隨 proposal 的接受流程取得使用者接受。G3 定版本身只說「失去必要保證則不得降級、必須 BLOCK」,未留出口(方向文件 G3);2026-09-01 拍板(附錄 9/1 表 #6)在其上新增**唯一合法出口**:修改該 change 的 Completion Contract 並重新核可。不另建 waiver / override 子系統。
 - Global schema default 的修改只用於「改變所有未來 change 的預設政策」,不拿來處理單一 change 的現實例外;反之亦然。
-- 「使用者接受」如何被 Gate 機械判定(acceptance provenance),是 Spike S2 必答題(§9)——否則 override 本身又成 self-claim。
+- **Acceptance provenance(弱保證版,S2 拍板 A′)**:「使用者接受」的 v1 載體是使用者明確操作產生的**顯式 acceptance record**。Gate 判定的對象是「acceptance record 存在且格式有效」,**不是**「使用者本人接受」——現有 runtime(OpenSpec CLI 無 approve 機制;Orca decision gate 的 `--from` 為自報身分)無法提供可被 Gate 機械判定的 human provenance,這筆 record 在系統層可由 Agent 寫出。v1 保證:**有顯式 acceptance record**;v1 不保證:**它不可由 Agent 偽造**(§8#5)。強 human provenance 留待可信 runtime / UI actor metadata;Orca decision gate 保留為 optional enhancement。
 
 TDD 預設 required 就是「TDD 不可丟」硬約束的機械形態:想丟它,唯一路徑是 proposal 明寫降級+理由+使用者接受,或修改 schema 預設——兩條路都看得見、都要審。
 
 ## 3. Minimal Traceability(最小追溯)
 
-三邊 join:`Requirement/Scenario ↔ Task ↔ Verification Result`。夠用就好(護欄 6)。
+三邊 join:`Requirement/Scenario ↔ Task ↔ Verification Result`。夠用就好(護欄 6)。其中 Task 層只 join 到 Requirement;**Scenario → Evidence 的對應由 Verification Result 建立**,不經 Task(§3.2 C′ 不變、§4.2)。
 
 ### 3.1 身分層(I1 的展開)
 
 - **架構規則**:每條可追蹤 Contract 必須有 stable ID。ID 是 identity,標題文字只是 description。
 - **v1 載體**:ID 寫在 Requirement heading(例 `### Requirement: REQ-12 <description>`)。未來 OpenSpec 若提供正式 ID 欄位,換載體不換架構。
-- **Immutability**:Contract 被接受後,改措辭不改 ID;改 ID 視為契約身分變更、需明確處置,不得當普通 rename(否則所有舊 reference 被無聲切斷——正是 G1a 要防的「靜默弱化」的機器版)。
-- **Scenario**:requirement-scoped stable sub-ID(例 `REQ-12-S1`),供 Verification coverage 指認;載體與 extraction 由 Spike S1 確認。
+- **唯一範圍**:ID 在 **capability 內唯一**,不是全 repo 唯一(與 OpenSpec 的天然邊界一致,也避免平行 change 共用一個隱形的號碼分配器)。完整 identity 是 `capability + local ID`:**凡是跨 Artifact、供機器解析的正式引用(`tasks.md` 的 `Contracts:`、`verification-results.json` 的 `contract`),一律寫限定形** `capability / local-ID`(例 `project-state-root / REQ-3`、`project-state-root / REQ-3-S1`),不因引用端剛好只涉及一個 capability 而省略 namespace;散文中以 `REQ-3` 作簡稱不受此限。同一 capability 內,**同一個 local ID 不得被重新指派給另一條不同的 Requirement / Scenario**(含已退休的 ID);同一條契約在 current spec 與已歸檔 change 中保留相同 ID 是合法的歷史紀錄,不構成重複。兩個平行 change 在同一 capability 把同一 ID 指派給不同契約時,第二個在整合/歸檔前 fail-closed。
+- **Immutability**:Contract 被接受後,改措辭不改 ID;改 ID 視為契約身分變更、需明確處置,不得當普通 rename(否則所有舊 reference 被無聲切斷——正是 G1a 要防的「靜默弱化」的機器版)。ID 放在標題上,標題描述文字一改,OpenSpec 就走 RENAMED:**RENAMED 前後 ID 必須相同**;內文措辭改動(標題不變)走 MODIFIED,ID 不受影響。
+- **退休與不重用**:退休的 ID **永不重用**。搬移、拆分、合併一律「舊 ID 退休、新 ID 出生」;lineage 只供追溯,**不是 alias**,新 ID 不繼承舊 ID 的 Result。Requirement 退休沿用 OpenSpec REMOVED 的 Reason + Migration;Scenario 退休須記錄對等資訊(Reason、lineage/Migration),記在 change 內、隨 archive 保存——**載體格式不在本文定**,由實作 change 在真實 OpenSpec 限制下決定。
+- **Archive 不得任意清理**:no-reuse 依賴已歸檔 change 保存的歷史 ID;不為此另建 registry(呼應下方 Fail-closed 條)。
+- **既有 ID 與既有紀錄**:`REQ-PB` grandfathered,不因格式統一改名(已被 `claude-md-phase-boundary/verification-results.json` 引用)。修訂前已歸檔的紀錄保留當時格式(例該檔的 `"contract": "REQ-PB"` 未帶 capability 前綴),不為新格式回頭改寫;限定形規則自本修訂核可後的新 change 生效。
+- **Identity preservation(歸檔時)**:OpenSpec 負責 merge,Bridge 負責 stable-ID preservation。重複 ID(同一 ID 指向不同契約)、RENAMED 前後 ID 不同、未經正式處置(REMOVED 或 Scenario 退休紀錄)卻消失 → BLOCK。需要預演歸檔後狀態時,在暫存複本實跑 `openspec archive`(CLI 無 dry-run),不重寫 merge 邏輯;有 delta spec 的 change 不得以 `--skip-specs` 繞過。此檢查只保證身分沒有無聲消失或被換掉,**不保證同一 ID 下的語意未被改弱**——後者屬 G1a 語意審查(§8#4)。
+- **Scenario**:requirement-scoped stable sub-ID(例 `REQ-12-S1`),供 Verification coverage 指認;載體與 extraction 由 Spike S1 確認(已拍板:標題載體)。
 - **Fail-closed**:缺 ID、重複、dangling → 直接報錯,不默默續跑。不引入 UUID / registry / 資料庫。
 
 ### 3.2 承接層(I2、I7)
 
 - **`tasks.md` 是 authoritative task list(SSOT)**(方向文件 §6#5);ticket 檔是 Worker 工作包、非權威紀錄。
-- Task 承接以 `- Contracts: REQ-12` 標註;**附屬語法必須機械可判**(PoC 架構訊號 1:縮排嚴格深於 checkbox;孤兒標註、同層 sibling 標註不算數——這兩個偽造路徑是 PoC 兩輪 review 實際抓到的)。
+- Task 承接以 `- Contracts: project-state-root / REQ-3` 標註。`Contracts:` 是正式機械 reference,**一律使用 capability-qualified Requirement ID**,沒有「單一 capability 可省略」的例外(2026-09-24 拍板):reference 自身完整、parser 規則只有一套、change 後來擴及多個 capability 不改變既有 reference 的語意、歸檔後單看 Task 也知道指向哪裡。**附屬語法必須機械可判**(PoC 架構訊號 1:縮排嚴格深於 checkbox;孤兒標註、同層 sibling 標註不算數——這兩個偽造路徑是 PoC 兩輪 review 實際抓到的)。
 - **方向性規則**:Requirement→Task 必須全覆蓋(I2);Task→Contract **不強制**——允許無標註 task(鷹架、雜項),不參與 contract join,但仍受 I7 管。反向強制會逼人硬掰對應、製造假 traceability。
 - **檢核維度分層**(C′ 定案):Task 層 join 到 Requirement(工作分配可以到 Requirement);Verification coverage 到 Scenario(驗收 coverage 要到 Scenario)。
 
@@ -107,14 +123,22 @@ TDD 預設 required 就是「TDD 不可丟」硬約束的機械形態:想丟它,
 
 | 欄位 | 說明 |
 |---|---|
-| contract | Requirement ID;**必須能指認到 Scenario**(既然 coverage 到 Scenario,Result 就要說得出自己驗哪個 Scenario;欄位形狀由 Spike S5 定) |
+| id | Result 的 stable id,檔內唯一即可、不建 registry(S5);invalidation 紀錄以它為 target |
+| contract | capability-qualified 的契約標的 reference(例 `project-state-root / REQ-3-S1`;正式機械 reference 一律限定形,見 §3.1、§3.2);**必須能指認到 Scenario**(既然 coverage 到 Scenario,Result 就要說得出自己驗哪個 Scenario;欄位形狀由 Spike S5 定)。指認對象限於契約標的(Requirement / Scenario);matrix row、fixture、test case 是驗證材料,不作正式 target(§2.1) |
 | status | 封閉集 `PASS / FAIL / BLOCKED`(記錄當下的事實) |
 | method | §4.2 封閉集之一 |
-| evidence | 依 method 的結構要求(§4.2) |
-| digest | Harness 機械計算的 tree digest(freshness 依據) |
+| evidence | 依 method 的結構要求(§4.2)。**短證據直接寫入;長證據引用 repo 內已 commit 的永久檔案**——scratchpad、git-ignored ledger、未追蹤檔一律不得作證據落點。Evidence 已有 Task owner(RED/GREEN,§4.3)就引用該 Task,不複製;**無 Task owner 者**(例如既有 regression test)由驗證活動自行產生 Evidence |
+| digest | Harness 機械計算的 tree digest(freshness 依據,digest domain 見 §6) |
 | timestamp | 記錄時間 |
 
+**載體角色**(S5 拍板 A′,2026-09-23 補充):`verification-results.json` 是 change 目錄內 **append-only 的驗收台帳**,保存驗證活動留下、事後無法重算回來的紀錄;不複製已有 owner 的證據。invalidation 紀錄與 Result 同檔(`{ "type": "invalidation", "target": "<result-id>", "reason": "<必填>", "timestamp": "<ISO8601>" }`),缺 `reason` 或 `target` dangling → 格式無效、fail-closed。invalidation 只用於**原紀錄本身錯誤或應撤銷**的情形;正常的 BLOCKED 不以 invalidation 結案(§6)。`verify.md` 是可覆寫的工作報告,**不是證據 owner**。
+
 **staleness / conflict 不存欄位**——是 Gate 時導出的 lifecycle state(§6),存了就會過期、又成雙載體。
+
+### 3.5 Decision 引用(2026-09-23 新增)
+
+- Design Decision 以 `D<n>`(design.md 的 `### D<n>` 標題)為 ID,**change-local**:只在所屬 change 內有效;跨 change 引用寫 `change / D<n>`(例 `loosen-plan / D5`)。change 歸檔後其 Decision 編號不得重排。
+- Decision ID 是 **navigation / design identity,不是 Contract identity**:不參與 I1–I3 的 join 與覆蓋判定,Task 上的 `per D5` 不能取代 `- Contracts: capability / REQ-x`。
 
 ## 4. Contract Verification(契約驗證層)
 
@@ -141,12 +165,16 @@ Harness  → 驗 Result / Evidence 是否滿足 Contract
 | `manual-demonstration` | 操作結果紀錄 |
 | `analysis` | 分析輸出 |
 
-Scenario coverage 責任在本層:Verification 對每條必要 Scenario 給出覆蓋;Gate 只機械核對「每個必要 Scenario 有指認它的 fresh PASS」。**「必要」的 v1 預設:所有被接受的 Scenario 均為必要**——排除任一 Scenario 屬契約變更,走 proposal 接受流程,不留機器或 Agent 的語意裁量。
+**驗證模型**(2026-09-23 拍板):驗收標的 → 方法 → Evidence → Result → Gate。驗收標的是契約標的(§2.1);方法為上表四種之一;Evidence 依 §3.4 的落點規則保存;Result 是一次驗證活動的正式結論;Gate 依 Result 判定。
+
+Scenario coverage 責任在本層:Verification 對每條必要 Scenario 給出覆蓋;**`Scenario → Evidence` 的對應由 Verification Result 建立,不由 Task → Scenario 建立**。Result 由 verify / review 階段產生,**不由 implementer 自我驗收**;無獨立 verifier 時依 G3 降級並留紀錄(§2.2 Verification executor independence、§5)。Gate 只機械核對「每個必要 Scenario 的有效判定為 PASS」(判定規則見 §2.1 I6、§6),以及 coverage、freshness、引用存在與結構——**不判語意充分性**。本文所稱「能重算」一律指**程式可重算**。**「必要」的 v1 預設:所有被接受的 Scenario 均為必要**——排除任一 Scenario 屬契約變更,走 proposal 接受流程,不留機器或 Agent 的語意裁量。
 
 ### 4.3 TDD 證據契約(吸收自原 record)
 
-- **條文**:對 applicable executable-behavior code task,v1 驗證政策要求 `method = automated-test` 且 evidence **必須含 RED 輸出與 GREEN 輸出**——RED(測試先失敗的輸出)證明測試真的會抓,GREEN 證明實作真的過。只有 GREEN 沒有 RED = evidence 結構不合格(I6 的「結構有效」驗的就是這種事)。
-- **範圍**:不是所有 task 一律 TDD。改文件、純資料調整等不 applicable 的 task 不硬造 RED/GREEN;applicability 的機械判準與 N/A 處置由 Spike S4 定。applicable 而不想做 = change-local degradation,走 proposal 留痕(§2.3)。
+- **條文**:對 applicable executable-behavior code task,v1 驗證政策要求 evidence **必須含 RED 輸出與 GREEN 輸出**——RED(測試先失敗的輸出)證明測試真的會抓,GREEN 證明實作真的過。只有 GREEN 沒有 RED = evidence 結構不合格。
+- **載體與 owner(2026-09-23 修訂)**:RED/GREEN 由 **Task** 保存(`tasks.md` 該 task 底下),Task 是它的 owner——RED 是不可事後重算的歷史事實;GREEN 雖可重跑,「當時 GREEN」不等於「現在仍 GREEN」,現況有效性交給 freshness(§6)。Verification Result(`method = automated-test`)需要時**引用**該 Task,不複製一份。結構檢查:對 applicable task 屬 §2.2「TDD Evidence」assurance condition;經 Result 引用時亦屬 I6 的結構要求(§2.1)。
+  - 歷史:9/1 版原設想 RED/GREEN 放在 `automated-test` 的 Result。`loosen-plan`(2026-09-04 歸檔)明確選擇 Task 作為**第一個** carrier,並保留日後搬到正式 Result 存放處的可能(該 change 的 `design.md`:「This is the first carrier, not an architecture invariant … the carrier can move」);2026-09-23 裁定進一步決定 RED/GREEN **長期仍由 Task 擁有**,因此 supersede 了當時「未來可搬」的暫定方向。
+- **範圍**:不是所有 task 一律 TDD。改文件、純資料調整等不 applicable 的 task 不硬造 RED/GREEN。applicability 以顯式標註表達(S4 拍板,`loosen-plan` 起已實作):標註是 **semantic assertion(語意判斷)**,受 artifact review;Gate 只機械驗它**存在與格式有效**。applicable 而不想做 = change-local degradation,走 proposal 留痕(§2.3)。
 - **誠實邊界**(與 digest 同一邏輯):RED/GREEN Evidence 存在且結構合格,**不能證明開發歷史完全真實**(先寫完功能再故意弄壞跑一次,也能製造 RED/GREEN)。Harness 保證證據被要求、被檢查;真偽 assurance 依賴 review 層,並隨其降級而降級(§8#5)。
 - 這是把 TDD 從「步驟要求」翻譯成「證據要求」——「規定證據,不規定步驟」主軸落在 TDD 上的具體形態。TDD 是 v1 verification policy,不是 Bridge Guarantee 本身;修改它 = 修改驗證契約,是看得見的改動。
 
@@ -189,6 +217,8 @@ degradable 的語意不是「可以不做」,而是「可以使用較弱但仍�
 
 **降級表 v1 第一個明名項目——審查獨立性**(方向文件 §6#3 指定):2026-08-27 實測(該次三輪審查中,語意類缺陷自查命中 0%、外部審查命中 100%)作為「review independence 確實可能造成 assurance 差異」的 design evidence——但不得泛化成 self-review 固定 0%、external review 固定 100% 的普遍能力結論。
 
+**降級表 v1 第二個明名項目——驗收者獨立性**(Verification executor independence,2026-09-23 列入 §2.2):無獨立 verifier 時,同一套 verification procedure 由非獨立執行者(含實作者本人)執行,並依上方最小形態留 degradation record;Assurance impact 為「驗收結論的獨立性下降」。與審查獨立性同一降級順序:保留同一套 procedure,只降執行者獨立性。
+
 **配套實作責任**:CLAUDE.md 現行「禁止某 fallback executor」的治理語言(紅旗「❌ 在 apply instruction 加 executing-plans 當 fallback」),由後續 implementation change 改寫為上述 capability / evidence / degradation 語言;本設計不直接修改。
 
 ## 6. Result Lifecycle(結果生命週期)
@@ -201,14 +231,20 @@ degradable 的語意不是「可以不做」,而是「可以使用較弱但仍�
 **Freshness invariant(正式規則)**:
 
 ```text
-result digest == current digest → 可進一步判定為 current
+result digest == current digest → 可進一步判定為 FRESH(再經 CONFLICT 判定)
 result digest != current digest → STALE,不得支撐 Complete,須重驗
 ```
 
-- **STALE ≠ FAIL**:表示 Result 曾經成立,但已不能證明目前 artifact state;舊 Result 保留作歷史紀錄,不刪除。舊 digest 的 FAIL 被新結果接替是 supersession——系統正常運作,不是 conflict。
-- **Invalidation optimization(可選層,不阻塞 v1)**:machine-evaluable 的 Diff rules 可縮小失效範圍(例:diff 只動 docs → code verification 不 stale;code/doc 分面只是第一個實例,不是架構本身),但不得改變 fail-closed 語意、**不得靠 Agent 語意宣告「這個改動無關」**(自宣告依賴範圍已否決——把 freshness 交回 self-claim)。v1 只做 coarse-grained digest。
+(`current digest` 指當下 artifact state 的指紋,不是 lifecycle state;lifecycle 用語一律為 `FRESH / STALE / CONFLICT`。)
 
-**CONFLICT**:同一 digest + 同一 Scenario 出現互斥的 PASS/FAIL → unresolved CONFLICT → Gate BLOCK。不採「最新自動覆蓋」:同一可辨識 artifact state 下互斥,表示目前的 verification claims 無法同時成立——不預判原因(可能是 flaky、造假,也可能是外部服務、fixture、DB、時間等 digest 未涵蓋因素)。**Explicit resolution**:查清楚後將錯誤 Result 有紀錄地標 invalid 附 reason,或 artifact 真正改變後在新 state 重驗。不允許 Gate 挑對 Complete 有利的一筆,也不允許以無意義修改製造新 digest 逃避 CONFLICT。
+- **Digest domain(2026-09-23 拍板)**:v1 的 coarse digest 範圍**由系統固定、不自我指涉**——納入會改變被驗內容的東西(spec、design、tasks、實作、測試等),排除驗證過程自己產生的紀錄(Verification Result / `verification-results.json`、`verify.md`、Gate 紀錄)與 change 外的工作紀錄(如 handoff)。否則 Result 一寫入就讓自己過期。不允許每筆 Result 自報「我只依賴這幾個檔案」——那就是已否決的自宣告依賴範圍。具體算法(git tree、working tree 或其他)屬實作。
+- **操作原則**:候選版本穩定後才產生 Result;coarse digest 下任何被驗內容的改動都會讓全部 Result 變 STALE。
+- **STALE ≠ FAIL**:表示 Result 曾經成立,但已不能證明目前 artifact state;舊 Result 保留作歷史紀錄,不刪除。舊 digest 的 FAIL 被新結果接替是 supersession——系統正常運作,不是 conflict。
+- **Invalidation optimization(可選層,不阻塞 v1)**:machine-evaluable 的 Diff rules 可縮小失效範圍(例:diff 只動 docs → code verification 不 stale;code/doc 分面只是第一個實例,不是架構本身),但不得改變 fail-closed 語意、**不得靠 Agent 語意宣告「這個改動無關」**(自宣告依賴範圍已否決——把 freshness 交回 self-claim)。v1 只做 coarse-grained digest,diff-aware invalidation 不進 v1:兩種錯誤代價不對稱——coarse 只會多做重驗,而漏算依賴會讓已不可信的 Result 仍被判 FRESH,產生假保證;安全做 diff-aware 的難處在於機械得知 Result 依賴什麼,而不是看哪些檔案改了。
+
+**BLOCKED 不是第三種判定**(2026-09-24 拍板):BLOCKED 表示該次 verification 未能完成判定,不等同 PASS 或 FAIL。同一 digest、同一 Scenario 中,只要存在有效的 PASS 或 FAIL,BLOCKED 即不參與該 Scenario 的判定——**與紀錄先後順序無關**(Gate 的正確性不依賴 Agent 自填的時間戳)。只有 BLOCKED、沒有 PASS / FAIL 時,該 Scenario 維持「尚未形成判定」,I6 不成立、Gate BLOCK。BLOCKED + PASS、BLOCKED + FAIL 都不構成 CONFLICT;BLOCKED 紀錄照常保留在台帳、不刪除,也不以 invalidation 結案。
+
+**CONFLICT**:同一 digest + 同一 Scenario 中,PASS 與 FAIL 同時存在且皆為有效(未被 invalidation 標為無效)結果 → unresolved CONFLICT → Gate BLOCK。不採「最新自動覆蓋」:同一可辨識 artifact state 下互斥,表示目前的 verification claims 無法同時成立——不預判原因(可能是 flaky、造假,也可能是外部服務、fixture、DB、時間等 digest 未涵蓋因素)。**Explicit resolution**:查清楚後將錯誤 Result 有紀錄地標 invalid 附 reason,或 artifact 真正改變後在新 state 重驗。不允許 Gate 挑對 Complete 有利的一筆,也不允許以無意義修改製造新 digest 逃避 CONFLICT。
 
 **核心原則**:Result 記錄「當時發生了什麼」;Gate 判斷「這些紀錄現在還能不能拿來證明 Complete」。
 
@@ -216,7 +252,7 @@ result digest != current digest → STALE,不得支撐 Complete,須重驗
 
 ## 7. Acceptance Gate(驗收閘門)
 
-**定位**(護欄 5):機械判定,不是 Agent prompt。Model 產生判斷(review 結論、verification 結果),Harness 判斷「齊不齊、PASS 沒、還 fresh 嗎」。
+**定位**(護欄 5):機械判定,不是 Agent prompt。Model 產生判斷(review 結論、verification 結果),Harness 判斷「齊不齊、PASS 沒、還 FRESH 嗎」。
 
 **綁定點**(方向文件 §6#6):tasks 全 `[x]` → 跑 Gate → **Gate PASS = Change Complete** → 才可 archive。**Orca 與 I7 的分工**:Orca runtime 可提供 Task completion 的早期攔截(工作途中不讓未完成的 task 往下走),但 I7「authoritative tasks 全 `[x]`」仍由 Core Acceptance Gate 最終機械檢查——Orca 不是 hard dependency,不能變成沒有 Orca 就沒人檢查 I7。
 
@@ -224,19 +260,19 @@ result digest != current digest → STALE,不得支撐 Complete,須重驗
 
 ```text
 Gate 執行時:記錄評估當下的 artifact digest + Effective Completion Contract state
-archive 時:檢查「current valid Gate PASS」——同一 state 才有效
+archive 時:檢查存在 FRESH 的 Gate PASS——同一 state 才有效
 state 已變 → Gate PASS stale → 重跑 Gate
 ```
 
-archive 的第二道保險是「**current valid Gate PASS exists**」,不是「PASS record exists」。digest 具體算法屬實作,invariant 在此定下。
+archive 的第二道保險是「**存在 FRESH 的 Gate PASS**」,不是「PASS record exists」。digest 具體算法屬實作,invariant 在此定下。**載體界線**(S5 拍板 A′):change 目錄內的 Gate 紀錄(如 `gate-pass.json`)是**稽核紀錄,不是通行證**——Agent 也寫得出 `"status": "PASS"`,archive 必須機械確認當下條件(呼叫 Gate 或驗當下 state),不能因檔案聲稱 PASS 就放行。
 
-**輸入**:Effective Completion Contract、contract 集(CLI JSON + 交叉核對)、`tasks.md`、Verification Results、降級紀錄、expansion scan 紀錄。
+**輸入**:Effective Completion Contract、contract 集(CLI JSON + 交叉核對)、`tasks.md`、Verification Results、降級紀錄、expansion scan 紀錄、identity preservation 檢查結果(§3.1)。
 
 **判定**:I1–I7 + 生效契約 assurance conditions,逐條導出 YES/NO;全 YES = PASS,否則 BLOCK。**Gate report 逐條列明每個條件的判定與依據**(PoC 報告格式已證可行)——BLOCK 時要能讀出缺哪條、缺什麼;Gate 的價值一半在擋、一半在告訴你差什麼。
 
 **實作歸屬**:Harness 側機械程式(PoC `gate_check.py` 的正式化),借 sd0x 的 durable state / digest 模式(sd0x 在它自己家裡是提醒層;「機械擋下」是在其 state/digest 基礎上新加的行為)。具體宿主與呼叫方式屬實作。
 
-## 8. 「不保證」清單(§1.4 第 3 題指定的窮舉輪)
+## 8. 「不保證」清單(方向文件 §1.4 第 3 題指定的窮舉輪)
 
 這套系統**不保證**:
 
@@ -244,10 +280,12 @@ archive 的第二道保險是「**current valid Gate PASS exists**」,不是「P
 2. **prompt / instruction 文字層的正確性**——CI 與 Gate 都驗不到。
 3. **Agent 產出品質上限**——保證流程性質,不保證聰明程度。
 4. **語意判斷零漏失**——含 G1a 的 silent weakening / incorrect semantic implementation(traceability 完整、Reviewer 判 PASS,實作仍可能把需求做弱而未被看出),與 G1b 的 silent expansion(Reviewer 可能漏抓)。Harness 保證這些檢查被要求、被執行、被記錄與處置;不保證 Reviewer / Verification judgment 永遠正確。無獨立 review 時此項 assurance 進一步降低,依 G3 顯式呈現。
-5. **Evidence 為真、開發歷史真實**——結構有效的 Evidence 不等於 Evidence 為真;machine-captured command output 可提供較強 provenance,但仍不證明完整語意或歷史不可偽造(RED/GREEN 可被事後製造;status/evidence 在 v1 可由 Agent 寫出——PoC 宣稱邊界)。真偽 assurance 依賴 review 層,並隨其降級而降級。
+5. **Evidence 為真、開發歷史真實**——結構有效的 Evidence 不等於 Evidence 為真;machine-captured command output 可提供較強 provenance,但仍不證明完整語意或歷史不可偽造(RED/GREEN 可被事後製造;status/evidence 在 v1 可由 Agent 寫出——PoC 宣稱邊界)。真偽 assurance 依賴 review 層,並隨其降級而降級。**acceptance record 同屬此界線**(§2.3):record 結構有效且存在,不代表使用者本人真的接受過——它在系統層可由 Agent 寫出。
 6. **digest 未涵蓋的外部狀態**——外部服務、runtime environment、fixture、DB state、時間、network 等不在 tree digest 內;digest 相同不代表完整執行環境相同。
 7. **`tasks.md` 之外任何載體與事實同步**——ticket 檔等非權威紀錄。
 8. **change-local degradation 決策本身的明智程度**——系統保證降級被看見、被接受;不評判該不該接受。
+9. **驗證材料的內部覆蓋完整性**(2026-09-23 補)——matrix row、fixture、test case 是驗證材料、不是正式驗收標的(§2.1),「矩陣每一列都有對應測試」這類內部覆蓋不由 Gate 保證。
+10. **capability rename**(2026-09-23 補)——capability 改名時 `capability / REQ-x` 限定引用的延續,目前沒有機制處理(實例 n=0,不建機制);發生時需人工處置。
 
 **窮舉紀律聲明**:此清單經 2026-09-01 設計輪窮舉;但依本 repo 既有教訓(2026-08-31:凍結清單 35 段之外仍被審查抓到第 6 段),**清單不得當窮舉證明**——後續發現的新「不保證」項補進清單即可,不視為設計失效。
 
@@ -283,9 +321,11 @@ Spike 的目標是取得事實,不是直接設計或實作完整方案;選型階
 | S5 | 記錄載體 | Result(含 Scenario 指認欄位)/ 降級紀錄 / CONFLICT 更正 / Gate PASS 紀錄的實際載體 |
 | S6 | Independent Review 的最小 provenance | 如何以 machine-evaluable 方式識別 review execution 與 implementation execution 的獨立性——不建完整 executor identity framework,先問現有 runtime 是否已提供(如 Orca run metadata);沒有再評估最小 adapter 值不值得 |
 
+**執行狀態(2026-09-24 補)**:S1–S6 已於 2026-09-01 執行並由使用者拍板,事實與選型見 [spike 報告](../poc/2026-09-01-capability-spikes/spike-report.md)(拍板總表)。S6 補註:已實測的只是 **review / implementation** 兩類 dispatch 的身分區分;§2.2 新增的 Verification executor independence 所需的 **verify 階段 provenance 載體未實測**(S6 題目範圍比它窄),列為該能力實作前的前置確認,不另開 spike。
+
 ### 9.3 Record 處置與 out of scope
 
-**Record 處置**:「TDD 證據契約」→ absorbed(§4.3);「apply 階段交件證據」→ absorbed(§5)。殘餘實作責任(schema 實作、CLAUDE.md 治理語言改寫、spike 執行)轉後續 change。
+**Record 處置**:「TDD 證據契約」(work-map `task-20260826-tdd-evidence-contract`)→ absorbed(§4.3);「apply 階段交件證據」(work-map `task-20260827-apply-degradation-boundary`)→ absorbed(§5)。殘餘實作責任(schema 實作、CLAUDE.md 治理語言改寫、spike 執行)轉後續 change。S3 的實作會動 `schema.yaml`,該 change 須依 repo CLAUDE.md「跨檔耦合」表連動(bridge README 的 Artifact DAG / Lifecycle、`templates/`、`docs/roadmap.md`、schema major 等)。
 
 **v1 必做 / v-next 的界線(與 I3 對齊)**:Scenario identity + Scenario-level Verification coverage 是 **v1 必做**(I3 依賴它,不可延後);v-next 延後的是**更完整的 Scenario traceability**(如 Task→Scenario 對應、更豐富的 dependency / coverage model)。
 
@@ -304,3 +344,27 @@ Spike 的目標是取得事實,不是直接設計或實作完整方案;選型階
 | 5 | G1b 偵測分工 | Diff 找標靶 → Reviewer 判語意 → Gate 驗完整性;降級沿 required/degradable,不建 waiver 系統 |
 | 6 | 宣告位置 | 兩層宣告 + Effective Completion Contract;放寬 = change-local degradation(理由+接受);Core invariants 不可 override |
 | 7 | 段落修訂 | I7 新增、I1 擴及 Scenario、刪萬用 blocker 句、Independent Review 預設 degradable、TDD 限 applicable、executor independence 降為 candidate、Gate PASS freshness、I7 不依賴 Orca、不保證清單擴 G1a 語意漏失、Spike 治理模型 |
+
+---
+
+## 附錄:2026-09-24 修訂拍板紀錄
+
+裁定來源:2026-09-23 裁定快照(`文檔/handoff/session-handoff-20260923.md` 的 Session 16:40 區塊)與章節修訂對照表 §4(Q1–Q6、A–D)。9/1 原版見 commit `f80fc7b`。
+
+| # | 題目 | 定案 | 落點 |
+|---|---|---|---|
+| 1 | 上位原則 | 先定 Artifact 責任 → 資訊 → 語言/結構 → 出生處與 owner → 最後才決定 ID / reference / 機械檢查;結構化副本仍是副本 | §1 |
+| 2 | Plan 的全域約束 | 取消人工逐字副本;reference 或 source-derived snapshot 由後續 schema change 實測選型;明示下游尚未對齊 | §1 |
+| 3 | 驗收標的 | Requirement / Scenario 是契約標的;I1–I7 是完成保障條件;matrix row / fixture / test case 是驗證材料;Blocking Verification Result 機械定義 | §2.1、§3.4、§8#9 |
+| 4 | 驗收者獨立性 | 列入 §2.2 為 degradable;不宣稱 verify provenance 已可機械判定 | §2.2、§4.2、§5、§9.2 |
+| 5 | Acceptance provenance | 弱保證版:保證有顯式 record,不保證不可偽造 | §2.3、§8#5 |
+| 6 | 身分生命週期 | capability 內唯一、正式機械 reference(`Contracts:`、Result 的 `contract`)一律限定形 `capability / local-ID`、既有紀錄不回改、RENAMED 保 ID、退休不重用、lineage 非 alias、archive 不清理、`REQ-PB` grandfathered、identity preservation 檢查 | §2.1 I1、§3.1、§3.2、§3.4、§3.5、§7 |
+| 7 | Scenario 退休 | 只定責任(Reason、lineage/Migration、隨 archive 保存),格式交實作 change | §3.1 |
+| 8 | 證據落點 | Task 保存 RED/GREEN;`verification-results.json` 為 append-only 驗收台帳;長證據引用已 commit 檔;`verify.md` 非證據 owner | §3.4、§4.3 |
+| 9 | Decision 引用 | change-local `D<n>`,跨 change `change / D<n>`,不是 Contract identity | §3.5 |
+| 10 | Scenario coverage | v1 仍必做;由 Verification Result 建立,不由 Task → Scenario;不由 implementer 自我驗收 | §3 導言、§4.2、§9.3 |
+| 11 | Freshness | coarse digest;digest domain 系統固定、不自我指涉;diff-aware 不進 v1;用語統一為 FRESH | §6、§7 |
+| 12 | 不保證清單 | 補驗證材料內部覆蓋、capability rename;acceptance record 併入第 5 條 | §8 |
+| 13 | 9/1 deferred findings | F1–F9 全收(§2.3 ×2、§2.2 ×2、§2.1、§8 標題、§6/§7 用詞、§9.3 ×2) | 各節 |
+| 14 | BLOCKED 與 I6 判定單位(2026-09-24,Codex 文件審 🟡 後裁定) | BLOCKED 是「沒有形成判定」,不是第三種判定;同一版本、同一 Scenario 一旦存在有效 PASS 或 FAIL,BLOCKED 即不參與判定,與紀錄先後無關;PASS 與 FAIL 皆有效並存才是 CONFLICT;正常 BLOCKED 不走 invalidation。I6 改以「每個必要 Scenario 的有效判定」為單位 | §2.1 I6、§3.4、§6 |
+| 15 | ID 不重用的措辭(同上) | 禁止的是同一 local ID 被重新指派給不同契約;同一契約在 current spec 與已歸檔 change 保留相同 ID 屬合法歷史紀錄 | §2.1 I1、§3.1 |
