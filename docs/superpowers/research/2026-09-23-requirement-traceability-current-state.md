@@ -70,6 +70,8 @@ Core Integrity Invariants 的 I1–I3（正式設計 §2.1）在 `schema.yaml` �
 | 不加 relation type | 正式設計本來就沒有 | 一致 | — | — | 否 | 正式設計 §3 |
 | Proposal → Requirement | proposal 只列 capability 名稱（capability 粒度） | 無 | requirement 粒度的漏列抓不到（§4.1 #8，即 09-21 盤點的資訊項 I5——非正式設計的 invariant I5） | proposal 列出 requirement ID，與 delta 做集合比對 | 否 | `templates/proposal.md`；§4.1 #8 |
 
+> **2026-09-24 註（後續裁定已推翻本表最後一列的「最小補法」）**：2026-09-23 裁定撤回「Proposal → Requirement ID」——Proposal 的責任是 change 立案/意圖/範圍，維持 capability 粒度，不維護 requirement ID 清單（見 `文檔/handoff/session-handoff-20260923.md` 的 Session 16：40 裁定快照）。依據是其後定為上位原則的「先定 Artifact 責任、結構化副本仍是副本」（2026-09-24 核可版正式設計（`docs/superpowers/specs/2026-09-01-bridge-guarantee-formal-design.md`，commit `8002fa0`） §1）。核可版正式設計本身沒有 Proposal 粒度的條文；本列保留作為當時的分析。
+
 ---
 
 ## 3. 反例：交接構想中不成立或與現況衝突之處
@@ -149,8 +151,10 @@ Task 不屬於任何 requirement 的情形合理，正式設計 §3.2 已允許�
 3. 是否正式承認 Decision ID（`D<n>`）為引用載體。
 4. ID 唯一範圍（全 repo / 每 capability）、REMOVED 後可否重用、現有 10 條無 ID 正式 requirement 是否補 ID。
 5. proposal 是否列出 requirement ID（唯一能機械抓到 §4.1 #8 類缺陷的做法）。
+   > **2026-09-24 註**：已裁定——不列（Proposal 維持 capability 粒度），見 §2 表後的註。
 6. 外部討論交接與正式設計 §3 的關係：補充或修訂（本文立場：不取代）。
 7. 若要分段實作，Scenario 層可否延後——需要修訂正式設計 §9.3「v1 必做、不可延後」（§6 第 2 點）。
+   > **2026-09-24 註**：已裁定——Scenario 層 **v1 仍必做**，不延後；Scenario → Evidence 由 Verification Result 建立。見 `文檔/handoff/session-handoff-20260923.md` 的 Session 16：40 裁定快照，以及 2026-09-24 核可版正式設計（`docs/superpowers/specs/2026-09-01-bridge-guarantee-formal-design.md`，commit `8002fa0`） §4.2、§9.3（§9.3「v1 必做」未修改）。§6 第 2 點「延後 Scenario 層」的構想因此不成立。
 
 ---
 
@@ -160,6 +164,7 @@ Task 不屬於任何 requirement 的情形合理，正式設計 §3.2 已允許�
 - **Spec 內文只讀了標題**：本 repo 的 spec 與 Issue #4 的 spec 都只讀 `### Requirement` / `#### Scenario` 標題，未逐段讀內文。
 - **Spec Kit 以 `main` `67ab049`（2026-09-23）為準**；其他版本可能不同。
 - 【推論】OpenSpec RENAMED 後的 requirement 會被移到 Requirements 區段末尾（讀 `specs-apply.js` 的重建迴圈推得，未實跑）。
+  > **2026-09-24 註（此推論已被實測推翻）**：2026-09-23 在 scratchpad 實跑——單一 capability 11 個 RENAMED，`openspec validate --strict` 通過、`openspec archive -y` 成功，**需求順序保留**，並未移到末尾（見 `文檔/handoff/session-handoff-20260923.md` 的 Session 16：40 裁定快照 的「實測」段）。跨多個 capability 的情形未測。
 - 【推論】zod 預設丟棄未知鍵：讀 `artifact-graph/types.js` 使用一般 `safeParse` 推得。S3 spike 已實測「自訂頂層區塊不會導致 validate 失敗」，但「被丟棄」本身未實測。
 - 【推論】`loosen-plan` 偏離正式設計 §4.3 的承載設想：以兩份文件內容比對推得，未查 `loosen-plan` 是否有明文記錄此偏離。
 - **Issue #4 的 18 項判定由 subagent 產出**；本人抽查三項事實：`check_promise_coverage` 存在（`change_delta_integrity.py:664`）、測試模組 56 個 `test_` 函式、列號標記只出現 3 處（L9、M7、M7）。其餘 15 項的來源與分類未逐一覆核。⚠️ 該 subagent 的**摘要**寫「4 可抓 / 5 助找 / 9 無助」，與它自己的逐列表格不符；初稿照抄了摘要，經 fallback 文件審指出後，已改為依表格逐列重數（§4.1）。subagent 自述未讀：spec 全文（只讀標題）、`2026-09-03-loosen-plan-execution.md`、`code-rereview-fallback-3.md`、loosen-plan SDD 報告、handoff 0921 三/五/六欄。
