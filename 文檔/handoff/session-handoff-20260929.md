@@ -284,3 +284,73 @@ Q8 收尾（裁定丙）＋主線下一步排定（A 需求追蹤拆塊、Identi
 1. commit 本 session 成果（若收工時未 commit）。
 2. 開 Identity 實作 change（主線下一步）：先盤點範圍再 `openspec new change`。
 3. 看 issue #19 有無回應。
+
+## Session 18:04
+
+### 一、本 session 主題
+
+開工三步驟後清兩個小尾巴，接著開 Identity 實作 change（`requirement-scenario-identity`）：範圍盤點（含 CLI 實測）→ brainstorm → proposal → design → specs，經 Codex 2 輪＋Fable 代審 3 輪文件審，最終 ✅ Mergeable 並**凍結設計 artifacts**。tasks.md 留到下個 session。
+
+### 二、完成事項
+
+- **小尾巴**：研究文件 `2026-09-09-review-provenance-analysis.md` 兩條延後 nit 已修（:117 完整路徑、:123「紀錄中沒有這項評估」）；上個 session 待刪的審查暫存檔與 `probe.config.toml` 查過已不存在。
+- **Identity change 開立**：`openspec/changes/requirement-scenario-identity/`（schema `superpowers-bridge`）。產出 brainstorm（Q1–Q14 決策鏈）、proposal、design（D1–D10）、specs（新 capability `contract-identity` 8 條 REQ；`plan-contract` / `tdd-claim-accuracy` / `tdd-evidence-contract` / `repo-guidance` 四份補號 delta）。`openspec validate --strict` valid。
+- **CLI 實測**（scratchpad，openspec 1.3.1）：帶 ID 標題在 validate / archive 下正常；本 repo 實際 specs 一次補號（10 req / 37 scenario）後合併結果逐行一致；**CLI 不擋重號**（同 capability 兩個 `REQ-1` 照樣合併）；spec 層 CLI JSON 不吐標題、只給 `requirementCount` 與 scenarios 陣列。
+- **使用者主要裁定**：升 schema major 3（版本號＝相容性邊界、不綁 roadmap）；既有 spec 一次補完、不留 legacy 例外；check 13 為 verify 內 agent 執行的固定判準、不是 executable Gate；本 change 只做「當下就判得出」的身分完整性，退休不重用／歸檔身分消失／scenario 退休格式留到歸檔身分檢查；新號配置分兩層（check 13 只驗「數字且大於目前最大號」，發號須查歷史最大號）；「同一契約」由 OpenSpec 操作角色判定；check 13 以「預演歸檔後」為驗收對象、「歸檔前」為判斷基準；BLOCK 分「違規」與「無法判定」、皆無降級出口（I1 為 Core Invariant）；宣稱邊界 owner 是 `contract-identity` spec，proposal 摘要／design 說理由；proposal 新增 `## Out of Scope`、`## Assurance Boundary` 兩段作 dogfood。
+- **TDD applicability 最終採行為判準（Q14）**：第 13 條相關 task 標 `TDD: applicable`（依 2026-09-07 使用者對 fix-v2 的裁定）；只有「舊 verify 判定與新契約不一致」的 fixture 是 TDD subject，RED 必須在改 schema 前實跑；正向範例只作 conformance evidence。§4.3（artifact 類型判準）與 9/07（可觀察行為判準）的落差不在本 change 解決。
+- **文件審**：Codex r1 ⛔（2 🔴：遷移指南與全域檢查衝突、TDD 理由與 INDETERMINATE 條款衝突）→ r2 ⛔（1 🔴：REQ-5-S1 殘留）→ r3 `codex_fail`（額度用完，log `You've hit your usage limit`）→ `[REVIEWER_FALLBACK] plane=doc_review from=codex to=contract-neutral-reviewer reason=quota | 2026-09-29T09:04:59Z`（Fable）→ Fable 3 輪皆 ✅ Mergeable（第 1 輪 4 🟡、第 2 輪 3 🟡 經使用者裁定現修；第 3 輪 0 🟡）。sentinel 皆以 `validate-family-sentinel.js doc` 驗過（報告為轉錄檔、原文在背景任務通知），`review-state.js note doc_review pass` 已記。
+- work-map：`task-20260929-requirement-scenario-identity` NEXT → DOING。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **下一步＝寫 tasks.md**（design artifacts 已凍結；除非拆 task 時暴露真正的新設計缺口，否則不重開設計）。tasks 須寫入：
+  - **RED 取得必須排在修改 `schema.yaml` 之前**（改了就補不回來）；RED/GREEN 同一 fixture、同一執行方式，唯一變數是第 13 條。「舊 verify 會放行缺 ID fixture」目前仍是推論，由 RED task 實跑確認。
+  - 正向 fixture 不記 RED——**刻意與 fix-v2 的 f12 前例（RED `INDETERMINATE`）不同**，D9 已定，tasks 開頭再提醒一次。
+  - Q13 兩個實作細節寫進驗收條件：`openspec show <change> --json --deltas-only` 只讀 stdout（stderr 會有 `Warning: Ignoring flags not applicable to change: scenarios`）；change JSON 的情境欄位是 `requirement.scenarios`。
+  - **Verification Strategy 試行**（不擴 scope、不改正式契約）：證據分兩條線——regression（RED→GREEN）與 conformance suite（整組正反例＋邊界逐案記 expected / actual）；另記 agent 判錯的型態（規則不清、讀錯狀態、CLI 資料不足、操作對應不清、忽略規則、重跑不一致）。這是實驗性觀察：不修改已凍結的正式設計、不提前實作 executable Gate；完成後以本 change 的實際證據研究「不同 artifact / claim 應採哪種 verification strategy」。**寫 tasks 時待裁**：誰跑 fixture（§4.2「不由 implementer 自我驗收」傾向獨立 subagent）；重跑次數（「2 個獨立執行者各跑 1 次」只是候選，是否為最低成本方案由本次試行驗證，不因外部文章直接定為規則）。
+- [#接力] **歸檔後 follow-up（不能放進 tasks）**：`contract-identity` archive 後 `## Purpose` 會是 CLI 產生的 `TBD`，要補正式說明（loosen-plan 前例）。
+- [#接力] **延後的 Fable ⚪**：design D9 未寫明與 f12 前例的差異（改在 tasks 開頭提醒）；brainstorm Q8 被推翻的祈使句可加刪除線（紀錄性，不修）。
+- [#接力] **Codex 是否補審**：使用者判準＝看 Fable finding 性質；本次都是規格精確度／摘要落差／實證理由，**不需**為此等 Codex。Codex 額度 19:23 恢復。
+- [#接力] 新登記研究題 `task-20260929-verification-strategy-research`（work-map，掛主線下）。**外部研究入口**（使用者 2026-09-29 已查核原文；連結與正式引用待研究時補）：
+  - Anthropic — Demystifying evals for AI agents（eval 拆成 task / trial / grader / trace / outcome；輸出有變異故同一 task 跑多次 trial；從真實失敗案例建 eval suite）
+  - OpenAI — Evaluation best practices（eval-driven development、task-specific eval、持續累積案例、能自動化就自動化）
+  - Cucumber — Behaviour-Driven Development（先以具體例子說清 expected behavior，再變成 executable specification）
+  - OPA — Policy Testing（declarative policy 另建 policy test cases，驗 allow / deny 結果）
+  - （第二級參考：Promptfoo，LLM / agent case suite 與 adversarial cases）
+  這些來源支持「案例集、重複 trial、policy / conformance testing」等做法，但**尚未裁定如何映射到 workflow-harness**——它們是研究輸入，不是規範依據。
+- [#接力] 使用者待刪（AI 無 rm 權限）：scratchpad `C:/Users/user/AppData/Local/Temp/claude/C--Users-user-orca-openspec-schemas/218f9f89-7661-4111-a7ed-820462929ebc/scratchpad/` 下 `rsi-*`、`run-rsi-*`、`idtest*`、`rsi-preview1`、`expected*.json`。
+- [#接力] 未 commit、照舊保留：`backlog-crosscheck-shadow.json`（開工前已修改）、`2026-08-27-brainstorm-產品承諾.md`。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **查「已決」的範圍要含前一個同類 change 的每份 artifact，不只 handoff 與主 spec。** 本次 TDD applicability 在 n/a／applicable 間來回三次，直到寫 tasks 前讀 fix-v2 的 tasks.md 才看到 9/07 使用者裁定；正式設計 §4.3 也是被 Codex 點出衝突後才讀。兩次漏查都是「已寫下、但不在預設查詢範圍」的決定。動作版：動手同類工作前，把上一個同類 change 的 brainstorm／design／tasks 開頭註解列入查已決範圍。attribute：全域 CLAUDE.md「提案前先查已決」＋「宣告不存在前先列舉所有存放處」。
+
+**【當日洞見】**
+
+- `Mergeable` ≠ 所有 finding 都可延後：在 design → tasks 邊界上，會影響 task 推導的 🟡 也現在修；tasks 承接設計、不替設計補洞（例：REQ-6 未寫 CLI 要在暫存複本跑——會成功執行卻比錯對象）。
+- D10 分工（spec＝owner、proposal 摘要、design 理由）第一次實跑就抓到 2 次 proposal 摘要落後 owner，都是審查者抓到、不是作者自查。
+- 審查者互補再得一例：Codex 抓到跨契約的 TDD 衝突；Fable 讀 CLI 原始碼抓到「MODIFIED 對不回 FROM」的規則缺口並更正 `MAX_DELTAS` 推論理由。累計樣本 3，**Hypothesis**：換審查者本身有增益。
+- 外部成熟做法（使用者已查核原文，見三「外部研究入口」）：規則／Skill／policy 用案例集做回歸與符合性驗證，要強制的才升 executable Gate——與本 change 的 regression＋conformance 雙線方向一致；如何映射到 workflow-harness 尚未裁定。
+
+**【學習候選】**
+
+1. **Case**：TDD applicability 來回 Q8 → Q10 → Q11 → Q14，每次推翻都因讀到新的「已寫下的決定」（Codex 引 INDETERMINATE 條款、正式設計 §4.3、9/07 裁定）。
+2. **Candidate Pattern**：做判斷前，前一個同類 change 的所有 artifact 都是查已決的範圍。
+3. **Evidence**：本次 1 例；全域規則已把「已決事項重問」列為高頻摩擦。**Hypothesis**。
+4. **Minimum Sufficient Intervention**：不新增規則——全域「提案前先查已決」已涵蓋，缺的是查詢範圍；先以紀律接力提醒下個 session。
+5. **Promotion**：History only。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（6e6b2fb、開工於 2026-09-29T15:04:31）。收工時經 `/smart-commit --execute`（使用者核可）提交三筆：`fae111c`（研究文件 nit）、`b74354a`（Identity change 設計 artifacts，9 檔）、以及收錄本 handoff 與 work-map 的 handoff commit。
+
+- working tree（本 session 改）：`docs/superpowers/research/2026-09-09-review-provenance-analysis.md`（兩條 nit）、`openspec/changes/requirement-scenario-identity/`（新目錄：`.openspec.yaml`、brainstorm、proposal、design、specs × 5）、`workflow-harness/work-map.jsonl`（Identity → DOING、新增研究題）、本 handoff。
+- 非本 session、照舊未 commit：`backlog-crosscheck-shadow.json`、`2026-08-27-brainstorm-產品承諾.md`。
+
+### 六、下一步建議
+
+1. 讀本區塊與凍結的四份 artifacts，寫 `requirement-scenario-identity` 的 tasks.md（RED 排在改 schema 之前；納入 Verification Strategy 試行；Q13 兩個實作細節入驗收條件）。
+2. 接著寫 plan.md 並進 apply，第一個執行步驟是取得 RED。
+3. 追 issue #19（sd0x adapter Windows alloc）有無回應。
