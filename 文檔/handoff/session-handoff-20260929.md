@@ -110,3 +110,58 @@ Python 失敗 → 寫 ??:?? + 區塊內附註原因。
 1. 重開 session 後接 sd0x 升級步驟 3–6（見三第一條）。
 2. 升級完成後做甲（研究文件短節 → 文件審查 → task-context-pilot DONE）。
 3. 確認 workflow-harness-20 是否已完成 Issue #4 收尾並關閉 Issue。
+
+## Session 09:29
+
+### 一、本 session 主題
+
+sd0x-dev-flow 5.0.0 升級步驟 3–6 全部完成；Codex 審查改以 profile 固定模型；研究文件補 Task Context 觀察期收尾（§6），觀察期結案。
+
+### 二、完成事項
+
+- **sd0x 5.0.0 升級**（commit `a702205` 規則、`b5dd966` 腳本升級、`d5a81af` 新腳本、`9c602c5` CLAUDE.md＋安裝紀錄＋work-map）：規則升 10、刪退場 2（`fix-all-issues.md`、`framework.md`，使用者手刪）、新增 2（`override-contract.md`、`git-workflow-project.md`）；`testing-project.md` 補 5.0.0 範本 `paths:`（使用者選甲）；腳本升 10＋新增 9；`.claude/CLAUDE.md` 補 § Contract Triggers、Rules 清單換 5.0.0 版。全部逐檔 `git hash-object` 與外掛一致。文件審查（Codex gpt-6-sol）r2 ✅ Mergeable。程式審查與 `/precommit` 經使用者選乙不跑（commit 說明記 `[DEVIATION]`；`/precommit` 實跑為 `⚠️ NO CHECKS RUN`、前後 tree 不變）。健檢報的「腳本落後」是在裝腳本前開跑的舊結果，已重核為一致。work-map `task-20260929-sd0x-v5-upgrade` → DONE。
+- **Codex profile**：`review.config.toml`（`model = "gpt-6-sol"`）放 Orca runtime home 與 `~/.codex` 兩處；`auto-loop-project.md ## Codex Profile` = `review`。以指定不存在模型的 probe profile 實證 `-p` 生效（log `model:` 行跟著變）。memory `feedback_codex_exec_not_mcp` 更新。
+- **發現**：sd0x 5.0.0 `codex-exec.js` adapter 在 Windows 上 `alloc` 必失敗（`alloc dir is not 0700`；NTFS chmod 0700 讀回 0666）⇒ 走 adapter 的 Codex 審查在本機第一步即掛；本 session 審查皆直接 `codex exec`。
+- **研究文件 §6**（`docs/superpowers/research/2026-09-09-review-provenance-analysis.md`）：Task Context 4 次 pilot 數據表（Pilot 2 拆 2a fallback／2b Codex）＋原始紀錄行號、⑤ 明寫不判、§5.1 前提在 5.0.0 已變（`codex-prompt-branch.md:20` 有 `${FOCUS}`）。Codex 文件審查 4 輪 ✅ Mergeable（r1–r3 各 ⛔，皆為表格與原始紀錄不符）。work-map `task-20260910-task-context-pilot` → DONE。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] 使用者待刪：`$CODEX_HOME/probe.config.toml`（測試用 profile；AI 的 rm 被擋）。指令：`! rm "$CODEX_HOME/probe.config.toml"`。
+- [#接力] 研究文件審查延後 2 條 nit：`pilot2-fallback-r2.md:1-8` 改完整路徑；「沒有做這項評估」→「紀錄中沒有這項評估」。
+- [#接力] 未 commit、照舊保留：Q8 報告＋`evidence/`＋`recompute-correctness.py`、`backlog-crosscheck-shadow.json`、`2026-08-27-brainstorm-產品承諾.md`。
+- [#接力] 新登記：`task-20260929-sd0x-codex-exec-windows`、`task-20260929-branch-focus-reeval`（見六）。
+- [#接力] 其餘照舊：Q8 是否改 BLOCKED、重派 Q8 ③ doc review、下一個 traceability implementation change。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **把前一 session 的摘要當事實來源。** 0924 補記有三處比原始紀錄寫得滿（兩種審查者混成一句、「4 次都沒帶偏」、「可歸功 0」），補寫研究文件時直接沿用，每一處都是 Codex 抓到後才回源逐格核對；替代句「每次都不同」本身又是絕對句。⇒ 動作版：引用 handoff 摘要的數字或判斷進交付物時，表格每一格都要能指到原始紀錄某一行；指不到寫「紀錄無此項」，不填 0。attribute：全域 CLAUDE.md「證據先於斷言」＋「修正絕對句時寫出的替代句要再過一次例外檢查」。
+
+**【當日洞見】**
+
+- 上游改版會悄悄推翻研究文件的前提（FOCUS 槽）；引用第三方範本時寫明版本，§6 已照做。
+- 外掛新機制要實測才知道能不能用：5.0.0 adapter 在 Windows alloc 必掛，讀文件看不出來。
+- smart-commit 的 `alloc` 預設落 Git Bash `/tmp`，被 hook 擋；用 `TMPDIR=<scratchpad>` 解（0924 已記，本次再現、做法有效）。
+
+**【學習候選】**
+
+1. **Case**：補寫研究文件時沿用 0924 摘要的三處過度宣稱，文件審查因此多跑 3 輪。
+2. **Candidate Pattern**：handoff 摘要是二手來源；寫進交付物前，每個數字與判斷都要能回指原始紀錄。適用：把舊摘要整理成正式文件；不適用：純轉述接力棒給使用者（仍應標來源）。
+3. **Evidence**：本次 3 例＋0924「evidence 欄位出處」猜錯 1 例。因果（摘要壓縮時丟了限定詞）為 **Hypothesis**。
+4. **Minimum Sufficient Intervention**：不新增規則——全域「證據先於斷言」已涵蓋，缺的是執行時點。
+5. **Promotion**：Case Memory。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（dd82db7、開工於 2026-09-29T08:45:37）——列 dd82db7..HEAD：`a702205`、`b5dd966`、`d5a81af`、`9c602c5`（`.claude/rules/**`、`.claude/scripts/**`、`.claude/CLAUDE.md`、`.sd0x/install-state.json`、`workflow-harness/work-map.jsonl`）。
+
+收工 commit 另含：`.claude/rules/auto-loop-project.md`（`## Codex Profile`）、研究文件 §6、`workflow-harness/work-map.jsonl`（task-context-pilot DONE＋兩條新登記）、本 handoff。
+
+非 repo：`~/.codex/review.config.toml`、`%APPDATA%/orca/codex-runtime-home/home/review.config.toml`（＋待刪 `probe.config.toml`）；memory `feedback_codex_exec_not_mcp.md`、`MEMORY.md`；`.claude_review_state.json`（gitignored，被 5.0.0 遷移刪除）。
+
+### 六、下一步建議
+
+1. Q8：決定是否改 BLOCKED、是否重派 ③ doc review 後 commit 報告與 evidence。
+2. `task-20260929-sd0x-codex-exec-windows`：回報上游或在本 repo 記繞道說明（影響之後每次審查怎麼派）。
+3. 下一個 traceability implementation change（使用者決定何時開）；`task-20260929-branch-focus-reeval` 可併入其評估。
