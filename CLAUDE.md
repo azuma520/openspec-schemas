@@ -205,6 +205,34 @@ Compatibility 表的列鍵用的是 **schema major(`v2`)**,不是 bundle 版本 
 - bridge README 的 badge URL 硬寫了 `JiangWay/openspec-schemas`;repo 若改名 / 換 owner,badge 與 issue 連結要一起改。
 - 兩支 workflow 都固定 Node 24 + `actions/checkout@v6` / `setup-node@v6` / `github-script@v9`。
 
+## Codex 審查在 Windows 本機怎麼派(2026-09-29 起)
+
+sd0x-dev-flow 5.0.0 的 adapter(`.claude/scripts/codex-exec.js`,與 plugin 內同檔)在 Windows 上 **`alloc` 必定失敗**:它把暫存目錄 chmod 成 `0700` 後讀回驗證,NTFS 讀回 `0666`,於是回 `[CODEX_EXEC_ERROR] reason=fs` / `alloc dir is not 0700`、exit 1。把 `TEMP` / `TMP` 指到別的目錄一樣失敗(2026-09-29 實測;Windows 上 Node 的 `os.tmpdir()` 讀 `TEMP`/`TMP`,不讀 `TMPDIR`)。
+
+- **後果**:`/codex-review-doc`、`/codex-review-fast` 等走 adapter 的派送,第一步就停。依 plugin 的 `skills/codex-code-review/references/codex-transport.md` § Completion state machine(「An `alloc` or `cleanup` failure is a lifecycle error…」那段),alloc 失敗**不算** `codex_fail`、**不會**自動改派 fallback reviewer——它是顯性失敗,不是靜默換人審。
+- **繞道**:照該審查 skill 的其餘步驟走(prompt 範本與 `codex-invocation.md` 規則、doc review 的連結檢查與 profile / batch 解析、全部 batch 都過才記 pass),把 adapter 的生命週期(`alloc` → `start`/`resume` → `cleanup`)換成直接呼叫——**但 adapter 在這條生命週期裡代做的檢查不會跟著消失,要自己補**(見下一條)。旗標照 adapter `run()` 的組法:profile / sandbox / approval / repo 根目錄四項**放在 `resume` 之前**(`-p` / `-s` / `-C` 放在 `resume` 之後會被拒)。adapter 另加的 `--json`(給它解析事件)與 `--color never`(輸出導向檔案時本來就不上色)可省。
+  **派法:在 Orca 分頁跑**(使用者看得到過程,2026-09-29 實測可行)。把指令寫進 scratchpad 的一支腳本,用 `orca terminal create --worktree active --shell git-bash --title "<標題>" --command "bash '<腳本>'"` 開分頁跑;`orca terminal create` 回報的只是分頁開成功、**不是審查跑完**,要另外等結束碼檔出現(例:背景跑 `until [ -f <結束碼檔> ]; do sleep 5; done`)。輸出同時要給分頁看、又要落 log,所以用 `tee`,**結束碼必須取 `${PIPESTATUS[0]}`**(直接 `$?` 拿到的是 `tee` 的):
+  ```bash
+  # 腳本內容。第一輪(新對話):log 裡的 `session id:` 行即 thread id,留著給下一輪
+  codex exec -p review -s read-only -c approval_policy='"never"' -C <repo 根目錄> -o <報告檔> - < <prompt 檔> 2>&1 | tee <log 檔>
+  echo "${PIPESTATUS[0]}" > <結束碼檔>
+  # 後續輪(同一對話):第一行換成
+  codex exec -p review -s read-only -c approval_policy='"never"' -C <repo 根目錄> resume <thread id> -o <報告檔> - < <prompt 檔> 2>&1 | tee <log 檔>
+  ```
+  不經 Orca、直接在 Bash 工具跑也可以:`codex exec …(同上的旗標與 -o) - < <prompt 檔> > <log 檔> 2>&1`,結束碼就是 `$?`。**`> <log 檔>` 必須寫在 `2>&1` 之前**,反過來 stderr 會跑到終端機、不進 log(`session id:` 行走 stdout 還是 stderr【未實測】,所以兩者都要收)。
+  `-p review` 的內容在 `$CODEX_HOME/review.config.toml`(目前只有 `model`;`.claude/rules/auto-loop-project.md` `## Codex Profile` 只寫 profile 名)。**`CODEX_HOME` 依啟動環境而異**:2026-09-29 實查,本機 Claude Code 的 Bash 環境裡它指向 `%APPDATA%\orca\codex-runtime-home\home`,不是 `~/.codex`,兩處目前各有一份 `review.config.toml`。它**不帶**唯讀與免詢問設定——`-s read-only` 與 `approval_policy` 不可省,否則吃到個人 Codex 設定的權限。每輪換新的報告 / log / 結束碼檔名,同一對話回覆滿 3 次換新對話(auto-loop R-a)。
+- **adapter 代做、繞道後要自己補的檢查**(依 `codex-transport.md` § Completion state machine 與 § Profile):
+  - **開跑前**:`$CODEX_HOME/review.config.toml` 存在(在要跑 codex 的那個 shell 裡查)。不存在就停,修好設定再跑——adapter 對此 fail-closed,因為 `codex exec` 遇到不存在的 profile 會**靜默**照跑(該文件 2026-09-03 以 codex-cli 0.149.0 實測;本機現為 0.156.0,未重測)。
+  - **跑完後**,以下全部成立才算拿到審查結果(`codex_ok`):結束碼檔存在且為 `0`;報告檔是一般檔案且非空(`[ -f <報告檔> ] && [ -s <報告檔> ]`);log 有 `session id:` 行;**續輪時該 id 必須等於你帶進去的 thread id**。成立後依報告的 terminal 行記結論:`node .claude/scripts/review-state.js note <doc_review|code_review> <pass|fail>`。
+  - **補不回來的兩項**(併入下面「保護降級」):報告檔 `0600` 讀回檢查(NTFS 做不到);prompt 完整送達——這裡 prompt 是 shell 從檔案轉向給 codex,不經 adapter 的寫入串流,所以沒有「寫到一半出錯」這一層可查;codex 有沒有讀完,adapter 本來也證明不了。
+- **沒拿到結果時怎麼分**(照 adapter 的三種出口,不可一律當 `codex_fail`):
+  - **開跑前就被擋**(profile 檔不存在、旗標錯——`codex exec` 對旗標錯回結束碼 `2`,2026-09-29 實測):設定錯誤,**沒有派出任何審查者**,修好重跑;不改派 fallback、不記結論。
+  - **結束碼檔還沒出現、或讀不到**:完成狀態不明,**gate 維持開著**;不改派、不記結論。
+  - **codex 已結束,但上面的 `codex_ok` 條件有任一不成立**(例:額度用完時 log 尾端是 `ERROR: You've hit your usage limit`、報告檔不會產生):才是 `codex_fail`——不記 pass / fail,改走該 skill 的 fallback 步驟(doc review 見 plugin `skills/doc-review/SKILL.md` Step 4:`review-dispatch.js`、`[REVIEWER_FALLBACK]` 紀錄、`validate-family-sentinel.js`);沒有可用的 fallback 就讓 gate 維持開著。
+- **保護降級(已知、接受中)**:adapter 的 `0700` 目錄 / `0600` 檔本來就是這個 bug 做不到的保證;繞道的 prompt / 報告 / log 放 session scratchpad,該目錄 ACL 讓 `CodexSandboxUsers` 等其他主體有 Modify 權(2026-09-29 `icacls` 實查)——**報告的機密性與完整性都比 adapter 弱**。本 repo 審查內容是公開 repo 的文件與程式,目前接受;要審含機密的內容時,先改用只授權本人的目錄(Git Bash:`MSYS_NO_PATHCONV=1 icacls <dir> /inheritance:r /grant:r "$USERNAME:(OI)(CI)F"`,2026-09-29 實測後 ACL 只剩本人一筆),並回讀 ACL 確認;Codex 能否把 `-o` 報告寫進這種目錄【未實測】,第一次用要先試一輪。
+- **清理是必做步驟**:scratchpad **不會**隨 session 回收(2026-09-29 實查:`%TEMP%/claude/<專案>/` 下仍留著 8 月以來的舊 session 目錄),adapter 的 `cleanup` 也被繞開了。審查結束(記完結論)後刪掉該次的 prompt / 報告 / log / 結束碼檔與派工腳本。
+- **退場條件**:上游修掉後(追蹤 work-map `task-20260929-sd0x-codex-exec-windows` 與上游 issue [sd0xdev/sd0x-harness#19](https://github.com/sd0xdev/sd0x-harness/issues/19)),**完整走一次** adapter 派送(`alloc` → `start` → 讀到報告 → `cleanup`)成功才刪本節——只驗 `alloc` 不夠,報告檔同樣有 `0600` 讀回檢查。
+
 ## 三個 alfred-openspec 顧慮的應對(內化記憶)
 
 PR #970 review 提出三個顧慮,本 schema 在 v1 已具體應對。Claude 在這個 repo 修任何 schema 行為前都要記住:

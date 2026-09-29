@@ -1,0 +1,85 @@
+{
+  "run": "2026-09-17 Q8 B-experiment, round 1, blinded independent readers, model=sonnet",
+  "cells": {
+    "A1_I1": {
+      "verdict": "BLOCK",
+      "route": "check9 FIELD CARDINALITY (two subject lines)"
+    },
+    "A1_I2": {
+      "verdict": "BLOCK",
+      "route": "check9 missing required subject on RED + check11 pairing"
+    },
+    "A1_I3": {
+      "verdict": "PASS",
+      "route": "TDD n/a valid; ### not collected; {1.1}={1.1}"
+    },
+    "A1_I4": {
+      "verdict": "BLOCK",
+      "route": "check12 no task number -> stage-two set difference"
+    },
+    "A1_I5": {
+      "verdict": "BLOCK",
+      "route": "check12 '1x' no entry key -> stage-two set difference"
+    },
+    "A1_I6": {
+      "verdict": "BLOCK",
+      "route": "fenced example line read AS a task line; check8 zero annotation + check12 key 9 unmatched"
+    },
+    "A2_I1": {
+      "verdict": "BLOCK",
+      "route": "R6 cardinality + check11 stage two"
+    },
+    "A2_I2": {
+      "verdict": "BLOCK",
+      "route": "REQUIRED(RED) missing subject + check11 stage two"
+    },
+    "A2_I3": {
+      "verdict": "PASS",
+      "route": "TDD n/a; ### not collected; TASKNUM=ENTRYKEY"
+    },
+    "A2_I4": {
+      "verdict": "BLOCK",
+      "route": "K1 no TASKNUM -> stage-two set difference"
+    },
+    "A2_I5": {
+      "verdict": "BLOCK",
+      "route": "K2 no ENTRYKEY -> 'plan exists but no key collectable' clause AND set inequality"
+    },
+    "A2_I6": {
+      "verdict": "BLOCK",
+      "route": "fenced line satisfies L3 and K1; check8 + check12 stage two"
+    },
+    "A3_I1": {
+      "verdict": "BLOCK",
+      "route": "F9_dup + F11_unpaired(GREEN_only)"
+    },
+    "A3_I2": {
+      "verdict": "BLOCK",
+      "route": "F9_missing_field + F11_unpaired(GREEN_only)"
+    },
+    "A3_I3": {
+      "verdict": "PASS",
+      "route": "excluded from APPLICABLE; P8 no findings"
+    },
+    "A3_I4": {
+      "verdict": "BLOCK",
+      "route": "F12_no_number"
+    },
+    "A3_I5": {
+      "verdict": "BLOCK",
+      "route": "F12_no_keys"
+    },
+    "A3_I6": {
+      "verdict": "BLOCK",
+      "route": "fenced line satisfies L3, no fence exception; F8 + F12_missing"
+    }
+  },
+  "expected_preregistered": {
+    "I1": "BLOCK",
+    "I2": "BLOCK",
+    "I3": "PASS",
+    "I4": "BLOCK",
+    "I5": "BLOCK",
+    "I6": "POLICY_GAP (correctness not scored; determinacy scored)"
+  }
+}

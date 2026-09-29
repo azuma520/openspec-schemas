@@ -224,3 +224,63 @@ sd0x-dev-flow 5.0.0 升級步驟 3–6 全部完成；Codex 審查改以 profile
 1. 13:06 後 Codex 補審 `CLAUDE.md` 新節 → note pass → commit。
 2. Q8 甲乙丙討論（使用者指定），並決定 Q8 報告 ③ doc review 與 commit 時機。
 3. 看 issue #19 有無回應。
+
+> **10:29 區塊補記（收工 commit `acbe83f` 之後）**：使用者裁定 Codex 審查改在 **Orca 分頁跑 `codex exec`（甲）**——`orca terminal create --shell git-bash --command "<同 CLAUDE.md 那條 codex exec 指令，輸出 tee 進 log>"`，使用者看得到過程、不能中途插話；報告仍 `-o` 落檔、成敗判準不變。否決乙（互動版 `codex`：可插話但無報告檔、成敗判準要重設計）。**尚未實測**。⇒ 接力棒第 1 條（13:06 後 Codex 補審 CLAUDE.md）改用此法派，順便實測；可行則把 CLAUDE.md 該節的派法改成 Orca 分頁、併入同一次補審。本補記未 commit。
+
+## Session 14:52
+
+### 一、本 session 主題
+
+Q8 收尾（裁定丙）＋主線下一步排定（A 需求追蹤拆塊、Identity 先做、B 延到 `Contracts:` 那塊再挑）＋ Q8 報告與 `CLAUDE.md` 繞道節的 Codex 文件審（改在 Orca 分頁跑，首次實測）。
+
+### 二、完成事項
+
+- **Q8 裁定丙（收掉、不做第二輪）**：報告 §9 新增「裁定（2026-09-29）」小節，記 §7 三個發現各自去處；work-map `task-20260915-b-structured-definition-experiment` → DONE（readback_ok）。
+- **主線排序裁定（使用者選方案一）**：A「需求追蹤正式實作」拆成 Identity → Task→Requirement（`Contracts:`）→ 驗收台帳 → Gate/freshness → 歸檔身分檢查。新登記 `task-20260929-requirement-scenario-identity`（NEXT，掛主線下）：只做 §3.1 stable ID 身分層，不加 `Contracts:`、不做 `verification-results.json`。B（作者表面對齊）不單獨開、不整包併入：做到 `Contracts:` 那塊時，把 9/8 matrix 原 finding 凍結成清單，逐項問「不處理的話，新增 `Contracts:` 後 task 附屬行會不會出現兩套不一致的規則」，會才收、不會留在 B。依據：B 的 7 個延後缺口只有 D2 是「照說明寫卻被擋」，其餘 6 條皆為檢查比說明寬（9/8 報告 Deferral safety 表）。
+- **正式設計文件頭狀態句已更新**：改為「2026-09-24 經使用者核可（`8002fa0`）、正文自核可後未改」（`git diff 8002fa0` 確認僅此一行）。
+- **Q8 報告＋`evidence/README.md`＋正式設計文件頭：Codex 文件審 3 輪 ✅ Mergeable**（thread `01a0ebd4`）。開工以為 Codex 沒額度，照規矩先試一次才發現可用——**不是降級審查**。修正：重跑指令改 `python -X utf8 …`（任何 shell 可跑，實跑 12/12）；§9 標題改為已拍板；README 重跑段改正輸出位置（`generators/pairs/`，非 `evidence/pairs/`）；補 `gen_arm0.py` 缺的 `schema_prefix.yaml` 重建指令（位元不變寫法、實測第 516 行為 `CHECKS 8-12`）。同類掃描另抓到 Codex 沒抓到的：`gen_arm0.py`／`gen_materialized.py`／`gen_arms.py` 重跑會**覆寫已凍結的紀錄檔**（arm0／materialized-inputs／arm2／arm3），已列表警告。
+- **`CLAUDE.md`「Codex 審查在 Windows 本機怎麼派」節：Codex 補審 3 輪 ✅ Mergeable**（thread `01a0ebdb`，三輪皆在 Orca 分頁跑）。r1 ⛔ 3 條（adapter 代做的檢查未補、「任一不成立＝codex_fail」過寬、`tee` 吃結束碼）→ 改寫：派法改 Orca 分頁（腳本＋`${PIPESTATUS[0]}` 寫結束碼檔、`orca terminal create` 只代表分頁開成）、補「開跑前查 profile 檔／跑完後查結束碼＋報告為一般非空檔＋`session id` 且續輪須等於帶入 id」、沒結果時分三種（設定錯＝不改派／狀態不明＝gate 開著／已結束不合格＝才是 codex_fail）；另記 `CODEX_HOME` 在本機 Claude Code 的 Bash 裡指向 `%APPDATA%\orca\codex-runtime-home\home`（兩處各一份 `review.config.toml`）、`codex exec` 旗標錯回 exit 2（實測）。r2 ⛔ 1 條（直接 Bash 版重導順序寫反）→ 修 → r3 ✅。上個 session 的降級審查補審義務就此結清。
+- `node .claude/scripts/review-state.js note doc_review pass` 已記（涵蓋上面兩批、兩批最新一輪皆 ✅）。⚠️ 本 handoff 區塊寫於 note 之後，未經審查。
+- 10:29 補記裡的 Orca 分頁指令（`tee` 進 log）已由 `CLAUDE.md` 該節取代；該補記為歷史紀錄、依 append-only 不改。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **程式碼審查這關依使用者決定不跑**：Q8 資料夾 5 支 `.py`（`recompute-correctness.py`＋`evidence/generators/` 4 支）是凍結證據、不得修改，使用者裁定不審。code_review 未記 pass，是刻意的。
+- [#接力] **commit 狀態**：見本區塊五（依收工時使用者決定）。
+- [#接力] Identity 實作：已是主線下一步，下個 session 可開 change（先盤點要動哪些檔、規模多大——本 session 未估）。
+- [#接力] 追 issue #19；照舊：研究文件 2 條 nit、`task-20260929-branch-focus-reeval`。
+- [#接力] 使用者待刪（AI 無 rm 權限）：scratchpad 內本 session 的 `claudemd-*` prompt／報告／log／結束碼檔與 `run-claudemd-*.sh`。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **拿來當決策前提的外部狀態，不管是誰說的，動手前先實際碰一次。** 本 session 開工時雙方都以為 Codex 沒額度，差點直接走降級審查；照規矩先試一次，Codex 可用，省掉一整輪降級審與之後的補審。上個 session 是「說系統會怎樣前先跑一次」，這次延伸到「別人告訴我的前提」。attribute：全域 CLAUDE.md「能碰就碰」。
+
+**【當日洞見】**
+
+- B（作者表面對齊）的 7 個缺口只有 D2 會讓作者照說明寫卻被擋；名字聽起來多嚴重 ≠ 風險多大，要逐格看方向。
+- 修一條 review finding 時順著同類掃，抓到 Codex 沒抓到的（3 支腳本會覆寫凍結紀錄）——「一個缺陷＝一類缺陷」再得一例。
+- 審查者互補再得一例（方向與上個 session 相反）：上個 session 備援 strict-reviewer 抓到 Codex 兩輪沒抓到的兩條 P1；這次 Codex 抓到那個備援審查員放過的 3 條 🔴＋1 條。樣本 2，**Hypothesis**：換審查者本身就有增益，不是誰固定比較強。
+- `review-state` 的 doc plane 不分檔案，第 2 次卡住（上次 10:29 蓋到未審的 Q8；這次 Q8 過了卻要等 `CLAUDE.md` 才能記）。是否進 backlog `[優化建議]` 待使用者決定。
+
+**【學習候選】**
+
+1. **Case**：開工以為 Codex 沒額度，照規矩先試一次才發現可用。
+2. **Candidate Pattern**：外部服務狀態（額度、連線、權限）要當決策前提前，先實際試一次。適用：決定要不要降級、要不要換路；不適用：試一次本身有成本或副作用。
+3. **Evidence**：本 session 1 例，Hypothesis。
+4. **Minimum Sufficient Intervention**：不新增規則——全域「能碰就碰」已涵蓋。
+5. **Promotion**：History only。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（acbe83f、開工於 2026-09-29T11:20:40）——`acbe83f..HEAD` 為空（收工前零 commit）。
+
+- working tree（本 session 改）：`CLAUDE.md`（繞道節改寫）、`docs/superpowers/poc/2026-09-17-q8-structured-definition/results-and-next-step.md`（§9 裁定＋修正）、`…/evidence/README.md`（新檔，重跑段修正）、`docs/superpowers/specs/2026-09-01-bridge-guarantee-formal-design.md`（文件頭一行）、`workflow-harness/work-map.jsonl`（Q8 DONE、Identity 新增）、本 handoff。
+- 非本 session、照舊未 commit：`backlog-crosscheck-shadow.json`、`2026-08-27-brainstorm-產品承諾.md`、`recompute-correctness.py` 與 `evidence/` 其餘檔（09-21 產物）。
+
+### 六、下一步建議
+
+1. commit 本 session 成果（若收工時未 commit）。
+2. 開 Identity 實作 change（主線下一步）：先盤點範圍再 `openspec new change`。
+3. 看 issue #19 有無回應。
