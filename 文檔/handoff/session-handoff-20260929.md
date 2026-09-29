@@ -165,3 +165,62 @@ sd0x-dev-flow 5.0.0 升級步驟 3–6 全部完成；Codex 審查改以 profile
 1. Q8：決定是否改 BLOCKED、是否重派 ③ doc review 後 commit 報告與 evidence。
 2. `task-20260929-sd0x-codex-exec-windows`：回報上游或在本 repo 記繞道說明（影響之後每次審查怎麼派）。
 3. 下一個 traceability implementation change（使用者決定何時開）；`task-20260929-branch-focus-reeval` 可併入其評估。
+
+## Session 10:29
+
+### 一、本 session 主題
+
+開工三步驟後，使用者要求先確認接力棒第 1（Q8）、2（sd0x adapter Windows 失敗）兩件「問題還在不在」再討論解法；確認後裁定第 2 件走 A（本 repo 繞道說明）＋B（回報上游），Q8 甲乙丙改下個 session 討論。
+
+### 二、完成事項
+
+- **Q8 現況確認**（未改任何檔）：報告自 9/21 未動；`inputs-six-cases.md` SHA256 與報告記載一致（`55680e38…`）；重跑 `recompute-correctness.py` 仍得 Correctness 12/12；`schema.yaml` 9/17 起零 commit、`:561` 引文仍在。仍卡三件：9/22 起 ③ doc review 未重派、報告＋`evidence/`＋腳本未 commit、§9 甲乙丙待拍板。
+- **adapter Windows 失敗實測重現**：`node .claude/scripts/codex-exec.js --protocol 1 alloc` → `alloc dir is not 0700`、exit 1；repo 副本與 plugin 5.0.0 逐位元相同；`TEMP`/`TMP` 改指 scratchpad 一樣失敗。依 plugin `codex-transport.md` § Completion state machine，alloc 失敗**不算** `codex_fail`、不改派 fallback（我先前對使用者說「會靜默改派」是錯的，已當場更正）。
+- **A：`CLAUDE.md` 新增「## Codex 審查在 Windows 本機怎麼派(2026-09-29 起)」**（未 commit，見三）：失敗原因、直接 `codex exec` 的第一輪／resume 指令（旗標放 `resume` 前）、成敗判準（exit 0＋報告非空＋`session id:` 三者皆成立，否則 = `codex_fail` 走 fallback）、保護降級（scratchpad ACL 含 `CodexSandboxUsers` Modify，icacls 實查；owner-only 指令 Git Bash 實測可用）、清理必做（scratchpad 不自動回收，8/14 起舊目錄仍在）、退場條件（完整走一次 adapter 派送成功才刪）。
+  - 審查：Codex（gpt-6-sol）r1 ⛔ 5 條、r2 ⛔ 2 條＋1 Nit；r3 撞 Codex 額度（13:06 恢復）→ 使用者同意降級，fallback strict-reviewer r1 ⛔（2 P1＋2 P2＋5 Nit）→ r2 ✅ Mergeable＋1 Nit → 修 Nit 後 r3 ✅ Mergeable。`[REVIEWER_FALLBACK] plane=doc from=codex to=strict-reviewer reason=quota`。`review-state note doc_review pass` 已記——⚠️ 該 digest 同時涵蓋未審的 Q8 報告改動，不代表 Q8 報告已審。
+  - 之後又補一行上游 issue 連結 → doc plane 重新打開，未重審。
+- **B：上游 issue 已發**：https://github.com/sd0xdev/sd0x-harness/issues/19（使用者核可文字、刪去「Happy to test a fix on Windows.」後發出；回讀 OPEN、內容一致）。上游 repo 已由 `sd0x-dev-flow` 改名 `sd0x-harness`。issue 草稿與 CLAUDE.md 同批審過。
+- work-map `task-20260929-sd0x-codex-exec-windows` → **BLOCKED**（等外部：issue #19；runner readback_ok）。doctor 隨即報 `blocked_by_pairing`（BLOCKED 必須帶 `blocked_by`），而 `register update`／`repair` 都沒有設 `blocked_by` 的旗標 → 直接改該行 JSON 加 `"blocked_by": "external"`（只動這一行，`/work-status --json` 回讀 integrity 空、壞筆 0）。這是 writer 的缺口，記一筆：BLOCKED 只能靠手改才合規。record 無欄位可掛 issue 連結，連結在本區塊與 CLAUDE.md。
+- 09:29 接力棒「使用者待刪 `probe.config.toml`」：已查 `$CODEX_HOME` 與 `~/.codex` 兩處皆不存在，已清。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **`CLAUDE.md` 新節未 commit（使用者選甲）**：13:06 後 Codex 補審（降級審查的補審義務＋issue 連結那行的重審），通過後 `node .claude/scripts/review-state.js note doc_review pass` 再 commit。派法照該節本身（直接 `codex exec -p review …`，新 thread）。
+- [#接力] **Q8 甲乙丙**：使用者指定下個 session 討論。Q8 報告的 ③ doc review 仍欠（本 session 的 doc_review pass 不涵蓋它）。
+- [#接力] 追 issue #19 回應；上游修好後依 CLAUDE.md 該節退場條件驗證、刪節、work-map 那條結案。
+- [#接力] 未 commit、照舊保留：Q8 報告＋`evidence/`＋`recompute-correctness.py`、`backlog-crosscheck-shadow.json`、`2026-08-27-brainstorm-產品承諾.md`。
+- [#接力] 使用者待決（未回、目前維持現狀）：全域 CLAUDE.md 寫 Codex 審查走 Orca 終端機分頁（看得到、可插話），實際做法是背景 `codex exec`＋落檔。使用者未明確回覆（「2沒問題」回的是 issue 以其帳號公開發出那點），目前照預設維持背景跑法；全域 CLAUDE.md 那句未改。
+- [#接力] 09:29 其餘照舊：研究文件 2 條 nit、`task-20260929-branch-focus-reeval`、下一個 traceability change。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **說「系統會怎樣」前先跑一次或讀到規則原文那一行。** 本 session 4 次憑推論說系統行為都錯：①「alloc 失敗會被當 Codex 掛掉、靜默改派」——規則原文明寫不算；②「暫存資料夾只給本人」——icacls 實查不是；③「換暫存位置也失敗」——改的是 `TMPDIR`、Windows Node 不讀它，等於沒測；④「暫存檔隨 session 回收」——8 月舊目錄仍在。①②自查抓到，③④審查抓到；推理每次都說得通，錯在沒碰。⇒ 動作版：寫進交付物的每一條系統行為，當場實跑或讀到原文；做不到標【未查證】。attribute：全域 CLAUDE.md「減少不知道自己不知道 ①能碰就碰」＋「寫規格條文前讀每條 early return / 特例分支」。
+
+**【當日洞見】**
+
+- 繞過 adapter 直接呼叫時，要接手的不只指令，還有 adapter 默默代做的判斷：成敗判準、失敗分流、清理、檔案權限。繞道說明第一版只換了指令，後四項都漏。
+- 降級審查（fallback strict-reviewer）抓到 Codex 兩輪沒抓到的兩條 P1（resume 旗標位置、直接呼叫時無人判 `codex_fail`）。樣本 1，**Hypothesis**。
+- `review-state note` 綁整個 doc plane digest、不分檔：本次 pass 同時蓋到未審的 Q8 報告。看到「doc_review pass」不能讀成「每份文件都審過」。
+
+**【學習候選】**
+
+1. **Case**：本 session 4 次憑推論宣稱系統行為皆錯（見紀律接力）。
+2. **Candidate Pattern**：寫進交付物的系統行為宣稱，當場實跑或讀原文。適用：說明文件、issue、規格；不適用：明標為推測的段落（如 issue 的「Probably affected」節）。
+3. **Evidence**：本 session 4 例。
+4. **Minimum Sufficient Intervention**：不新增規則——全域「能碰就碰」已涵蓋，缺的是執行時點。
+5. **Promotion**：History only。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（23e893a、開工於 2026-09-29T09:46:38）——`23e893a..HEAD` 為空（本 session 收工前零 commit）。
+
+- working tree：`CLAUDE.md`（新節，**本次不 commit**）、`workflow-harness/work-map.jsonl`（codex-exec-windows → BLOCKED）、本 handoff 檔。
+- 非 repo：GitHub `sd0xdev/sd0x-harness#19`（新建）；scratchpad 的審查 prompt／報告／log 與 issue 草稿。
+
+### 六、下一步建議
+
+1. 13:06 後 Codex 補審 `CLAUDE.md` 新節 → note pass → commit。
+2. Q8 甲乙丙討論（使用者指定），並決定 Q8 報告 ③ doc review 與 commit 時機。
+3. 看 issue #19 有無回應。
