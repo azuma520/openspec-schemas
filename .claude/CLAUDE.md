@@ -39,21 +39,40 @@ The terminal completion invariant, tiers, sub-threshold handling, and sentinels 
 **What is yours to decide**: the effective tier (escalate above the configured baseline when the change warrants it -- never below), when to batch and when to review, how deep to review, and when 80 is a passing grade rather than another round. **What is not**: the four Anchor corollaries -- Declaring != Executing, Summary != Completion, Fixing != Verifying, and an edit re-opening its own plane's gate. Naming a gate is not running it, and no context or session pressure outranks an open one. Sub-threshold findings are **logged and passed**, not weighed: @rules/auto-loop.md § Sub-Threshold Findings allows exactly two on-the-spot fixes (a one-line fix in a file already open, and a finding whose severity was mis-assigned to something that is really a security or data-integrity defect) -- anything else is a `[DEVIATION]`, not a judgment call.
 
 
+## Contract Triggers
+
+Detailed contracts load on demand. Their `skills/…` paths, here and in `.claude/rules/`, are relative to the sd0x-dev-flow plugin root, which the session-start hook prints as `Plugin root:` (no such line: it is the directory holding `skills/push-ci/SKILL.md` under `~/.claude/plugins/`). When the situation arises, Read the contract first; if that Read fails, stop the governed action and say so.
+
+| Situation | Read first |
+|-----------|-----------|
+| First or rotated Codex review dispatch | `skills/codex-code-review/references/codex-invocation-contract.md` |
+| A review report arrives, or a verdict blocks | `skills/codex-code-review/references/review-common.md` |
+| A finding or edit outside the frozen baseline; uncertain scope | `skills/codex-code-review/references/scope-contract.md` |
+| Repeated failed rounds; no progress | `skills/codex-code-review/references/loop-diagnostics.md` |
+| Intent to commit, push or otherwise mutate git | `skills/push-ci/references/authorization-contract.md` |
+| Test or AC-evidence work | `skills/test-review/references/testing-contract.md` |
+| Splitting a feature doc; a line-budget or comment-block exemption; changing the comment-block checker | `skills/doc-review/references/documentation-contract.md` |
+| Interpreting, auditing or editing a `*-project.md` override | `.claude/rules/override-contract.md` |
+
+New policy lands in an on-demand contract by default. It becomes resident only when it is needed before the task type is knowable, or when its failure mode — irreversible, security, attribution, secrets, gate supremacy — cannot wait for a Read; a resident addition over budget must displace or compress something.
+
 ## Rules
+
+A `(path-scoped)` rule loads when a matching file is read and is never `@`-imported.
 
 - @rules/discretion.md -- **Read this first**: Anchor / Default / Guidance, the Anchor Register, and how to deviate
 - @rules/auto-loop.md -- Auto review loop (highest priority)
 - @rules/auto-loop-project.md -- Project-specific auto-loop overrides (user-owned)
 - @rules/codex-invocation.md -- Codex must independently research (critical)
-- @rules/fix-all-issues.md -- Zero tolerance for blocking findings; sub-threshold ones are logged, not fixed
 - @rules/scope-discipline.md -- Scope axis orthogonal to severity; out-of-scope pre-existing defects get a recorded exit, not a repo-wide sweep
-- @rules/testing.md -- Test pyramid, conventions, evidence model, adequacy gate
-- @rules/testing-project.md -- Project-specific testing overrides (user-owned)
-- @rules/framework.md
+- `rules/testing.md` (path-scoped) -- Test pyramid, conventions, evidence model, adequacy gate
+- `rules/testing-project.md` (path-scoped) -- Project-specific testing overrides (user-owned)
 - @rules/security.md
-- @rules/docs-writing.md
-- @rules/docs-numbering.md
+- `rules/docs-writing.md` (path-scoped)
+- `rules/docs-numbering.md` (path-scoped)
 - @rules/git-workflow.md
+- @rules/git-workflow-project.md -- Project-specific git overrides (user-owned)
+- `rules/override-contract.md` (path-scoped) -- Resolution order and heading tables for the three user-owned override files
 - @rules/logging.md
 - @rules/self-improvement.md -- Corrected → record → prevent recurrence
 - @rules/context-management.md -- Data-driven context monitoring (measure before deciding)

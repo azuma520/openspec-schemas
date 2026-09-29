@@ -1,50 +1,55 @@
 {
   "schema_version": 1,
   "installed_at": "2026-08-27T00:00:00Z",
-  "updated_at": "2026-08-27T00:00:00Z",
-  "plugin_version": "4.3.1",
+  "updated_at": "2026-09-29T00:00:00Z",
+  "plugin_version": "5.0.0",
   "rules": {
     "auto-loop.md": {
-      "hash": "92769a91f64e4e1f89a584c6879c146460ce97cb"
+      "hash": "d9420bab895c3c7ede7e999e4bb2d3b2a748c6a6"
     },
     "codex-invocation.md": {
-      "hash": "70d8a47b0ee832bd90ee377c90f8f75cca1d0852"
+      "hash": "07c7d3157fdb15d2d12c8c7a2ad3f956b4259cf1"
     },
     "context-management.md": {
-      "hash": "fc8114710451673d6d1c8c9acc385b2386e7b3e7"
+      "hash": "bbeaff4e3fd7976653adb53cf87c772de8be1900"
     },
     "discretion.md": {
-      "hash": "2d7ad9e13af4dd522a7e817a41eb3d4e4faa10d7"
+      "hash": "5ff0296df84cf758b72a95d1745d1451002890fd"
     },
     "docs-numbering.md": {
-      "hash": "50951bd246665b7ba014e079e0bde5edc9d73249"
+      "hash": "3757eb9eb036235083b94702a03e56836b2b71ee"
     },
     "docs-writing.md": {
-      "hash": "90a5292684b1c7c771d9e7e6d675f4b60ff38a5a"
+      "hash": "547fd3317bbe3b8c2688d604717dcfd07bcb1a7c"
     },
     "fix-all-issues.md": {
-      "hash": "c4cb75a5a13071370ba087075297c7c59d78699f"
+      "hash": "c4cb75a5a13071370ba087075297c7c59d78699f",
+      "deleted": true
     },
     "framework.md": {
-      "hash": "88190401bef7fe4fddb2405cb52db19014a6c8a7"
+      "hash": "88190401bef7fe4fddb2405cb52db19014a6c8a7",
+      "deleted": true
     },
     "git-workflow.md": {
-      "hash": "390373930fbe28504693f428bf5ec27a8a9cec35"
+      "hash": "e9e15308a64de31bf1a860a067b48c34a70bbfb7"
     },
     "logging.md": {
       "hash": "730ef9d70812f965cd99a50b15272b2badb4f9ef"
     },
     "scope-discipline.md": {
-      "hash": "aff90861bd6155551f3aed2778c7ba0476ada1d9"
+      "hash": "74802ad8f598b22be58b5c3986fe8f06178c46b0"
     },
     "security.md": {
       "hash": "7f527a07c7e478ebef0e919ae1c320b926a3b990"
     },
     "self-improvement.md": {
-      "hash": "cfa8ec6774bc9313f684162196e23a646756d0a2"
+      "hash": "7b6dab22ce5e49a60afb14c76c3f2cc70c999268"
     },
     "testing.md": {
-      "hash": "f41056e892bf7d9449a412d68e2770a5f257ce8f"
+      "hash": "bd22bd67ea61bcde4783f06f0d5fc1fe74273ebd"
+    },
+    "override-contract.md": {
+      "hash": "1867c888cef61f0b738689e851cc8ea27e550b96"
     }
   },
   "scripts": {
@@ -70,7 +75,7 @@
       "hash": "842f830b671f02471a355ff71a895db79ea46ef5"
     },
     "generate-readme-catalog.js": {
-      "hash": "465f1c5918183f33cde47f7de93f30af4d466049"
+      "hash": "991f37ac1f40c91c63df977144b12c3053855450"
     },
     "migrate-hook-lightweighting.js": {
       "hash": "a011e15ca16fa081a5f69399fbb003e968c55d07"
@@ -79,13 +84,13 @@
       "hash": "e9f694b20c21613318edd324d1aa3eecb178c9fa"
     },
     "namespace-hint.sh": {
-      "hash": "b451a8b5acbf8e482668d4a87db88bfb01a60cba"
+      "hash": "b4f3cf3f94225f9964e537fcc33c9f516651f480"
     },
     "pre-push-gate.sh": {
-      "hash": "c405c9a3d79be1a63ff50b9af66db942028493eb"
+      "hash": "a6bc4169a33a0b90dfbfb995bd475453c705ae7a"
     },
     "precommit-runner.js": {
-      "hash": "5eb4c6f938d6eb5bf2b1bb94ed3b8e622bff3720"
+      "hash": "915675d43011b5742390b3a684f881c818960397"
     },
     "resolve-feature-cli.js": {
       "hash": "22b43fcdf6872dc0b9850c2945be7f36ef86da8b"
@@ -100,19 +105,19 @@
       "hash": "d515eebc7e278fa0567a7261bcddfe5fa3f54c26"
     },
     "review-state.js": {
-      "hash": "111e3a239964e1adf7a88922bba2f8e7043b4e76"
+      "hash": "57f986fb146877f6d750db39f4900cbc9a25cdcb"
     },
     "run-skill.sh": {
       "hash": "084af6aef9ae2f4dfae3c0280fc9626a34bf91a1"
     },
     "security-redact.js": {
-      "hash": "3e48ae2c52485447c7a2b1f0c2cd2ed444c1e4b6"
+      "hash": "63a809be3d8d2e7b10964a146be0684cb429508b"
     },
     "validate-family-sentinel.js": {
       "hash": "f062535de7fee3c6e359a32a48674619fc26c835"
     },
     "verify-runner.js": {
-      "hash": "d545376fe82338882f8e595d9a382a02fa027b43"
+      "hash": "c930ba86b992420f91e0353abd0f784da9dac17d"
     },
     "lib/context-shape.js": {
       "hash": "e84271a32613c247e78b50b72d942135198df9be"
@@ -121,7 +126,7 @@
       "hash": "37203ea8a9631e535409c4f51325c86c77bda7f2"
     },
     "lib/doc-metadata.js": {
-      "hash": "8ed941499fc6bd493aa755715643c8809754f142"
+      "hash": "8f0b0898992ec80ed2dbed01455204b0fa2d4c12"
     },
     "lib/fc-aggregator.js": {
       "hash": "b17c66070c776a5fda1e2f2ffa50b9ab69d0a57d"
@@ -145,10 +150,10 @@
       "hash": "19da230a363996694b97d32dfd4a46c1c3cecf31"
     },
     "lib/utils.js": {
-      "hash": "cdcc9e0c53fe2cac021aece9e6d7c0baf25b7e8b"
+      "hash": "0d75ed9196a280c7b68cc48cbe63332f31c305ce"
     },
     "config/doc-taxonomy.json": {
-      "hash": "5c0e51c176bbe9b36d42a30afc92765758d68c98"
+      "hash": "1e7116a1a87e95941052ef1bd1a4cb2ea8df2a11"
     },
     "config/file-classification.json": {
       "hash": "011b7fa00e216849d73c97395acbae22390523de"
@@ -158,6 +163,33 @@
     },
     "config/sensitive-paths.json": {
       "hash": "6b1f897b03c435681537fc389f5b4be49d05b563"
+    },
+    "codex-exec.js": {
+      "hash": "be35d3e5003c35d8bde9ac7a0421ae71d207169b"
+    },
+    "instruction-budget.js": {
+      "hash": "f71c73261408ba33720bed8dd8892bcfa62c2b0f"
+    },
+    "protected-branches.sh": {
+      "hash": "9672ee9336b78acb2fd81422182fe211c40d6368"
+    },
+    "lib/fc-parsers/check-coverage.js": {
+      "hash": "f5116c193a05b0b302a7959038c08fb7500d1684"
+    },
+    "lib/fc-parsers/codex-security.js": {
+      "hash": "c88657089dd5ac0af01bb4a594345fdaa6b3ba69"
+    },
+    "lib/fc-parsers/feature-verify.js": {
+      "hash": "81813ff7565911927ec2de38887f8fde741ca380"
+    },
+    "lib/fc-parsers/risk-assess.js": {
+      "hash": "79e532a0ce8d258dd03d0b9c2b88aa366ad9b6f5"
+    },
+    "lib/fc-parsers/test-health.js": {
+      "hash": "01f32dbfd9488de8279939216e814dfb68610e25"
+    },
+    "lib/fc-parsers/test-review.js": {
+      "hash": "75c9a3ad3454e9165ca8fa18cc030d090027dbc6"
     }
   }
 }
