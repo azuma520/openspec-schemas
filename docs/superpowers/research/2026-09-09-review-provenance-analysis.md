@@ -114,13 +114,13 @@ A 已明文 / B 原則有但不具體 / C 沒有 / D 現有規則會限制。
 | Pilot | 審查對象 | 可歸功 Task Context 的 finding(有評估紀錄者) | Context mismatch(審查者報告的項數) | 密封清單(已知缺陷、不給審查者看) | 原始紀錄 |
 |---|---|---|---|---|---|
 | 1 | 本文件 doc review(r8–r10) | 0(已評估:審查者自己追原始紀錄,範本本來就要求獨立研究) | 0 | 無(「記 miss」是 0910 下午才加的裁定) | `文檔/handoff/session-handoff-20260910.md:139`、`:167`、`:171` |
-| 2a | fix-v2 branch review(fallback Opus r1–r2) | 1(已評估:r1 唯一 P2 扣著 Downstream use 格,worktree 拆掉後證據消失) | r1 0、r2 2(凍結基準漏列 `.gitattributes` 與一個未追蹤目錄;當時 handoff 判為「歸類做法正確」而記 0) | 無正式密封清單(r1 漏 1177 殘留,記為 miss) | `文檔/handoff/session-handoff-20260910.md:168`、`文檔/handoff/attachments/20260910-pilot2/pilot2-fallback-r1.md`、`pilot2-fallback-r2.md:1-8` |
+| 2a | fix-v2 branch review(fallback Opus r1–r2) | 1(已評估:r1 唯一 P2 扣著 Downstream use 格,worktree 拆掉後證據消失) | r1 0、r2 2(凍結基準漏列 `.gitattributes` 與一個未追蹤目錄;當時 handoff 判為「歸類做法正確」而記 0) | 無正式密封清單(r1 漏 1177 殘留,記為 miss) | `文檔/handoff/session-handoff-20260910.md:168`、`文檔/handoff/attachments/20260910-pilot2/pilot2-fallback-r1.md`、`文檔/handoff/attachments/20260910-pilot2/pilot2-fallback-r2.md:1-8` |
 | 2b | fix-v2 branch review(Codex r1) | 紀錄無此項(七項紀錄不含歸功判斷;`session-handoff-20260910.md:168` 寫於 Codex r1 派工前,不適用) | 3(2 項基準清單漏列,與 2a r2 同類;1 項 R1 範圍超出五個修正;作者判為皆屬作者側事實錯) | 5/5 漏抓 | `文檔/handoff/attachments/20260910-pilot2/pilot2-codex-r1-record.md:14`、`:15` |
 | 3 | 2026-09-10 契約漂移考古文件 doc review | 紀錄無此項 | 1(作者側「全部 62 條」誇大;審查者直接反駁) | 2 命中、1 部分命中、1 漏抓、1 未提及 | `文檔/handoff/attachments/20260910-pilot2/pilot3-research-doc-review-r1.md:1-7` |
 | 4 | fix-v2 branch review(換新對話的第一次派工) | 紀錄無此項 | 0 | 5/5 漏抓 | `文檔/handoff/attachments/20260910-pilot2/pilot2-codex-r1-record.md:24` 起 |
 
 - **有結論、已落地**:改規則後要搜被取代的**舊說法**(A1,3 樣本,已回灌 `review-fix-propagation` skill);有明文紀錄的 3 次(2b、3、4:`pilot2-codex-r1-record.md:15`、`:37`,`pilot3-research-doc-review-r1.md:7`)都沒看到 Task Context 帶偏審查者;Pilot 1 與 2a 的紀錄裡找不到這一項(查過 `session-handoff-20260910.md` 與 `attachments/20260910-pilot2/` 全部檔案)。
-- **只有數字、不下判斷**:有評估紀錄的兩次(1、2a)共 1 筆可歸功 Task Context,其餘三次(2b、3、4)沒有做這項評估,不能當成 0;密封清單在兩次 Codex branch review(2b、4)都 5/5 漏抓,但同一批審查也抓到大量作者不知道的問題(Pilot 2 的 Codex r1 一次 9 條,作者逐條查證屬實)。
+- **只有數字、不下判斷**:有評估紀錄的兩次(1、2a)共 1 筆可歸功 Task Context,其餘三次(2b、3、4)紀錄中沒有這項評估,不能當成 0;密封清單在兩次 Codex branch review(2b、4)都 5/5 漏抓,但同一批審查也抓到大量作者不知道的問題(Pilot 2 的 Codex r1 一次 9 條,作者逐條查證屬實)。
 - **Hypothesis**:Pilot 2b 與 4 各自漏抓的同一組 5 條裡有 3 條是 Nit 或缺 fixture 類小毛病(另 2 條:縮排深度不對稱,0909 Codex 評 Important;f8–f13 未盲跑,未評級),可能是審查者把力氣放在大問題,不是盲點。樣本太小,未驗證。
 - **不判**:0910 約定「由使用者判 Pilot 1/2 第一輪 findings 與 miss 是否服務實際風險」——使用者至 2026-09-29 未作此判斷,依當日開工時說明的預設「明寫不判」處理,觀察期以本節收尾;日後要判仍可依本節表格的原始紀錄回查。
 - **5.1 的前提已變**:5.1 說 branch 模板沒有 `FOCUS` 槽,那是 sd0x-dev-flow 4.3.1 的狀態;2026-09-29 本 repo 升到 5.0.0 後,`codex-prompt-branch.md:20` 已有 `${FOCUS}`。5.1 的 A/B 題因此需要重新評估,本節不改寫 5.1 原文(它記的是當時的事實)。
