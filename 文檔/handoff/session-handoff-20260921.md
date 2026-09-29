@@ -304,3 +304,331 @@
    §9 的三條路（甲改量測／乙找新案例／丙收掉）待使用者拍板。
    ⚠️ 相對初版，**甲的成本已上修**——D1–D4 使任何後續表示形式比較都必須先修 Arm
    並重跑，不能沿用本輪材料。
+
+
+---
+
+## Session 18:33
+
+### 一、本 session 主題
+
+補齊 09-21 早場接力棒第 1 條指名的**三輪外部審**，並收完其中兩輪回報的 blocking
+findings。三輪為：① workflow-harness `fix-worktree-canonical-root` 程式面重審
+② 同 change 文件面（條件降級的補審義務）③ openspec-schemas 的 Q8 報告 doc review。
+
+**①③ 取得結果、皆為 Blocked；② 未取得**（Codex 額度當日第二次耗盡，22:13 恢復）。
+使用者裁定：先修完 ①③ 已確認的問題，22:13 後再對①②③的**最終狀態**重審——
+不浪費第②輪去審一份馬上會過期的狀態。
+
+本 session **未記任何 pass、未 commit**。
+
+### 二、完成事項
+
+- **三輪審查派工**（tier 一律 `thorough`，依 Anchor Register #3 資料完整性升級）：
+  - ① 程式面：範圍取**整條 branch**（commit `0b5cdb6` ＋ 未 commit 的修正，21 檔 +2756），
+    不只取未 commit 的 delta——契約本身被改了。額外要求 **Test Strength Audit**
+    必交付欄位。→ **⛔ Blocked**，1×P0、2×P1、3×P2。
+  - ③ Q8 文件面：8 檔一 batch、86KB、未超預算；link check `failures: []` / `unresolved: 0`；
+    profile 全數 `full-design`。額外要求 **Verification Log** 必交付欄位。
+    → **⛔ Needs revision**，7 條 blocking。
+  - ② 文件面：11 檔 / 128KB 備料完成（link check 亦乾淨），派工時 **Codex 額度耗盡失敗**。
+  - 三輪 prompt 皆依 `codex-invocation.md`：只給 metadata、強制自行讀／跑／查，
+    未餵 diff、未餵結論。
+
+- **①的 6 條 finding 我逐條讀碼核實，全部成立**。其中兩條的性質比報告寫的更重：
+  - **P0**：`project_state_root.py` 把「缺 `commondir`」當成 main tree 的正面證據，
+    但 `<gitdir>` 坐在 `worktrees/` 底下時那是**損壞**；且 `Path.is_file()` 會把
+    `PermissionError` 吞成 `False`，所以不只「被刪」一種觸發。
+    ⚠️ 而 `test_hand_built_pointer_without_commondir_returns_itself` **把這個不安全
+    結果寫成測試固定下來**，docstring 還明寫它在 pin resolver 的決定。
+  - **P1（`artifact_paths.py` 漏接 `RuntimeError`）是同一天稍早 P2-1 的同類漏網**——
+    當時只補了 `project_state_root.py` 三處就收手。
+
+- **決定一（證據保存，選甲）落地**：`docs/superpowers/poc/2026-09-17-q8-structured-definition/evidence/`
+  29 檔 400KB——24 份派工材料、4 支產生器、`results.json`、README。
+  - 起因：Codex 判「證據鏈不存在、無法獨立稽核」。**依 repo 現況那個判定是對的**；
+    追查後發現材料還活在會被回收的 session scratchpad。
+  - 內容掃過：無金鑰／token／email。三支產生器有硬寫絕對路徑，**刻意不改**——
+    改產生器就是改證據。
+  - ⚠️ **mtime 揭穿一件事**：`pairs/A1_*`、`A2_*`、`A3_*` 那 18 份的 mtime 是
+    **09-21 08:45 而非 09-17**——當天跑 `gen_materialized.py` 時它 exec 了
+    `gen_pairs.py`、**把原始派工檔覆寫了**。那 18 份是重新產生的，**09-17 原件無副本**。
+    A0 的 6 份則是同期（A0 本就 09-21 才跑）。README 為此立了逐檔「證明力分級」表。
+  - 用救回的檔案把 Codex 標「could not check」的 byte-identity 宣稱**驗成 holds**：
+    六組材料逐位元出現在 `A1_I*.md`，0 例外。
+
+- **決定二（Q8 報告）落地，7 條 blocking 全收**：
+  - **Correctness 分母 15 → 12**，機械算出、非挑選。判準從凍結檔本文字串抽取
+    （I1「只答 BLOCK 不算判對」、I4「兩段式必答點」、I6 事前登記排除），
+    再逐格檢查 `results.json` 的 route 能否承載各自要求：I4 三格皆逐字記下正確讀法
+    → 可評；I1 要的是恰兩條 finding ＋ 兩條刻意不報，一句 `BASIS` 撐不起、且
+    `A1_I1` 實際只記一條 → 不可評。寫成可重跑腳本 `recompute-correctness.py`。
+    ⚠️ **報告中明寫 I4 留在可評集是一個解讀**、若採嚴格讀法分母為 9（數值同 100%）。
+  - 從派工檔挖到機械事實：指令只要求 `VERDICT:` 一行 ＋ `BASIS:` 一句，
+    **從頭到尾沒要求列 finding**——finding set **不是事後遺失、是派工設計上就沒收**。
+  - **D6（第五個 decision-affecting 偏離）**：A1 數前導**空白格數**
+    （`arm1-prose-baseline.md:20-21` 逐字 `its number of leading spaces`），
+    A2/A3 數前導**空白字元數**（`arm2/arm3:13` 的 `L1`）。已機械驗六組材料
+    前導 tab 命中 **0**、未被觸發。編號跳過 D5（D5 已用於不影響判定的表述差異）。
+  - I3 的 task number 由「無 task line」更正為 `1.1`（結論不變、**寫出來的證據是錯的**）。
+  - §1「六個輸入皆取自已修好的 finding」與 I6「從未被規定」矛盾 → 射程收窄為 I1–I5。
+  - 新增 **§6.1 experiment specification defect**：S1 = I2 的 provenance 不實
+    （f7 原檔 20 行，刪 RED `subject:` 應剩 19，凍結檔只有 8——標題／空行／第二筆任務
+    也被刪）；S2 = I1 凍結要求與事前登記 metric 互相矛盾。**凍結檔未修改。**
+  - 事前登記時序**降級為未經佐證的作者宣稱**；SHA256 能證明與不能證明的分別寫清楚。
+  - §8 已知限制新增三列：證據鏈當時不在版控、事前登記無法佐證、24 格皆無原始回覆。
+
+- **決定三＋程式面 6 條全修完**，`7 failed / 3193 passed / 4 xfailed`——
+  failed 與 `red-evidence.md` 的 baseline **逐條相同**，passed 由 3189 增 4，
+  差額剛好是新增的 4 條。
+  - **兩次變異檢查（動作版，非讀碼推論）**：拿掉 `worktrees/` 判別 → **2 條轉紅**；
+    注入同名原地改寫 → `test_does_not_mutate_disk` **轉紅**（修改前只比檔名、會放行）。
+  - submodule 兩條改用**真 git** 建（`protocol.file.allow=always`），手寫版保留但
+    改名說實話「pin 的是決定、不是 git 實際寫出的版面」。
+  - P1 雙重解析：`resolve_for_hook_read` 新增 `state_root` 參數，Stop 解析一次傳下去。
+  - spec 收窄到與實作一致（**spec 比實作寬正是這次 P0 能活下來的機制**），
+    `openspec validate --strict` 通過、delta integrity 4 條過。
+  - 文件測試數字重新量測：`test_project_state_root.py` **38 → 42**，
+    其餘（`test_session_start_worktree.py` 11 / `TestStopHookLinkedWorktree` 11 /
+    `test_paths_runtime_hook_read.py` 6）未變。
+
+- **同類全掃並留紀錄**（使用者明示要求，不得只修被點名位置）：
+  新檔 `openspec/changes/fix-worktree-canonical-root/resolve-exception-sweep.md`。
+  AST 掃全 repo：56 個 `.resolve()`、37 個納入判定、**25 個未被 `RuntimeError`
+  或廣義 handler 覆蓋**。修 3 個 in-scope，其餘 22 處 / 8 檔記
+  `[OUT_OF_SCOPE_DEFERRED]` 附完整負面證據——全修會超過 scope-discipline 斷路器
+  門檻（>5 個 baseline 外檔案）。掃描紀錄自述兩個限制：只掃 `.resolve()` 一種載體、
+  AST 只看語法上包住的 `try`、不追跨函式呼叫鏈。
+
+- **週一 backlog 週檢**（第 3 次 shadow 掃描）：0 筆可自動刪、1 筆待拍板
+  （`[優化建議] [mature: 2026-09-07]` 讀了名字沒讀它實際說什麼）。
+  ⚠️ **射程不完整**：8 條裡只有 1 條有穩定 `#NNN`，7 條沒編號因而未進比對；
+  W37/W38/W39 三輪皆因 coverage 不完整**永遠不計入**四輪時間盒，
+  **已完成判讀的輪次為 0 / 4**——時間盒實際在空轉。
+- 上述 mature 條目 **case-count 由 5 累加至 6**（本 session 四條比名字弱的測試）。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] ⚠️ **第②輪（workflow-harness 文件面補 Codex）仍未取得**。
+  這正是 09-21 早場記的「條件降級補審義務」——早場已走過一次 fallback
+  （`contract-neutral-reviewer`），義務指名要補的就是 **Codex 那一輪**，
+  **再派一次 fallback 不清償它**。備料已完成（11 檔 / 128KB、一 batch、link check 乾淨）。
+- [#接力] ⚠️ **三輪都要對最終狀態重跑，且重審對象比第一輪更大、不是更小**：
+  本 session 動了程式 5 檔、spec、5 份 change 文件、Q8 報告大改、兩個新目錄。
+  **目前沒有任何一個 plane 記了 pass。Fixing ≠ Verifying。**
+- [#接力] `workflow-harness` 未裝 sd0x 的 `review-state.js`，它那兩輪的 verdict
+  **沒有 state slot 可記**；依 hook-lightweighting，durable record 即本 handoff 與對話。
+  openspec-schemas 的 slot **不可**拿來記它的 verdict（digest 綁的是另一棵樹）。
+- [#接力] **本 session 全部未 commit**。兩個 repo 都是 dirty：openspec-schemas
+  （Q8 報告 + evidence/ 29 檔 + recompute 腳本 + backlog + work-map）、
+  workflow-harness worktree（程式 5 檔 + change 文件 + 掃描紀錄）。
+  依早場裁定「三輪都過之後才談 commit」，**刻意不提前**。
+- [#接力] 新登記 `task-20260921-path-resolve-runtimeerror-sweep`（`.resolve()`
+  全庫例外保護對齊，22 處 / 8 檔 out-of-scope deferred）。
+- [#待裁] backlog 那條 mature `[優化建議]` 仍待使用者決定保留／升級／移除。
+  我的建議是**保留但改問法**：規矩已在全域 CLAUDE.md，再升級一條同義規範沒有掛點；
+  真正的問題是「有規矩卻擋不住」，該收的樣本應換成「哪一層本來該喊卻沒喊」。
+- [#待裁] backlog 射程問題（7 條無編號未進比對、四輪時間盒 0/4 空轉三週）未修。
+- [#不重議] 決定一的範圍：**只保最小證據集**，且**保存不回溯提升歷史證明力**
+  （使用者 2026-09-21 明示）。A0 缺原始回覆的缺口照實保留，不補歷史。
+- [#不重議] 不重跑、不修 Arm 2/3（沿用先前裁定）。D6 直接補進報告並明寫為設計缺陷。
+- [#不重議] Correctness 分母 **MUST NOT 靠直覺換**——必須從凍結規則與現有證據重新算
+  （使用者 2026-09-21 明示，理由是這幾天一路踩到的就是這個）。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **「一個缺陷＝一類缺陷」在同一天內被實證違反一次。** P2-1 修 `RuntimeError`
+  只補了 `project_state_root.py` 三處，第二輪審就在 `artifact_paths.py` 抓到同型。
+  這次的做法改成：**先掃完同類、把掃描範圍與結果落檔、再決定修哪些**——
+  而掃完才發現母體是 25 處、不是 2 處，且其中 22 處依 scope-discipline 不該在本
+  change 修。**先掃再修不只是紀律，它改變了「該修多少」這個問題的答案。**
+- **比「測試比名字弱」更深一層的形狀：測試把缺陷祝福了。**
+  `test_hand_built_pointer_without_commondir_returns_itself` 的名字、斷言、實作
+  三者完全一致，錯的是**被固定下來的那個行為本身**，而 docstring 還明寫它在 pin
+  resolver 的決定。這一類**測試全綠、名字正確、邏輯自洽**，沒有任何一層會喊——
+  只有外部審去問「這個被 pin 的決定對嗎」才抓得到。
+  ⚠️ 它是**修復動作本身**產生的：上個 session 修 P2-2 時發現舊測試形狀錯，
+  修法是另建真 git 版本、**卻把形狀錯的那個案例保留下來並祝福它的結果**。
+- **證據只活在會消失的位置，是一個會重複發生的事故形狀。** 這次是 scratchpad 的
+  24 份派工檔，09-04 是 worktree 裡的未追蹤 handoff。兩次都是「當事人知道它在哪，
+  但那個位置不在任何人的保存範圍內」。**Reviewer 依 repo 判「不存在」每次都會是對的。**
+- **保存證據 ≠ 提升歷史證明力。** 事後把材料補進版控，能讓未來可重驗，
+  **不能**讓「當時已完整凍結／可重現」變成真。這次差點就在 README 裡寫成後者——
+  擋下它的是去看 mtime，不是任何規則。
+- **spec 比實作寬是缺陷能存活的機制，不是保守。** P0 的那個過寬 carve-out
+  同時寫在程式註解、模組 docstring、spec 三處，彼此一致，所以三處互相佐證了一個錯的東西。
+
+**【當日洞見】**
+
+- Codex 的 read-only sandbox **沒有可寫的暫存目錄**，因此它**跑不了測試**。
+  那份 70 條的 Test Strength Audit 是**用讀的推論**出來的——判「adequate」的那些
+  尚未取得執行證據。它自己有誠實講，但若不看那句話會直接把它當成驗過。
+- Codex 額度**一天內第二次耗盡**（早場一次、17:2x 一次）。它已不是偶發事件，
+  而是需要納入排程假設的常態條件。
+- **檔案 mtime 是這次唯一揭穿「這批就是當時派出去的檔案」的東西。** 內容看起來
+  完全正確、hash 也算得出來，只有時間戳說出它是重新產生的。
+
+**【學習候選】**
+
+1. **Case** — 修 P2-1（`RuntimeError` 例外契約）時點對點修了 3 處就收手；
+   同一天第二輪外部審在 `artifact_paths.py` 抓到同型漏網。這次改為先做 AST 全掃，
+   掃出母體 25 處，其中只有 3 處依 scope-discipline 屬本 change 射程。
+2. **Candidate Pattern** — 「一個缺陷＝一類缺陷」的既有規則只說了「要掃同類」，
+   沒說**掃描要先於修復、且掃描結果要落檔**。先修後掃時，修改範圍已經先被
+   「被點名的位置」決定了；先掃後修才有機會發現母體與射程不一致。
+   **適用邊界**：缺陷有可機械列舉的同類載體時（例外 handler、API 呼叫點、字串模式）。
+   不適用於語意性缺陷（無法機械列舉母體）。
+3. **Evidence** — N=1 完整實例（本次）＋ 1 個反例（P2-1 先修後停）。
+   因果尚未確立為通則，標 **Hypothesis**。
+4. **Minimum Sufficient Intervention** — **不新增規則**。既有的「一個缺陷＝一類缺陷」
+   已在全域 CLAUDE.md，本次的差異不在規則有無、在**執行順序**。
+   建議改既有條文的動詞而非新增一條：把「立刻全範圍掃同類實例一次修完」
+   改為「**先**全範圍掃同類、把掃描範圍與結果落檔、**再**依射程決定修哪些」。
+   ⚠️ **enforcement 掛點**：外部審查（本次就是它抓到的）＋ 掃描紀錄檔本身
+   （落檔後可被複審讀到，沒落檔則複審看不到範圍）。
+   ⚠️ 但**掛點強度僅止於「有外部審時才會被發現」**——沒有任何機械檢查會在
+   「只修被點名位置」時喊。若使用者認為這不夠，本項應降級為 Observe。
+5. **Promotion** — 建議停在 **Refine Existing Strategy**（改既有條文的動詞，不新增規則）。
+   正式升級由使用者決定。
+
+### 五、檔案異動
+
+**本 session 無 commit**（錨點 `commit_range`，開工 commit `ff3e806`、開工於
+2026-09-21T17:09:07，`ff3e806..HEAD` 為空）。以下皆為 working tree 改動。
+
+**openspec-schemas**（`C:/Users/user/orca/openspec-schemas`）：
+
+- `docs/superpowers/poc/2026-09-17-q8-structured-definition/results-and-next-step.md` — 依
+  第三輪 doc review 的 7 條 blocking 大幅修正（分母、D6、I3、I6 矛盾、§6.1、provenance 降級、§8）
+- `docs/superpowers/poc/2026-09-17-q8-structured-definition/evidence/` — **新增 29 檔**
+  （`README.md` ＋ `pairs/` 24 ＋ `generators/` 4 ＋ `results.json`）
+- `docs/superpowers/poc/2026-09-17-q8-structured-definition/recompute-correctness.py` — 新增
+- `backlog.md` — mature 條目 case-count 5 → 6
+- `backlog-crosscheck-shadow.json` — 週一 shadow-plan 第 3 次掃描記帳
+- `workflow-harness/work-map.jsonl` — 新增 `task-20260921-path-resolve-runtimeerror-sweep`
+- `文檔/handoff/session-handoff-20260921.md` — 本區塊
+- 未追蹤且長期刻意排除：`2026-08-27-brainstorm-產品承諾.md`
+
+**workflow-harness worktree**（`D:/workflow-harness/.worktrees/fix-issue-4-worktree-canonical-root`，**未 commit**）：
+
+- `hooks/lib/project_state_root.py` — P0 `worktrees/` 判別式、`gitdir` 只解析一次、
+  `same_path` 接 `RuntimeError`、模組契約敘述收窄
+- `hooks/lib/artifact_paths.py` — `_resolve_one` 與 `resolve_bases` 兩處補接 `RuntimeError`
+- `hooks/lib/paths_runtime.py` — `resolve_for_hook_read` 新增 `state_root` 參數
+- `hooks/stop.py` — 解析一次並傳下去，消除雙重解析
+- `hooks/lib/test_project_state_root.py` — 42 collected（+4）：worktree 缺 commondir、
+  commondir 不可讀、separate-git-dir 反向控制、真 git submodule ×2；
+  `does_not_mutate_disk` 改為 bytes+sha 快照
+- `hooks/lib/test_paths_runtime_hook_read.py` — 兩處改為完整四 base 等式斷言
+- `openspec/changes/fix-worktree-canonical-root/specs/project-state-root/spec.md` — 步驟 3
+  加判別式、新增兩個 Scenario
+- 同 change 的 `brainstorm.md` / `design.md` / `plan.md` / `proposal.md` — 測試數字與行為敘述同步
+- `openspec/changes/fix-worktree-canonical-root/resolve-exception-sweep.md` — **新增**（掃描紀錄）
+- `hooks/test_stop.py` / `specs/handoff-guard/spec.md` / `tasks.md` — 早場改動，本場未動
+
+**本 session 外的暫存**：`C:/Users/user/orca/q8-evidence-rescue-20260921/`
+（救援中繼副本，內容已進版控，可刪）。
+
+### 六、下一步建議
+
+> **狀態定位：Fixes complete / Verification not started。**
+> ①③ 回報的 blocking 已全數處理並附證據（含兩次變異檢查），但**修正本身尚未被
+> 任何人審過**，且重審對象比第一輪更大。**未記任何 pass、未 commit。**
+
+1. **22:13 後跑三輪重審**（順序不拘、可並行但注意額度）：
+   ① workflow-harness 程式面（branch 範圍、tier `thorough`）
+   ② workflow-harness 文件面（11 檔一 batch，**這是條件降級的補審義務、fallback 不算**）
+   ③ openspec-schemas Q8 報告 doc review（含新增的 `evidence/` 與 `recompute-correctness.py`）
+   ⚠️ 派工前重新抓 metadata——本 session 之後檔案集已變。
+2. 三輪都過之後才談：commit（走 `/smart-commit --execute`，**不由 `/end-session`
+   自跑**，2026-09-07 裁定的 B 路徑）→ PR（需 `plan.md` 4.4a 通過）→ merge →
+   更新 plugin cache → 真實 linked worktree dogfood → 才把
+   `task-20260915-stop-hook-worktree-root` 標完成。
+3. **Q8 的 §9 三條路**（甲改量測／乙找新案例／丙收掉）＋ 那條 ⭐ 分水嶺題
+   （「規範權威」vs「事實來源」）仍待使用者拍板。⚠️ 甲的成本因 D6 再度上修——
+   現在是**五處**偏離都要先修才能重跑。
+4. **backlog 兩件待裁**：mature `[優化建議]` 的保留／升級／移除；以及射程問題
+   （7 條無編號、四輪時間盒 0/4 空轉三週，不修則該機制永遠評估不出結果）。
+5. `task-20260904-worktree-handoff-lifecycle` 維持 open、與本 change 互指；
+   ⚠️ **不是** Issue #4 的關閉前置（沿用早場裁定）。
+
+
+---
+
+### 追記（同一 session，22:13–23:05）—— 三輪重審的實際結果
+
+> 本段是 `## Session 18:33` 區塊的續寫，不是新 session。18:33 當下的內容未改動。
+
+**額度窗只夠一輪。** 22:13 恢復後派出①③，**①成功、③失敗**（額度第三次耗盡，
+下次恢復 **2026-09-22 03:16**）；②從未派出。今日累計派工 5 次、成功 3 次、
+額度失敗 2 次。**額度已是這條工作線的瓶頸**，不是時間也不是產出速率。
+
+#### 第①輪重審：⛔ Blocked，2×P1 + 5×P2
+
+⚠️ **最重的一條是我自己修出來的。** P0 的判別式我用了目錄名
+`gitdir.parent.name == "worktrees"`，而 `worktrees` 是使用者可自選的普通目錄名。
+以真 git 實測確認兩種合法版面被判成 `None`：
+
+| 版面 | `gitdir` 父層名 | 判別式結果 | 正解 |
+|---|---|---|---|
+| `--separate-git-dir` 指向 `<x>/worktrees/repo.git` | `worktrees` | `None` ❌ | 回 root |
+| submodule 掛在路徑 `worktrees/sub`（git dir 落在 `.git/modules/worktrees/sub`） | `worktrees` | `None` ❌ | 回 root |
+| 真 linked worktree、`commondir` 被刪（對照） | `worktrees` | `None` ✅ | `None` |
+
+**後果是 Stop 會對合法 repo 直接 BLOCK。** 改用結構性訊號 `<gitdir>/gitdir`
+（`git worktree add` 必寫的回指檔）：實測 A 無 / B 無 / C 有，完全可分，
+且它是 git 自己寫的結構，無法靠命名偽造。
+
+#### 本輪修正（全部已收，含證據）
+
+| 項目 | 證據 |
+|---|---|
+| 判別式改結構訊號 | 變異檢查：換回名字比對 → **2 條新反向控制轉紅**（真 git 建） |
+| `test_does_not_mutate_disk` 再補強 | 加 `st_mtime_ns` / `st_mode` / `st_size`——原版同位元組覆寫、改 mtime 都抓不到 |
+| 三條 P1 缺的回歸測試 | 變異檢查：三個修正逐一拿掉，**各抓到一條** |
+| `hooks/artifact_paths.py:294` | 第二輪審指出實為 in-scope（`run()` 於 `:322` 一跳呼叫已改動的 `resolve_bases`），初版台帳誤 defer |
+| spec 三處 | 補 `state_root` 參數與信任邊界（含「Stop MUST 傳、SessionStart MUST NOT」）、消除「不可讀 `commondir`」與第 64 行的自相矛盾、判別式改結構描述並**明文禁止用目錄名** |
+| 掃描台帳計數更正 | 原寫 56（grep 行命中）與 22（混用檔案位置與呼叫運算式）**單位都錯**。正確：全 repo **314** 個呼叫運算式 → 納入判定 **37** → 已修 **5** → **deferred 20 個運算式 / 7 檔** |
+
+**驗證**：`7 failed, 3199 passed, 4 xfailed`——failed 與 `red-evidence.md` baseline
+逐條相同，passed 由 3193 增 **6**，差額剛好是新增的 6 條。
+`openspec validate --strict` 通過。測試數重新量測：
+`test_project_state_root.py` **42 → 45**、`test_paths_runtime_hook_read.py` **6 → 8**，
+`test_session_start_worktree.py` 11 與 `TestStopHookLinkedWorktree` 11 未變；
+四處文件引用已同步。
+
+#### ⚠️ 本輪我做錯的事（與早場【紀律接力】同一形狀）
+
+**我今天做過兩次變異檢查，兩次都只驗 P0 那一條。** 三個 P1 修正
+（`state_root=` 傳參、兩個 `RuntimeError` handler、`same_path`）一條都沒驗——
+拿掉它們測試全綠。是審查者點出來我才補的。
+
+這與早場記的「一個缺陷＝一類缺陷」是**同一個形狀的第二個實例**：
+紀律本身有做，但只套在**被點名的那一項**上，沒套在同一類的其他項。
+早場那次是「修了三處就停」，這次是「驗了一條就停」。
+⚠️ 兩次都不是忘記做，是**做了但沒做完**——而「做了」的感覺正好掩蓋了「沒做完」。
+
+#### 使用者裁示（2026-09-21 23:05）
+
+**03:16 的額度窗給第①輪（選項乙）。** 理由：①剛被大改過，且我已在它身上
+留下一次實證的誤判紀錄（名字判別式）——它是最可能還藏著東西的那一份；
+③的 blocking 多屬文件表述，風險不對稱。
+
+②與③的補審順延。⚠️ **②仍是唯一不能用 fallback 清償的那一輪**
+（09-01 定的條件降級補審義務指名 Codex）。
+若該義務的原意是「高風險項要有獨立外部審」而非「必須是這個供應商」，
+fallback 的定位可以重談——**但那是規則解釋，歸使用者**，本 session 未決。
+
+#### 追記後的狀態
+
+- **仍未記任何 pass、仍未 commit。** 兩個 repo 依舊 dirty。
+- ①的第 3 輪、②的首輪、③的第 2 輪，三者全欠。
+- 本輪新增檔案異動（在原「五、檔案異動」之上）：
+  `hooks/artifact_paths.py`（`run()` 補 `RuntimeError`）、
+  `hooks/test_stop.py`（新增 `TestStopPassesPreResolvedStateRoot` 結構守門）、
+  以及 `project_state_root.py` / `test_project_state_root.py` /
+  `test_paths_runtime_hook_read.py` / `specs/project-state-root/spec.md` /
+  `resolve-exception-sweep.md` / `brainstorm.md` / `design.md` / `plan.md` /
+  `proposal.md` 的再次修改。

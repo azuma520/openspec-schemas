@@ -162,3 +162,8 @@ git status 中其餘 dirty 檔（`backlog-crosscheck-shadow.json`、Q8 報告與
 1. **Task Context 與 Q8 兩題**（兩秒可決）：Task Context 甲／乙；Q8 改 BLOCKED 與否。Q8 若要推進，下一步是重派 ③ doc review、再 commit 報告與 evidence。
 2. **Issue #4 收尾雜事**（見三）：4.5 打勾記偏離理由 → archive → 清 worktree／分支 → Issue 留言。可在 workflow-harness 那邊做，或這邊做完請使用者核可 commit。
 3. **下一個 traceability implementation change**：依核可版正式設計，由使用者決定何時開、範圍多大（沿用上一區塊）；正式設計文件頭那句過時狀態句仍待裁。
+
+- [#待確認] **18:xx 補記——Task Context 觀察期的紀錄整理（使用者：先寫上、後面再討論）**。讀過觀察表 `文檔/handoff/attachments/20260910-pilot2/pilot2-codex-r1-record.md`、`pilot3-research-doc-review-r1.md`、複盤 `docs/superpowers/retrospectives/2026-09-14-fix-v2-round-learnings.md` §1、handoff 0910 :135–:200：
+  - **已有結論、已落地**：①（A1）改規則後要搜**被取代的舊說法**、不是新說法——3 樣本，其中 2b 用新說法搜而假綠、Codex 下一輪抓到 2 處；已回灌 `review-fix-propagation` skill。②Task Context 沒有帶偏審查者（4 次皆未見 anchoring；Pilot 3 審查者直接反駁 Context 的「全部 62 條」）。
+  - **有數據、沒人下結論**：③Task Context 有沒有用——4 次只有 1 筆可歸功（Pilot 2：Downstream use 格讓審查者想到「worktree 拆掉後證據消失」）；其餘不能歸功（審查範本本就要求獨立研究）。④密封清單（已知缺陷、不給審查者看）：Pilot 2、Pilot 4 皆 **5/5 漏抓**，Pilot 3 約 3/5 抓到；同時 Codex 抓到大量作者不知道的問題（Pilot 2 一次 9 條、皆查證屬實）。其含義（例：審查不能取代作者自查）未寫成判斷。⑤0910 約定由使用者判「Pilot 1/2 第一輪 findings 與 miss 是否服務實際風險」——**未判**。
+  - **待討論**：研究文件（`docs/superpowers/research/2026-09-09-review-provenance-analysis.md`）要不要補寫 ③④ 的整理（甲）、或直接結案（乙）；⑤ 需使用者判。work-map `task-20260910-task-context-pilot` 在決定前維持 DOING。
