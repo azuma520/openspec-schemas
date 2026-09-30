@@ -9,7 +9,7 @@
 
 > Bridges [OpenSpec](https://github.com/Fission-AI/OpenSpec)'s artifact governance (the **what**) with [obra/superpowers](https://github.com/obra/superpowers) execution skills (the **how**) into a single workflow. Adds an evidence-first `retrospective` artifact filling a gap Superpowers does not natively cover.
 >
-> The integration lives entirely at the prompt layer — no Superpowers source modified, no OpenSpec CLI changes. Schema version: v2 (see [Compatibility](#compatibility) and [Migrating v1 → v2](#migrating-v1--v2)).
+> The integration lives entirely at the prompt layer — no Superpowers source modified, no OpenSpec CLI changes. Schema version: v3 (see [Compatibility](#compatibility) and [Migrating v2 → v3](#migrating-v2--v3)).
 
 ---
 
@@ -114,7 +114,7 @@ rm -rf /tmp/oss-upgrade
 
 > Within one schema major, in-flight changes (any phase: brainstorm / design / specs / ...) remain valid because the schema graph (`requires:` edges, PRECHECKs, artifact dependencies) does not change across patch releases. Existing `verify.md` / `retrospective.md` from before the upgrade are still readable; if you re-run `/opsx:verify` or `/opsx:continue → retrospective` on them, the new template structure applies on overwrite.
 
-> **Crossing a schema major does need migration.** Upgrading from bundle `1.x.y` (schema major `v1`) to `2.x.y` (schema major `v2`) changes what `tasks.md` and `plan.md` must contain, so an in-flight v1 change needs the steps in [Migrating v1 → v2](#migrating-v1--v2) before it will pass verify. Structural schema-graph changes (artifact add/remove, `requires:` edge changes, PRECHECK changes) are always announced with a migration guide under [Versioning](#versioning).
+> **Crossing a schema major does need migration.** Upgrading from bundle `1.x.y` (schema major `v1`) to `2.x.y` (schema major `v2`) changed what `tasks.md` and `plan.md` must contain; upgrading from `2.x.y` (`v2`) to `3.x.y` (`v3`) requires every Requirement and Scenario heading to carry a stable ID. An in-flight `v2` change needs the steps in [Migrating v2 → v3](#migrating-v2--v3) before it will pass verify (check 13). Any schema-major bump — previously-valid artifacts becoming invalid (independently sufficient), an artifact being added or removed, a `requires:` edge changing, or a PRECHECK's shape changing — is always announced with a migration guide under [Versioning](#versioning).
 
 ---
 
@@ -329,7 +329,7 @@ Implemented purely via context injection at invocation time, not by modifying sk
 ```bash
 /opsx:ff my-feature    # one-shot: scaffold + brainstorm + proposal + design + specs + tasks + plan
 /opsx:apply            # worktree + subagent-driven-development (structural code review; TDD per tasks.md annotation)
-/opsx:verify           # produces verify.md (12 checks + review judgements)
+/opsx:verify           # produces verify.md (13 checks + review judgements)
 /opsx:continue         # → retrospective (produces retrospective.md, §0 + 6 sections)
 /opsx:archive          # archive
 ```
@@ -344,7 +344,7 @@ Implemented purely via context injection at invocation time, not by modifying sk
 /opsx:continue         # → tasks
 /opsx:continue         # → plan
 /opsx:apply            # → implementation + worktree + subagent-driven-development
-/opsx:verify           # → verify.md (post-apply, runs the 12 checks)
+/opsx:verify           # → verify.md (post-apply, runs the 13 checks)
 /opsx:continue         # → retrospective.md (post-verify, evidence-first §0 + 6 sections)
 /opsx:archive
 ```
@@ -392,7 +392,7 @@ This schema does NOT support `superpowers:executing-plans` as a fallback. See th
 
 #### 3. Verification — `openspec-verify-change`
 
-Produces `verify.md` from 12 checks. Checks 1–7 are the cycle-completeness set: structural validation (`openspec validate --all --json`), task completion, delta-spec sync state, design/specs coherence (non-blocking warning), implementation signal (committed code), front-door routing leak detector (non-blocking warning), and deferred-dogfood vs automated-test equivalence. Check 7 reads `tasks.md` and nothing else — under the Plan Contract `tasks.md` is the carrier of task-level state — and blocks only when `tasks.md` carries at least one `- [~]` deferred task line while the equivalence section is empty (gap analysis skipped); otherwise it is informational.
+Produces `verify.md` from 13 checks. Checks 1–7 are the cycle-completeness set: structural validation (`openspec validate --all --json`), task completion, delta-spec sync state, design/specs coherence (non-blocking warning), implementation signal (committed code), front-door routing leak detector (non-blocking warning), and deferred-dogfood vs automated-test equivalence. Check 7 reads `tasks.md` and nothing else — under the Plan Contract `tasks.md` is the carrier of task-level state — and blocks only when `tasks.md` carries at least one `- [~]` deferred task line while the equivalence section is empty (gap analysis skipped); otherwise it is informational.
 
 Checks 8–12 are the TDD evidence contract and the plan/task key set, added in schema v2. Each **decides its verdict deterministically** — reading text against a fixed rule, with no judgement call — and each blocks on failure: the `TDD:` annotation is present and well-formed on every task (8); every applicable task carries `- RED:` and `- GREEN:` records with their required fields, and every `subject:` value is well-formed — after trimming, exactly one `::` with a non-empty remainder on each side, and nothing further constrained (no path syntax, no file extension, no test-name character rules) (9); the outcome markers conform, GREEN being exactly `PASS` and RED a single uppercase token other than `PASS` (10); records pair by their `subject:` value and never by position, in two stages — subject values unique within a task on each side, then exactly one RED and exactly one GREEN per subject (11); and the `tasks.md` task numbers correspond 1:1 to the `plan.md` entry keys, also in two stages — no duplicate key on either side, each repeated key named in a message distinct from the missing/extra-key one, then the two key sets compared in both directions (12). In both two-stage checks stage one does **not** short-circuit: stage two is evaluated whatever stage one found, so a single run reports both kinds of defect.
 
@@ -401,6 +401,8 @@ Checks 8–12 are the TDD evidence contract and the plan/task key set, added in 
 - They are deterministic in *what they decide* and **agent-executed** in *how they run*: their execution is the verify agent following the verify instruction. The schema requires them to run before archive and to block on failure, but this is **not** a Harness-level, mechanically enforced, non-bypassable archive-time gate. If the verify agent does not execute one of them, no mechanism in this schema intercepts the omission — review of `verify.md` is the only backstop.
 - They decide **structure, format and cardinality** only, and **never** whether the evidence is true. They read the presence and structure of the annotations and records; they do not establish that the evidence is authentic (it is agent-submitted; that assurance rests on the review layer and degrades with it), do not prove a test-first development history, and do not assess semantic quality.
 - The semantic questions — whether a RED `failure:` excerpt is a behavioural failure rather than a harness error, whether the cited subject actually tests what the task claims, whether an `n/a` reason holds, and whether an `n/a` task nonetheless carries records — are stated in the instruction as **review judgements** (R1–R4), reported as blocking findings of the review rather than of a check.
+
+**Check 13 (added in schema v3) — identity integrity.** Every Requirement and Scenario heading must carry a stable, unique ID (see [Migrating v2 → v3](#migrating-v2--v3)). Check 13 judges the change's post-archive *candidate state* — produced by an archive preview run in a throwaway copy, never by reasoning about the merge — against that rule, and cross-checks the requirement/scenario counts it reads from text with the OpenSpec CLI's JSON output. It BLOCKs in two distinct kinds that are never collapsed into one: a **violation** (the check completed and found a broken rule) or an **undeterminable** finding (the check could not complete reliably — for example the archive preview failed) — neither kind has a degraded or warning-level pass. Like checks 8–12, it is deterministic in what it decides and agent-executed in how it runs: the schema requires it to run before archive and to block on failure, but this is **not** a Harness-level, non-bypassable gate — if the verify agent skips it, nothing in this schema intercepts the omission. It does not establish that a retired ID is never reassigned, that a scenario ID never silently disappears through a full-text rewrite or through archive, that the meaning under an unchanged ID hasn't weakened, or that an ID survives a capability rename. The full rule set and this claim boundary are owned by the `contract-identity` capability spec ([`openspec/specs/contract-identity/spec.md`](../openspec/specs/contract-identity/spec.md)) — this README summarizes it and adds nothing.
 
 Failures route back to the corresponding artifact for fix; verify can be re-run.
 
@@ -480,12 +482,12 @@ This bundle carries **two version identifiers** that should not be confused:
 
 | Identifier | Where | Meaning | Example |
 |---|---|---|---|
-| Schema major | `schema.yaml: version: 2` | Contract of the schema graph (artifacts, `requires:` edges, PRECHECK shape). Breaking changes bump this. | `2` |
-| Bundle release | `VERSION` file + git tag | SemVer release of this bundle, scoped to a schema major. | `2.0.0` (tag `v2.0.0` at release) |
+| Schema major | `schema.yaml: version: 3` | Contract of the schema graph. Bumps on any breaking change: previously-valid artifacts becoming invalid (independently sufficient), an artifact added/removed, a `requires:` edge changing, or a PRECHECK's shape changing. | `3` |
+| Bundle release | `VERSION` file + git tag | SemVer release of this bundle, scoped to a schema major. | `3.0.0` (tag `v3.0.0` at release) |
 
-A bundle release `2.x.y` is a published cut of schema major `v2`, as `1.x.y` was of `v1`. Adopters who pin to a `1.x.y` or `2.x.y` bundle are guaranteed schema-graph compatibility within that major.
+A bundle release `3.x.y` is a published cut of schema major `v3`, as `2.x.y` was of `v2` and `1.x.y` was of `v1`. Adopters who pin to a `1.x.y`, `2.x.y` or `3.x.y` bundle are guaranteed schema-graph compatibility within that major.
 
-> The compatibility matrix below uses the schema major (`v1`, `v2`) as the row key, because compatibility with OpenSpec / Superpowers is governed by the schema contract, not by patch-level edits inside this bundle.
+> The compatibility matrix below uses the schema major (`v1`, `v2`, `v3`) as the row key, because compatibility with OpenSpec / Superpowers is governed by the schema contract, not by patch-level edits inside this bundle.
 
 ### Why v1 → v2 is a schema-major bump
 
@@ -495,6 +497,29 @@ Two of the policy's criteria are met, and the first is on its own sufficient:
 2. **PRECHECK shape changed.** The `plan` artifact's skill PRECHECK is removed, which hits this section's "PRECHECK shape" criterion directly. It is removed because its subject is gone — with `superpowers:writing-plans` no longer a dependency, "is that skill present?" has no object — not because prose replaced it. The replacement control covers a different question: a conforming plan, checked by verify's deterministic checks before archive. Every other PRECHECK (brainstorm, verify, retrospective, apply pre-flight) is untouched.
 
 Keeping `version: 1` and rewording the policy was considered and rejected: that would redefine "breaking" to fit the change and silently break the compatibility promise made to anyone pinned to `v1.x.y`.
+
+### Why v2 → v3 is a schema-major bump
+
+One of the policy's criteria is met, and it is on its own sufficient:
+
+1. **Previously-valid artifacts become invalid.** v3 makes a stable ID normative on every Requirement and Scenario heading and adds deterministic verification of it (verify check 13). A `spec.md` that was legal under v2 — a heading with no ID, such as `### Requirement: Token expiry` — now fails verify's check 13 until it is migrated. Previously-legal artifacts becoming illegal is what breaking means, independently of any argument about PRECHECKs.
+
+PRECHECK shape is unaffected this time: check 13 is a new verify check, not a change to any skill PRECHECK, and every existing PRECHECK (brainstorm, apply pre-flight, verify, retrospective) is untouched.
+
+Keeping `version: 2` and only checking newly-written requirements was considered and rejected: that would redefine "breaking" to fit the change, the same reasoning that rejected the equivalent option for v1 → v2 above.
+
+### Migrating v2 → v3
+
+A Requirement heading now takes the form `### Requirement: <REQ-ID> <description>`, and a Scenario heading `#### Scenario: <REQ-ID>-S<m> <description>`; a newly-allocated Requirement ID looks like `REQ-<n>` (a positive integer). The full grammar and the new-ID allocation rule are defined once, in the `contract-identity` capability spec ([`openspec/specs/contract-identity/spec.md`](../openspec/specs/contract-identity/spec.md)) — read them there rather than from a second copy.
+
+For an in-flight change started under a `2.x.y` bundle, after upgrading the schema directory:
+
+1. **Upgrade the bundle** to `3.0.0`.
+2. **Open one renumbering change that covers every capability.** For each capability's main spec: give every Requirement a stable ID via a `RENAMED` entry (an existing stable ID — one already carried by a Requirement before this migration — is kept as-is; a Requirement with no prior ID gets a new one), then update the heading text via `MODIFIED` with the new heading. Scenarios do not go through `RENAMED` — each gets its `<REQ-ID>-S<m>` ID as part of that same `MODIFIED` full-text replacement, since a Scenario heading is not itself a renameable entry. Content does not change — only the headings. **This cannot be split across capabilities into separate changes**: check 13 judges the *candidate state* — every main spec the change's archive would produce, not only the ones it touches — so a change that renumbers only some capabilities is blocked by every capability it left unnumbered.
+3. **Run verify** (check 13 included) and then archive.
+4. **Any other in-flight `v2` change not yet archived** needs its delta specs' new and modified headings brought up to the ID grammar above before it will pass verify.
+
+**Rollback:** pin bundle `2.x.y`. Schema major `v2` remains a published cut and is not withdrawn; IDs added during a partial migration are harmless under `v2` — it does not check IDs, and an ID-bearing heading validates and archives normally under the CLI.
 
 ### Migrating v1 → v2
 
@@ -513,14 +538,17 @@ The annotation grammar and the record shape are defined once, in the `tasks` art
 
 Baseline versions this schema was authored against. This is a **historical snapshot, not an end-to-end compatibility guarantee** — CI cannot run the full prompt-layer workflow in headless mode, so behavioral compatibility relies on human review when drift fires.
 
-Current bundle release: **`2.0.0`** (see [VERSION](./VERSION); git tag `v2.0.0` created at release).
+Current bundle release: **`3.0.0`** (see [VERSION](./VERSION); git tag `v3.0.0` created at release).
 
 | superpowers-bridge | OpenSpec CLI | Superpowers plugin | Baseline as of |
 |---|---|---|---|
+| v3 | `1.3.1` | `v5.1.0` | 2026-09-30 |
 | v2 | `1.3.1` | `v5.1.0` | 2026-09-01 |
 | v1 | `1.3.1` | `v5.1.0` | 2026-05-11 |
 
-> Newest major first. Each major keeps its own row, and the v1 row is retained for adopters still pinned to a `1.x.y` bundle.
+> Newest major first. Each major keeps its own row, and the v1 and v2 rows are retained for adopters still pinned to a `1.x.y` or `2.x.y` bundle.
+>
+> **The v3 row declares the same Superpowers baseline as v1 and v2 (`v5.1.0`, unbumped) — v3 does not touch the Superpowers dependency any more than v2 did, and the `brainstorming` drift recorded in the re-verification log below is still open. The environment actually exercised while implementing this change is recorded separately below, distinct from that declared baseline.** OpenSpec `1.3.1`: `openspec schema validate superpowers-bridge` passed against the v3 schema in throwaway test-project copies while implementing the `requirement-scenario-identity` change, and the 22 identity mutation fixtures were run through `openspec validate` / `openspec archive` / `openspec show` — all under CLI `1.3.1`. **Observed environment, not the declared baseline:** the `requirement-scenario-identity` change's own apply phase — and only the paths it exercised, loading the `using-git-worktrees` and `subagent-driven-development` skills — ran on the installed Superpowers `v6.4.1` and passed. This is not a full `/opsx:new` → archive cycle; it does not cover that change's own brainstorm or design phases, which ran earlier under an unrecorded Superpowers version; and it does not by itself justify raising the declared baseline — that requires a full compatibility verification after the `brainstorming` drift fix lands. See the re-verification log below for the still-open `v6.3.0` findings, which this row does not resolve.
 >
 > The v2 row's OpenSpec entry is a **CLI-level attestation**, not a full prompt-layer cycle: CLI behaviour under `version: 2` was exercised across the CLI surface (validate / schemas / new / status / instructions) against openspec `1.3.1` in an isolated test project on 2026-09-01. The Superpowers entry is **unchanged from v1** — v2 removes a dependency rather than adding one, and no full cycle has been re-run against a newer Superpowers release, so bumping it would claim a check nobody performed. See the re-verification log below for what has and has not been checked against `v6.3.0`.
 
@@ -557,13 +585,15 @@ The contract is three layers — **baseline declaration + automated drift detect
 | Drift notification | [`version-check.yml`](../.github/workflows/version-check.yml) weekly, compares baseline above against latest npm / GitHub release | Pinned ≠ latest upstream | Opens / updates a [labelled drift issue](https://github.com/JiangWay/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check) for human review (workflow stays green — drift is normal, not a failure) |
 | End-to-end workflow | **Not automated** | Behavioral changes inside Superpowers skills (renames, prose rewrites altering PRECHECK semantics, transitive-dependency changes); subtle OpenSpec engine semantic shifts | A human reads upstream release notes when the drift issue fires |
 
-The "Baseline as of" date is bumped when a maintainer manually re-runs a full cycle against the listed versions and confirms nothing degraded. Until then, the date marks human attestation, not an automated test pass. **One exception, stated so the row and this definition do not disagree:** the v2 row's `2026-09-01` is a **CLI-level attestation only** — CLI behaviour under `version: 2` (validate / schemas / new / status / instructions) against openspec `1.3.1` — **not** a full prompt-layer cycle re-run. No full cycle has been re-run since the v1 row's `2026-05-11`.
+The "Baseline as of" date is bumped when a maintainer manually re-runs a full cycle against the listed versions and confirms nothing degraded. Until then, the date marks human attestation, not an automated test pass. **Two exceptions, stated so the rows and this definition do not disagree:** the v2 row's `2026-09-01` and the v3 row's `2026-09-30` are each a **CLI-level attestation only** — CLI behaviour under the row's `version:` (validate / schemas / new / status / instructions for v2; `schema validate` plus the 22 identity mutation fixtures under `validate` / `archive` / `show` for v3) against openspec `1.3.1` — **not** a full prompt-layer cycle re-run. Neither date reflects a Superpowers re-verification: the Superpowers column is unbumped in both rows, and the environment `requirement-scenario-identity` actually exercised (Superpowers `v6.4.1`, apply phase only) is recorded above as an observation distinct from the declared baseline, not as grounds to move this date. No full cycle has been re-run since the v1 row's `2026-05-11`.
 
 ### Known breaking changes
 
+**v2 → v3** (bundle `2.0.0` → `3.0.0`). Every Requirement and Scenario heading must now carry a stable ID, verified by check 13: a `spec.md` legal under v2 — an unnumbered heading — fails verification until migrated. Migration: [Migrating v2 → v3](#migrating-v2--v3). Rollback: pin bundle `2.x.y`.
+
 **v1 → v2** (bundle `1.0.1` → `2.0.0`). The TDD applicability annotation and the RED/GREEN evidence become normative and are verified (checks 8–12), so a `tasks.md` that was valid under v1 fails verification until migrated, and a `plan.md` not keyed 1:1 to the task numbers fails check 12. The `plan` artifact's skill PRECHECK is removed along with the `superpowers:writing-plans` dependency. Migration: [Migrating v1 → v2](#migrating-v1--v2). Rollback: pin bundle `1.0.1`.
 
-Future schema-graph structural changes (artifact add/remove, `requires:` edge changes, PRECHECK changes) will be listed here with a migration note.
+Future schema-major bumps — whether from previously-valid artifacts becoming invalid, an artifact being added or removed, a `requires:` edge changing, or a PRECHECK's shape changing — will be listed here with a migration note.
 
 For adopters: pin to versions ≥ those listed above. To inspect your own project's runtime state, run `openspec list` + `openspec schemas` + `claude plugin list`.
 

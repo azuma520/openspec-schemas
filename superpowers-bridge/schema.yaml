@@ -1,5 +1,5 @@
 name: superpowers-bridge
-version: 2
+version: 3
 description: >
   Spec-driven workflow integrated with Superpowers skills.
   Requirements: Superpowers plugin installed, providing skills:
@@ -136,9 +136,42 @@ artifacts:
       - **RENAMED Requirements**: Name changes only - use FROM:/TO: format
 
       Format requirements:
-      - Each requirement: `### Requirement: <name>` followed by description
+      - Each requirement heading: `### Requirement: <REQ-ID> <description>`,
+        where `<REQ-ID>` is `REQ-` followed by one or more uppercase
+        letters or digits (`[A-Z0-9]+`), separated from `<description>`
+        by whitespace, and `<description>` MUST be non-empty — an ID
+        with nothing after it (`### Requirement: REQ-3`) is illegal.
+        Each scenario heading:
+        `#### Scenario: <REQ-ID>-S<m> <description>` with WHEN/THEN
+        format, where `<REQ-ID>` is exactly the local ID of the
+        requirement it sits under, `<m>` is a positive integer with
+        no leading zeros (`S1`, `S12`; never `S0` or `S01`), and
+        `<description>` MUST likewise be non-empty. Example:
+          ### Requirement: REQ-3 Token expiry
+          #### Scenario: REQ-3-S1 Expired token is rejected
+      - Requirement IDs that already exist stay legal as they are, even
+        when not numeric (for example `REQ-PB`) — the numeric form below
+        constrains only newly allocated IDs.
+      - RENAMED: the local ID of the FROM heading and the TO heading
+        MUST be equal. The one exception is a FROM heading with no ID
+        at all — that rename assigns an ID to a pre-existing unnumbered
+        requirement, and its TO ID is a newly allocated ID under the
+        allocation rule below.
+      - Allocating a new requirement or scenario ID has two layers, and
+        this instruction is the author's obligation for both. Verify's
+        identity check (check 13) enforces only the smaller, structural
+        half — a new requirement's ID greater than every numeric
+        requirement ID currently in that capability's main spec, a new
+        scenario's number greater than every scenario number currently
+        under the same requirement — and does not read history, so it
+        cannot catch a retired number being reused. YOU MUST additionally
+        take history into account: look up the largest number ever used
+        for that capability (or, for a scenario, that requirement),
+        including the delta specs under `openspec/changes/archive/`, and
+        allocate above it; only start at 1 when no number has ever been
+        used anywhere. This historical-maximum obligation is not
+        verified by check 13.
       - Use SHALL/MUST for normative requirements (avoid should/may)
-      - Each scenario: `#### Scenario: <name>` with WHEN/THEN format
       - **CRITICAL**: Scenarios MUST use exactly 4 hashtags (`####`). Using 3 hashtags or bullets will fail silently.
       - Every requirement MUST have at least one scenario.
 
@@ -875,6 +908,438 @@ artifacts:
           between the two key collections. This check reads keys
           only — that an entry's contract text actually describes its
           task is review judgement, never this check.
+
+      13. **Identity integrity** (deterministic in what it decides,
+          agent-executed like checks 8-12; BLOCKs are of two kinds):
+
+          Every Requirement and Scenario heading carries a stable
+          identity, and this check decides whether the change keeps
+          it. The `contract-identity` capability spec is the normative
+          owner of these rules; this check states them in executable
+          form and adds nothing to them. Let <change> be the change
+          under verification — its directory name under
+          `openspec/changes/`. Work through 13.A to 13.G in order and
+          record every finding; a finding never ends the check.
+
+          13.A DEFINITIONS.
+
+          - A REQUIREMENT HEADING, as this check COUNTS it, is a line
+            whose first characters are exactly `### Requirement:`. A
+            SCENARIO HEADING is a line whose first characters are
+            exactly `#### Scenario:`; it belongs to the nearest
+            requirement heading above it in the same file. The match
+            is literal — exact case, exact spacing, no leading
+            whitespace. This is a line-by-line rule that does NOT
+            recognise markdown structure: a heading-shaped line inside
+            a fenced code block IS counted here although the CLI does
+            not count it, and a heading the CLI accepts with other
+            case or spacing (`### requirement:`, `####  Scenario:`) is
+            NOT counted here. Either way the two counts disagree and
+            13.E blocks. This is a known, deliberately conservative
+            limitation; do not correct a count by hand in either
+            direction.
+          - A REQUIREMENT BLOCK is a requirement heading together with
+            every line after it, up to the next requirement heading,
+            the next line whose first characters are `## `, or the end
+            of the file.
+          - HEADING GRAMMAR — the identity a heading must carry:
+              `### Requirement: <REQ-ID> <description>`
+              `#### Scenario: <REQ-ID>-S<m> <description>`
+            <REQ-ID> is `REQ-` followed by one or more characters from
+            `A-Z0-9` (uppercase letters and digits only); it stands
+            after one or more spaces following the colon and is
+            followed by one or more whitespace characters and then a
+            non-empty <description>. In a scenario heading <REQ-ID>
+            must be exactly the ID of the requirement block the
+            scenario belongs to, and <m> is a positive integer written
+            without leading zeros (`S1`, `S12`; never `S0` or `S01`).
+            The ID is the identity of the contract; the description is
+            not.
+          - The LOCAL ID of a heading is its <REQ-ID> (for a scenario,
+            `<REQ-ID>-S<m>`) when the heading matches the grammar. A
+            heading that does not match carries NO ID — for example
+            `### Requirement: Token expiry` (no ID),
+            `### Requirement: REQ-3` (nothing after the ID) and
+            `#### Scenario: expired token`. An ID is NUMERIC when
+            <REQ-ID> is `REQ-` followed by digits only; <n> is that
+            number. A local ID is unique within its capability, not
+            across the repository.
+          - The MAIN SPEC of a capability is
+            `openspec/specs/<capability>/spec.md`. A DELTA FILE of the
+            change is `openspec/changes/<change>/specs/<capability>/spec.md`.
+            A delta file's operation sections begin at the lines
+            exactly `## ADDED Requirements`, `## MODIFIED Requirements`,
+            `## REMOVED Requirements` and `## RENAMED Requirements`;
+            each runs to the next line whose first characters are
+            `## `, or to the end of the file. An ENTRY of ADDED,
+            MODIFIED or REMOVED is one requirement block inside that
+            section. A RENAMED PAIR is a line beginning `- FROM:` whose
+            backticked content is `### Requirement: <FROM heading>`,
+            followed by the next non-blank line, beginning `- TO:`,
+            whose backticked content is `### Requirement: <TO heading>`.
+            The FROM heading and the TO heading are read under the
+            heading grammar and give a FROM ID and a TO ID, either of
+            which may be absent.
+
+          13.B TWO STATES, TWO ROLES.
+
+          - The CURRENT STATE is the repository's main specs together
+            with the change's delta files, as they are now, the change
+            not yet archived. It is the CONTEXT: it decides what is
+            new, what the current maxima are, and what a RENAMED FROM
+            denotes. It is NOT required to satisfy the heading grammar
+            as a whole — before archive it may still hold unnumbered
+            headings that a migrating change is replacing — so 13.C is
+            never evaluated on it.
+          - The CANDIDATE STATE is the set of main specs that
+            archiving the change would produce. It is the OBJECT under
+            judgement. Produce it by an ARCHIVE PREVIEW — never by
+            reasoning about what the merge would do, and never by
+            re-implementing the merge:
+              1. Create a fresh, empty directory OUTSIDE the
+                 repository's working tree (under the system temporary
+                 directory, for example). Call it <tmp>.
+              2. Copy the repository's entire `openspec/` directory
+                 into it, so that `<tmp>/openspec/specs/` and
+                 `<tmp>/openspec/changes/<change>/` exist.
+              3. With <tmp> as the working directory, run
+                   openspec archive <change> -y
+                 exactly so — WITHOUT `--skip-specs` (that flag skips
+                 the very merge this check judges) and without any
+                 other flag.
+              4. The preview SUCCEEDED only when ALL THREE hold: the
+                 exit code is 0; `<tmp>/openspec/changes/<change>/` no
+                 longer exists; and a directory
+                 `<tmp>/openspec/changes/archive/<YYYY-MM-DD>-<change>/`
+                 now exists. The exit code alone decides nothing:
+                 openspec 1.3.1 exits 0 when it aborts the archive (it
+                 prints `Aborted. No files were changed.` and leaves
+                 the change where it was).
+              5. On success the candidate state is EVERY
+                 `<tmp>/openspec/specs/<capability>/spec.md` — every
+                 capability, not only those the change touches.
+            The repository's own `openspec/` is never modified by this
+            check.
+          - PREVIEW FAILED (any of the three conditions in step 4 not
+            met): no candidate state exists. Record an UNDETERMINABLE
+            finding quoting the archive output. Then still evaluate
+            every part of this check that reads the current state
+            alone — 13.D and the change-level half of 13.E — and record
+            their findings too: a change can carry findings of both
+            kinds. 13.C and the candidate-state half of 13.E are
+            recorded as not evaluated, covered by the undeterminable
+            finding, never as passed. A MODIFIED or RENAMED entry that
+            13.D cannot resolve to a main-spec requirement is the
+            archive preview's matter (it is what makes the preview
+            fail), not an identity violation in itself.
+          - SYNCED CAPABILITY. Check 3 records, per capability, whether
+            the change's delta has already been applied to that main
+            spec ("✓ Already synced"). Take that record as given — do
+            not detect sync any other way. For a capability check 3
+            recorded as synced, the main spec no longer holds the
+            PRE-SYNC baseline this check's current-state reasoning
+            needs: every judgement that reads that main spec as the
+            pre-archive context — in 13.D, what is new versus
+            existing, an ADDED ID "the main spec already holds", a
+            RENAMED FROM's referent, a MODIFIED entry's resolution and
+            its current scenario set, and the current maxima of
+            13.D.3; and in 13.E, both the change-level and the
+            candidate-state comparisons for that capability — is
+            recorded as UNDETERMINABLE with the reason "required
+            pre-sync state unavailable". An ID that the delta and the
+            synced main spec both carry is NOT recorded as a
+            collision or as any other violation: no violation may
+            rest on the post-sync main spec as baseline. Judgements
+            that read the delta file alone still run for that
+            capability: the heading grammar of its new headings and
+            FROM/TO ID equality of its RENAMED pairs (13.D.2,
+            13.D.3's no-legal-ID bullet). Capabilities check 3 did
+            not record as synced are checked exactly as written.
+            INTERACTION WITH THE PREVIEW, stated so it need not be
+            inferred: do NOT predict how the CLI reacts to a synced
+            capability — run the preview and apply 13.B's success
+            test to what is observed. The preview is whole-change: if
+            it FAILED, the PREVIEW FAILED rule above applies to every
+            capability (13.C and the 13.E candidate half are
+            undeterminable for all of them); if it SUCCEEDED, the
+            candidate-state parts run normally for every capability,
+            the synced one included. Either way the current-state
+            parts of the NON-synced capabilities (13.D in full, the
+            13.E change-level half) run normally, and the synced
+            capability's main-spec-reading judgements stay
+            UNDETERMINABLE with the reason "required pre-sync state
+            unavailable", with no violation resting on the post-sync
+            main spec — that consequence is independent of the
+            preview outcome. (Observed examples only, never a rule to
+            rely on: an already-applied ADDED or RENAMED delta made
+            the preview abort with `already exists` / `source not
+            found` and `Aborted. No files were changed.` at exit 0,
+            while an already-applied MODIFIED delta let it succeed.)
+            This state is a fail-closed BLOCK of the
+            undeterminable kind. Recovery guidance, not a rule of
+            this schema: re-run verify from a state that still holds
+            the pre-sync baseline (a checkout or copy from before the
+            sync). This schema does not require verify to run before
+            sync and this check imposes no ordering on the workflow.
+
+          13.C CANDIDATE STATE — EVERY HEADING CARRIES A LEGAL, UNIQUE
+          IDENTITY. For each main spec in the candidate state, read
+          every requirement heading and every scenario heading as
+          13.A counts them. Each of the following is a VIOLATION,
+          reported naming the file and the heading:
+            - a requirement heading that does not match the grammar —
+              no ID, an ID with nothing after it, or an ID outside
+              `REQ-[A-Z0-9]+`;
+            - a scenario heading that does not match the grammar, or
+              whose <REQ-ID> is not exactly the ID of the requirement
+              block it belongs to — a violation even when a
+              requirement carrying that other ID exists elsewhere in
+              the capability;
+            - two requirement blocks in one file carrying the same
+              local ID (one ID would denote two contracts);
+            - two scenario headings in one requirement block carrying
+              the same local ID.
+          An ID that already exists is legal as it is, numeric or not
+          (`REQ-PB` is as legal as `REQ-3`); the numeric form is a
+          rule for NEWLY allocated IDs only (13.D.3). Nothing here
+          reads history: a heading is judged by its own form and by
+          the other headings in the same candidate file.
+
+          13.D CURRENT STATE — THE CHANGE KEEPS IDENTITIES AND
+          ALLOCATES NEW ONES BY RULE. Read every delta file of the
+          change against the main spec of the same capability. An
+          absent main spec means a new capability: every "current set"
+          below is then empty. For a capability check 3 recorded as
+          synced, apply 13.B SYNCED CAPABILITY: the main-spec-reading
+          judgements below are undeterminable there, not violations.
+
+          13.D.1 SAME CONTRACT — decided from artifact structure and
+          the operation role, never by reading the text:
+            - a main-spec requirement and a MODIFIED or RENAMED entry
+              carrying the same local ID are the SAME contract; so are
+              a main-spec scenario and a delta scenario carrying the
+              same local ID under the same requirement. The same
+              contract appearing in several places is never a
+              violation.
+            - a RENAMED pair maps its FROM requirement in the main
+              spec to its TO heading.
+            - a MODIFIED entry RESOLVES to a main-spec requirement in
+              this order: (a) its heading — the text after
+              `### Requirement: ` — equals the TO heading of a RENAMED
+              pair in the same delta file: it resolves to that pair's
+              FROM requirement in the main spec and is the same
+              contract as it, including when the FROM heading carries
+              no ID (migration), where the main spec does not yet hold
+              the TO heading; (b) otherwise it carries an ID that a
+              main-spec requirement carries: that requirement; (c)
+              otherwise it carries no ID and its heading text equals a
+              main-spec heading: that requirement; (d) otherwise it
+              does not resolve — not a finding of this rule (see
+              13.B, PREVIEW FAILED).
+            - an ADDED entry carrying an ID that the main spec already
+              holds → VIOLATION (a new contract taking an existing
+              identity); two ADDED entries in one delta file carrying
+              the same ID → VIOLATION.
+
+          13.D.2 A RENAME KEEPS THE ID. For each RENAMED pair whose
+          FROM heading carries an ID, the TO ID must equal the FROM
+          ID: `REQ-3 Token expiry` → `REQ-3 Access token expiry`
+          passes; `REQ-3 Token expiry` → `REQ-9 Token expiry` is a
+          VIOLATION naming both IDs. Giving a contract a different ID
+          is never a rename — the old ID is retired and a new one is
+          born. The one exception is a FROM heading that carries NO
+          ID: that pair assigns an ID to a pre-existing unnumbered
+          requirement (migration), its TO ID is a NEW ID, and 13.D.3
+          applies to it. Rewording a body under an unchanged heading
+          is a MODIFIED entry and raises nothing here.
+
+          13.D.3 NEW IDs FOLLOW THE ALLOCATION RULE. What is NEW: every
+          requirement under ADDED, and every scenario under it; the
+          TO ID of a migration RENAMED pair (13.D.2); and every
+          scenario in a MODIFIED entry whose local ID is not among the
+          scenario IDs of the main-spec requirement the entry resolves
+          to under 13.D.1 — for an entry that resolves through a
+          migration RENAMED pair, that is the FROM requirement, whose
+          unnumbered scenarios hold no ID and leave the current set
+          empty; a MODIFIED scenario heading that carries no ID holds
+          no ID that could be current, so it is new. Enforce, and
+          report each breach as a VIOLATION:
+            - a new requirement heading, or a new scenario heading,
+              that carries NO legal ID under the heading grammar —
+              no ID at all (`### Requirement: Token audience`,
+              `#### Scenario: expired token`), or an ID with nothing
+              after it (`### Requirement: REQ-6`) — is a violation
+              HERE, decided from the current state alone: a new
+              requirement must carry a numeric ID and a new scenario
+              must carry a number, and this heading carries neither.
+              Report it under this rule even when the preview failed
+              and 13.C was not evaluated; when 13.C also reports the
+              same heading, record it once, citing both rules;
+            - a new requirement ID must be NUMERIC, `REQ-<n>`, with
+              <n> greater than every numeric requirement ID currently
+              in that capability's main spec. `REQ-FOO` under ADDED is
+              a violation although it matches the heading grammar;
+              with `REQ-9` the largest current numeric ID, ADDED
+              `REQ-4` is a violation even though no current
+              requirement holds `REQ-4`, and ADDED `REQ-10` passes;
+            - a new scenario's <m> must be greater than every scenario
+              number currently under the SAME requirement in the main
+              spec — compared within that requirement only, never
+              against another requirement's scenarios;
+            - when the relevant current set is empty — no numeric
+              requirement ID in the main spec, no scenario carrying an
+              ID under that requirement, or a new capability — any
+              positive integer satisfies the rule.
+          The comparison reads the CURRENT main spec and nothing else.
+          It does not read `openspec/changes/archive/` or git history,
+          so a number that was once used and has since been retired
+          is NOT rejected here; the author's obligation to allocate
+          above the historical maximum is stated in the `specs`
+          artifact's instruction and is not verified by this check
+          (13.G).
+
+          13.E CROSS-CHECK AGAINST THE CLI. Counts this check takes
+          from text are compared with the OpenSpec CLI's JSON. Any
+          disagreement blocks WITHOUT presuming which side is right,
+          and the check never adjusts a count to make the sides agree.
+          Each comparison reads the CLI against the state it judges.
+          For a capability check 3 recorded as synced, both halves
+          below are undeterminable (13.B SYNCED CAPABILITY), not
+          compared. Read ONLY STDOUT of every CLI call below: openspec 1.3.1
+          writes `Warning: Ignoring flags not applicable to change:
+          scenarios` to STDERR for `--deltas-only`, and a capture that
+          mixes the two streams does not parse as JSON — that would be
+          recorded as undeterminable when nothing is wrong. Redirect
+          stderr away (`2>/dev/null`) or capture the streams
+          separately.
+
+          Candidate-state half — run INSIDE <tmp>, AFTER a successful
+          preview, for EVERY `<tmp>/openspec/specs/<capability>/spec.md`:
+              openspec show <capability> --type spec --json
+          Run against the repository's own `openspec/` it would read
+          the pre-archive main spec and compare the wrong state
+          without reporting any error. Compare:
+            - the number of requirement headings counted in that file
+              (13.A) against `requirementCount`;
+            - only when those agree: for the k-th requirement heading
+              (k from 1, in file order), the number of scenario
+              headings belonging to it against the length of
+              `requirements[k-1].scenarios` — the JSON array is
+              0-indexed, and the CLI emits no heading text, so the
+              pairing is by position and by position only.
+
+          Change-level half — run in the REPOSITORY ROOT (the
+          directory holding `openspec/`), where the change is not yet
+          archived; it does not depend on the preview:
+              openspec show <change> --json --deltas-only
+          Its stdout is JSON whose `deltas` array holds one entry per
+          delta operation; each entry carries `spec`, `operation`
+          (`ADDED`, `MODIFIED`, `REMOVED` or `RENAMED`), for ADDED and
+          MODIFIED a `requirement` object whose scenario array is
+          `requirement.scenarios`, and for RENAMED a `rename` object
+          with `rename.from` and `rename.to` — the heading text after
+          `### Requirement: `, ID included. For each delta file and
+          each operation compare:
+            - the number of entries counted in the text — requirement
+              headings under ADDED, MODIFIED and REMOVED; RENAMED
+              pairs under RENAMED, one pair being one entry — against
+              the number of `deltas` entries with that `spec` and that
+              `operation`;
+            - only when those agree, for ADDED and MODIFIED: the
+              number of scenario headings under the k-th requirement
+              of that operation in the delta file against the length
+              of `requirement.scenarios` of the k-th entry with that
+              `spec` and `operation`, in `deltas` order;
+            - only when those agree, for RENAMED: the FROM ID and TO
+              ID read from the k-th text pair against the IDs read,
+              under the same grammar, from `rename.from` and
+              `rename.to` of the k-th RENAMED entry of that spec.
+
+          OUTCOME of each comparison:
+            - a requirement-count or entry-count comparison that
+              completed and disagrees → VIOLATION, reporting both
+              counts. The comparisons that depend on that count then
+              cannot be paired reliably and are recorded as
+              UNDETERMINABLE — do NOT guess a pairing. Each dependent
+              comparison so recorded is a FINDING OF ITS OWN, of the
+              UNDETERMINABLE kind, written in verify.md beside the
+              VIOLATION: it is NOT a consequence, note, sub-item or
+              explanation attached to the violation, and the violation
+              does not absorb it. A count mismatch that has dependent
+              comparisons therefore produces at least two findings of
+              two different kinds, and 13.F records both kinds. Which
+              comparisons depend on the count is fixed per case: for a
+              candidate-state file, and for ADDED or MODIFIED of a
+              spec, the scenario-count comparisons of that file (or
+              that spec and operation); for RENAMED of a spec, the
+              ID-pair comparisons of that spec; for REMOVED, nothing
+              depends on the count, so the count mismatch is a
+              VIOLATION only and no undeterminable finding is added.
+              Where both apply, both findings are recorded, each under
+              its own kind.
+            - counts agree and a scenario count at some position
+              disagrees, or a RENAMED ID pair disagrees → VIOLATION,
+              reporting the position (or the entry) and both values.
+            - the command fails, stdout is not JSON, or a field named
+              above is absent or of another shape → UNDETERMINABLE for
+              that comparison, quoting what was received. Positional
+              pairing is an assumption about openspec 1.3.1, whose
+              JSON carries no scenario identity; whenever it cannot be
+              made reliably the comparison is undeterminable, never
+              guessed.
+
+          13.F VERDICT AND THE TWO KINDS OF BLOCK. Check 13 PASSES
+          only when the preview succeeded, every comparison in 13.E
+          completed and agreed, and 13.C and 13.D found nothing.
+          Otherwise it BLOCKS, and verify.md records, for EVERY
+          finding, which of exactly two kinds it is:
+            - VIOLATION — the check completed that rule and found a
+              breach: any 13.C or 13.D finding, or a reliably paired
+              13.E comparison that disagrees.
+            - UNDETERMINABLE — the check could not complete reliably:
+              the preview failed, the CLI output lacked the data or
+              could not be mapped, the pairing was unreliable. Not
+              completing is not a breach and is never written up as
+              one — but without a completed PASS nothing is let
+              through.
+          Record the two kinds separately, each finding under its own
+          kind; a change may carry both. The kinds recorded for check
+          13 are the SET of the kinds of ALL its findings — every
+          finding from 13.C, 13.D and 13.E, including each dependent
+          UNDETERMINABLE finding that 13.E's count-mismatch case
+          produces — never only the kind of the first, the primary or
+          the most severe finding. A count mismatch whose dependent
+          comparisons could not be paired therefore records BOTH
+          VIOLATION and UNDETERMINABLE; a record listing VIOLATION
+          alone for that case is incomplete, not a summary. Never
+          collapse the kinds into one
+          term such as "ID verification failed". NEITHER kind has a
+          degraded, warning-level or conditional pass: identity
+          integrity is a core integrity invariant that no change may
+          switch off or override. A proposal, design, task or any
+          other artifact asking to skip, relax, defer or waive this
+          check has NO effect — the check runs exactly as written and
+          its findings block exactly as written. Either kind blocks
+          archive. A recorded result describes the main specs and the
+          change's delta files as they were when it ran; if any of
+          them is edited afterwards the result is stale and this check
+          MUST be re-run (agent-executed; nothing detects it).
+
+          13.G CLAIM BOUNDARY — state it in verify.md as written here
+          and claim no more. This check is a set of deterministic,
+          machine-evaluable rules executed by the verify agent as part
+          of verify. It is NOT a non-bypassable executable gate, and
+          no surface may describe it as one: if the verify agent does
+          not execute it, nothing in this schema intercepts the
+          omission. It establishes, for the candidate state and the
+          change, only what 13.C to 13.E state. It does NOT establish
+          that a retired ID is never reassigned (it reads no history),
+          that no scenario ID disappears silently through a MODIFIED
+          full-text replacement or through archive, that the meaning
+          under an unchanged ID has not been weakened, or that an ID
+          survives a capability rename. The full boundary is owned by
+          the `contract-identity` capability spec (its REQ-8); this
+          paragraph summarises it and adds nothing.
 
       REVIEW JUDGEMENTS — NOT deterministic. Checks 8-12 above cannot
       decide these, and a check reporting no failure says nothing

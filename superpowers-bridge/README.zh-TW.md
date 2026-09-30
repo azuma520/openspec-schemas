@@ -9,7 +9,7 @@
 
 > 把 [OpenSpec](https://github.com/Fission-AI/OpenSpec) 的 artifact 治理流程(**做什麼**)與 [obra/superpowers](https://github.com/obra/superpowers) 的執行技能(**怎麼做**)整合為單一工作流。額外提供 evidence-first 的 `retrospective` artifact,補上 Superpowers 沒有的 retro 能力。
 >
-> 整合**完全發生在 prompt 層**——不修改 Superpowers 任何程式碼,不修改 OpenSpec CLI。Schema 版本:v2(見[相容性](#相容性)與[從 v1 遷移到 v2](#從-v1-遷移到-v2))。
+> 整合**完全發生在 prompt 層**——不修改 Superpowers 任何程式碼,不修改 OpenSpec CLI。Schema 版本:v3(見[相容性](#相容性)與[從 v2 遷移到 v3](#從-v2-遷移到-v3))。
 
 ---
 
@@ -114,7 +114,7 @@ rm -rf /tmp/oss-upgrade
 
 > **在同一個 schema major 之內**,in-flight change(任一 phase:brainstorm / design / specs / ...)仍合法 — schema graph(`requires:` edges、PRECHECKs、artifact 依賴)不會跨 patch release 變動。升級前產出的 `verify.md` / `retrospective.md` 仍可讀;若對它們重跑 `/opsx:verify` 或 `/opsx:continue → retrospective`,會用新 template 結構覆蓋。
 
-> **跨 schema major 則需要 migration。** 從 bundle `1.x.y`(schema major `v1`)升到 `2.x.y`(schema major `v2`)改變了 `tasks.md` 與 `plan.md` 必須包含的內容,所以一個 in-flight 的 v1 change 要先做完[從 v1 遷移到 v2](#從-v1-遷移到-v2)的步驟才過得了 verify。schema graph 的結構性變動(增刪 artifact、改 `requires:` edges、PRECHECK 變動)一律會在[版本識別](#版本識別)下附上 migration guide 公告。
+> **跨 schema major 則需要 migration。** 從 bundle `1.x.y`(schema major `v1`)升到 `2.x.y`(schema major `v2`)改變了 `tasks.md` 與 `plan.md` 必須包含的內容;從 `2.x.y`(`v2`)升到 `3.x.y`(`v3`)則要求每個 Requirement 與 Scenario 標題都帶穩定 ID。一個 in-flight 的 `v2` change 要先做完[從 v2 遷移到 v3](#從-v2-遷移到-v3)的步驟才過得了 verify(check 13)。任何 schema major 升版——原本合法的 artifact 變不合法(獨立即足夠)、增刪 artifact、改 `requires:` edges、PRECHECK 形狀改變——都一律會在[版本識別](#版本識別)下附上 migration guide 公告。
 
 ---
 
@@ -329,7 +329,7 @@ Superpowers skill 有預設輸出路徑(例如 brainstorming 寫到 `docs/superp
 ```bash
 /opsx:ff my-feature    # 一條龍:scaffold + brainstorm + proposal + design + specs + tasks + plan
 /opsx:apply            # worktree + subagent-driven-development(結構性 code review;TDD 依 tasks.md 註記)
-/opsx:verify           # 產出 verify.md(12 項檢查 + review 判斷)
+/opsx:verify           # 產出 verify.md(13 項檢查 + review 判斷)
 /opsx:continue         # → retrospective(產出 retrospective.md,§0 + 6 sections)
 /opsx:archive          # 封存
 ```
@@ -344,7 +344,7 @@ Superpowers skill 有預設輸出路徑(例如 brainstorming 寫到 `docs/superp
 /opsx:continue         # → tasks
 /opsx:continue         # → plan
 /opsx:apply            # → 實作 + worktree + subagent-driven-development
-/opsx:verify           # → verify.md(post-apply,跑 12 項檢查)
+/opsx:verify           # → verify.md(post-apply,跑 13 項檢查)
 /opsx:continue         # → retrospective.md(post-verify,evidence-first §0 + 6 sections)
 /opsx:archive
 ```
@@ -392,7 +392,7 @@ Main agent 讀 `plan.md`,為每個 task 派發 fresh subagent。每個 subagent 
 
 #### 3. Verification — `openspec-verify-change`
 
-產出 `verify.md`,跑 12 項檢查。第 1–7 項是 cycle 完整性那一組:結構驗證(`openspec validate --all --json`)、task 完成度、delta-spec sync 狀態、design/specs 一致性(non-blocking warning)、實作信號(commit 狀態)、front-door routing leak detector(non-blocking warning)、以及 deferred-dogfood vs automated-test 等價性。第 7 項只讀 `tasks.md`、不讀別的檔——依 Plan Contract,`tasks.md` 才是 task 層級狀態的載體——並且僅在 `tasks.md` 至少帶一條 `- [~]` 延後 task 行、而等價性章節空白(gap 分析被跳過)時才 block,其他情境屬 informational。
+產出 `verify.md`,跑 13 項檢查。第 1–7 項是 cycle 完整性那一組:結構驗證(`openspec validate --all --json`)、task 完成度、delta-spec sync 狀態、design/specs 一致性(non-blocking warning)、實作信號(commit 狀態)、front-door routing leak detector(non-blocking warning)、以及 deferred-dogfood vs automated-test 等價性。第 7 項只讀 `tasks.md`、不讀別的檔——依 Plan Contract,`tasks.md` 才是 task 層級狀態的載體——並且僅在 `tasks.md` 至少帶一條 `- [~]` 延後 task 行、而等價性章節空白(gap 分析被跳過)時才 block,其他情境屬 informational。
 
 第 8–12 項是 schema v2 新增的 TDD 證據契約與 plan/task 對鍵組。每一項都**以決定性的方式判定結果**——按固定規則讀文字,沒有主觀判斷的餘地——而且失敗一律 block:每個 task 的 `TDD:` 註記都存在且格式正確(8);每個標為適用的 task 都帶著 `- RED:` 與 `- GREEN:` 紀錄、必填欄位齊全,且每個 `subject:` 值都合乎文法——trim 之後恰好一個 `::`、兩側各自非空,除此之外不再多加限制(不限制路徑寫法、不限制副檔名、不限制測試名稱用什麼字元)(9);結果標記符合規定,GREEN 必須恰好是 `PASS`、RED 必須是 `PASS` 以外的單一大寫 token(10);紀錄以 `subject:` 值配對、絕不以位置配對,分兩階段——同一個 task 內每一側的 subject 值必須唯一,然後每個 subject 恰好一筆 RED 與一筆 GREEN(11);以及 `tasks.md` 的 task 編號與 `plan.md` 的條目鍵 1:1 對應,同樣分兩階段——先各側各自查重複鍵,逐一點名重複的鍵,訊息與「缺鍵/多鍵」的訊息不同,再把兩個鍵集合雙向比對(12)。這兩項兩階段檢查的第一階段都**不會** short-circuit:不論第一階段查到什麼,第二階段照跑,所以一次執行就把兩類缺陷都報出來。
 
@@ -401,6 +401,8 @@ Main agent 讀 `plan.md`,為每個 task 派發 fresh subagent。每個 subagent 
 - 它們在**判定什麼**這件事上是決定性的,在**怎麼跑**這件事上是 **agent 執行**的:執行者就是那個照 verify instruction 走的 verify agent。schema 要求這些檢查在 archive 之前跑、且失敗要 block,但這**不是** Harness 層級、機械強制、無法繞過的 archive-time gate。如果 verify agent 沒有執行其中某一項,本 schema 沒有任何機制會攔截這個遺漏 —— 對 `verify.md` 的 review 是唯一的後盾。
 - 它們判定的只有**結構、格式與基數(cardinality)**,**絕不判定證據的真假**。它們讀的是註記與紀錄的存在與結構;它們不確立證據是真的(證據由 agent 自行提交;那份保證落在 review 層,也隨著 review 層一起打折),不證明開發過程真的是測試先行,也不評斷語意品質。
 - 語意層面的問題 —— RED 的 `failure:` 摘錄到底是行為失敗還是 harness 錯誤、被引用的 subject 是否真的在測這個 task 所宣稱的東西、`n/a` 的理由站不站得住、以及標為 `n/a` 的 task 是不是反而帶了紀錄 —— 在 instruction 裡被列為 **review 判斷**(R1–R4),是以 review 的 blocking finding 回報,而不是某一項檢查的結果。
+
+**第 13 項(schema v3 新增)—— identity integrity。** 每個 Requirement 與 Scenario 標題都必須帶穩定、唯一的 ID(見[從 v2 遷移到 v3](#從-v2-遷移到-v3))。第 13 項判定的對象是這個 change 的歸檔後 *候選狀態* —— 在一份暫存複本上實跑 archive preview 產生,絕不靠推理去猜合併結果 —— 對照這條規則,並把從文字數出的 requirement / scenario 數量與 OpenSpec CLI 的 JSON 輸出交叉核對。它的 BLOCK 分兩種、絕不混稱一種:**違規**(檢查完成、發現規則被破壞)或**無法判定**(檢查本身無法可靠完成 —— 例如 archive preview 失敗)——兩種都沒有降級或警告級的通過。跟第 8–12 項一樣,它在**判定什麼**上是決定性的、在**怎麼跑**上是 agent 執行的:schema 要求它在 archive 之前跑、失敗要 block,但這**不是** Harness 層級、無法繞過的 gate —— 如果 verify agent 跳過它,本 schema 沒有任何機制會攔截這個遺漏。它不確立退休的 ID 不會被重新指派、Scenario ID 不會透過全文替換或 archive 無聲消失、同一個未改動的 ID 底下語意沒有被削弱,也不確立 ID 能在 capability 改名後存活。完整的規則集與這個宣稱邊界由 `contract-identity` capability spec([`openspec/specs/contract-identity/spec.md`](../openspec/specs/contract-identity/spec.md))擁有 —— 本 README 只是摘要,不另加內容。
 
 失敗會回到對應 artifact 修正後重跑 verify。
 
@@ -480,12 +482,12 @@ LLM 不必解讀 timing 文字 —— 跑指令、看結果即可。這是顧慮
 
 | 標識 | 位置 | 含義 | 範例 |
 |---|---|---|---|
-| Schema major | `schema.yaml: version: 2` | schema graph 契約版本(artifacts、`requires:` 邊、PRECHECK 形狀)。破壞性改動才 bump | `2` |
-| Bundle release | `VERSION` 檔 + git tag | 此 bundle 的 SemVer 發佈版本,從屬於某個 schema major | `2.0.0`(發版時打 tag `v2.0.0`) |
+| Schema major | `schema.yaml: version: 3` | schema graph 契約版本。任一破壞性改動就 bump:原本合法的 artifact 變不合法(獨立即足夠)、artifact 增刪、`requires:` 邊改變、PRECHECK 形狀改變 | `3` |
+| Bundle release | `VERSION` 檔 + git tag | 此 bundle 的 SemVer 發佈版本,從屬於某個 schema major | `3.0.0`(發版時打 tag `v3.0.0`) |
 
-bundle release `2.x.y` 是 schema major `v2` 的一個 published cut,一如 `1.x.y` 之於 `v1`。Adopter 釘到 `1.x.y` 或 `2.x.y` 的 bundle,即享有 schema graph 在該 major 內的相容保證。
+bundle release `3.x.y` 是 schema major `v3` 的一個 published cut,一如 `2.x.y` 之於 `v2`、`1.x.y` 之於 `v1`。Adopter 釘到 `1.x.y`、`2.x.y` 或 `3.x.y` 的 bundle,即享有 schema graph 在該 major 內的相容保證。
 
-> 下方相容矩陣以 schema major(`v1`、`v2`)為列鍵,因為 OpenSpec / Superpowers 的相容性由 schema 契約決定,不受 bundle 內部 patch 影響。
+> 下方相容矩陣以 schema major(`v1`、`v2`、`v3`)為列鍵,因為 OpenSpec / Superpowers 的相容性由 schema 契約決定,不受 bundle 內部 patch 影響。
 
 ### 為什麼 v1 → v2 是 schema major 升版
 
@@ -495,6 +497,29 @@ bundle release `2.x.y` 是 schema major `v2` 的一個 published cut,一如 `1.x
 2. **PRECHECK 形狀改變。** `plan` artifact 的 skill PRECHECK 被移除,這直接命中本段「PRECHECK 形狀」那條判準。它之所以被移除,是因為**檢查對象消失了** —— `superpowers:writing-plans` 不再是依賴,「那個 skill 在不在?」就沒有受詞了 —— 而不是因為改用文字敘述取代。接手的控制措施回答的是另一個問題:一份符合契約的 plan,由 verify 的決定性檢查在 archive 之前查核。其餘每一個 PRECHECK(brainstorm、verify、retrospective、apply pre-flight)都沒有動。
 
 「維持 `version: 1` 並改寫政策措辭」這個做法有考慮過並被否決:那等於為了遷就這次改動而重新定義「破壞性」,並且靜默地違背對所有釘在 `v1.x.y` 的人做過的相容承諾。
+
+### 為什麼 v2 → v3 是 schema major 升版
+
+政策裡有一條判準成立,而且它本身就足夠:
+
+1. **原本合法的 artifact 變成不合法。** v3 讓每個 Requirement 與 Scenario 標題都必須帶穩定 ID 成為規範要求,並加上對它的決定性驗證(verify 第 13 項)。一份在 v2 下合法的 `spec.md` —— 標題沒有 ID,例如 `### Requirement: Token expiry` —— 現在沒遷移就過不了 verify 第 13 項。原本合法的 artifact 變成不合法,這件事本身就是「破壞性」的定義,跟 PRECHECK 怎麼論無關。
+
+這次 PRECHECK 形狀不受影響:第 13 項是新增的 verify 檢查,不是改動任何 skill 的 PRECHECK,現有每一個 PRECHECK(brainstorm、apply pre-flight、verify、retrospective)都沒有動。
+
+「維持 `version: 2` 並只檢查新寫的需求」這個做法有考慮過並被否決:那等於為了遷就這次改動而重新定義「破壞性」,跟上面否決 v1 → v2 那個選項的理由相同。
+
+### 從 v2 遷移到 v3
+
+Requirement 標題現在的形式是 `### Requirement: <REQ-ID> <description>`,Scenario 標題則是 `#### Scenario: <REQ-ID>-S<m> <description>`;新配置的 Requirement ID 形如 `REQ-<n>`(正整數)。完整語法與新 ID 配置規則只定義在一個地方,就是 `contract-identity` capability spec([`openspec/specs/contract-identity/spec.md`](../openspec/specs/contract-identity/spec.md))—— 請直接讀那裡,不要另抄一份。
+
+對於在 `2.x.y` bundle 下開始、目前仍 in-flight 的 change,升級 schema 目錄之後:
+
+1. **升級 bundle** 到 `3.0.0`。
+2. **開一個涵蓋所有 capability 的補號 change。** 對每個 capability 的主 spec:用 `RENAMED` 條目給每個 Requirement 補上穩定 ID(遷移前已帶 ID 的 Requirement,既有 ID 原樣保留;沒有 ID 的則配一個新的),再用 `MODIFIED` 更新標題文字。Scenario 不走 `RENAMED`——Scenario 標題本身不是可被 rename 的條目,它的 `<REQ-ID>-S<m>` ID 是隨同一筆 `MODIFIED` 全文替換一起補上的。內容不變——只改標題。**這件事不能拆成逐 capability 的多個 change 分批做**:第 13 項判定的是**候選狀態**——這個 change 的 archive 會產出的**每一個**主 spec,不只是它動到的那些——所以只補了部分 capability 的 change,會被它沒補到的每一個 capability 擋下。
+3. **跑 verify**(含第 13 項)然後 archive。
+4. **任何其他還沒 archive 的 in-flight `v2` change**,其 delta spec 裡新增與修改的標題都要先補到符合上面的 ID 語法才能過 verify。
+
+**Rollback:** 把 bundle 釘回 `2.x.y`。schema major `v2` 仍是一個已發布的 cut、沒有被撤下;遷移途中補上的 ID 對 `v2` 無害——它不檢查 ID,帶 ID 的標題在 CLI 下照常 validate 與 archive。
 
 ### 從 v1 遷移到 v2
 
@@ -513,14 +538,17 @@ bundle release `2.x.y` 是 schema major `v2` 的一個 published cut,一如 `1.x
 
 本 schema 撰寫時所對齊的 upstream 基準版本。這是**歷史快照,不是端對端相容性承諾** — CI 無法在 headless 環境跑完整的 prompt-layer workflow,行為相容性依賴 drift 觸發人類檢核。
 
-目前 bundle release: **`2.0.0`**(見 [VERSION](./VERSION);tag `v2.0.0` 於發版時建立)。
+目前 bundle release: **`3.0.0`**(見 [VERSION](./VERSION);tag `v3.0.0` 於發版時建立)。
 
 | superpowers-bridge | OpenSpec CLI | Superpowers plugin | 基準日期 |
 |---|---|---|---|
+| v3 | `1.3.1` | `v5.1.0` | 2026-09-30 |
 | v2 | `1.3.1` | `v5.1.0` | 2026-09-01 |
 | v1 | `1.3.1` | `v5.1.0` | 2026-05-11 |
 
-> 新的 major 排在前面。每個 major 各留一列,v1 那列保留給仍釘在 `1.x.y` bundle 的採用者。
+> 新的 major 排在前面。每個 major 各留一列,v1 與 v2 那兩列保留給仍釘在 `1.x.y` 或 `2.x.y` bundle 的採用者。
+>
+> **v3 那列宣告的 Superpowers 基準跟 v1、v2 相同(`v5.1.0`,未推進)——v3 並沒有比 v2 更動到 Superpowers 這個依賴,而下方重新查證紀錄裡的 `brainstorming` 漂移也仍未解。實作這個 change 時實際用到的環境,另外記錄在下面,跟這個已宣告的基準是兩件事。** OpenSpec `1.3.1`:實作 `requirement-scenario-identity` 這個 change 期間,`openspec schema validate superpowers-bridge` 在拋棄式測試專案複本裡對 v3 schema 通過過;另外 22 個 identity mutation fixtures 跑過 `openspec validate` / `openspec archive` / `openspec show` —— 全部在 CLI `1.3.1` 之下。**實際觀察到的環境,不是已宣告的基準:** `requirement-scenario-identity` 這個 change 自己的 apply phase —— 且僅限它實際跑到的路徑,載入了 `using-git-worktrees` 與 `subagent-driven-development` 兩個 skill —— 在已安裝的 Superpowers `v6.4.1` 上跑過且通過。這不是一次完整的 `/opsx:new` → archive cycle;也不涵蓋那個 change 自己的 brainstorm 或 design phase,那兩個 phase 更早跑完、當時的 Superpowers 版本沒有記錄;這件事本身也不足以正當化推進已宣告的基準——那需要等 `brainstorming` 漂移修好之後,重跑一次完整的相容性查證。`v6.3.0` 仍未解的 finding 見下方重新查證紀錄,這一列不解決它們。
 >
 > v2 那列的 OpenSpec 欄位是 **CLI 層級的聲明**,不是一次完整的 prompt-layer cycle:`version: 2` 之下的 CLI 行為已在 2026-09-01 於一個隔離的測試專案中、對 openspec `1.3.1` 跑過**整個 CLI 介面**(validate / schemas / new / status / instructions)。Superpowers 欄位則**與 v1 相同未動** —— v2 是移除一個依賴而不是新增,而且沒有人對更新的 Superpowers release 重跑過完整 cycle,推進它等於宣稱一個沒人做過的查核。對 `v6.3.0` 查了什麼、沒查什麼,見下方的重新查證紀錄。
 
@@ -557,13 +585,15 @@ bundle release `2.x.y` 是 schema major `v2` 的一個 published cut,一如 `1.x
 | Drift 通知 | [`version-check.yml`](../.github/workflows/version-check.yml) 每週,把基準 vs 最新 npm / GitHub release 字串比對 | Pinned ≠ latest upstream | 開 / 更新 [labelled drift issue](https://github.com/JiangWay/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check),由人類檢核(workflow 維持綠 — drift 是正常狀態,不是錯誤) |
 | 端對端 workflow | **未自動化** | Superpowers skill 內部行為改變(改名、改寫 prose 影響 PRECHECK 語意、傳遞依賴變動);OpenSpec 引擎語意微調 | drift issue 觸發時,人類讀 upstream release notes |
 
-「基準日期」由 maintainer 手動重跑完整 cycle 確認沒退步後才推進。在那之前,日期代表的是人類聲明,不是自動測試通過。**有一個例外,寫在這裡是為了讓那一列與這個定義不互相矛盾:** v2 那列的 `2026-09-01` **只是 CLI 層級的聲明** —— `version: 2` 之下的 CLI 行為(validate / schemas / new / status / instructions)對 openspec `1.3.1` 跑過 —— **不是**一次完整的 prompt-layer cycle 重跑。自 v1 那列的 `2026-05-11` 以來,沒有重跑過完整 cycle。
+「基準日期」由 maintainer 手動重跑完整 cycle 確認沒退步後才推進。在那之前,日期代表的是人類聲明,不是自動測試通過。**有兩個例外,寫在這裡是為了讓那兩列與這個定義不互相矛盾:** v2 那列的 `2026-09-01` 與 v3 那列的 `2026-09-30` 都**只是 CLI 層級的聲明** —— 各自那一列 `version:` 之下的 CLI 行為(v2 是 validate / schemas / new / status / instructions;v3 是 `schema validate` 加上 22 個 identity mutation fixtures 跑過 `validate` / `archive` / `show`)對 openspec `1.3.1` 跑過 —— **不是**一次完整的 prompt-layer cycle 重跑。這兩個日期都不代表對 Superpowers 重新查證過:兩列的 Superpowers 欄位都沒有推進,`requirement-scenario-identity` 實際用到的環境(Superpowers `v6.4.1`,僅 apply phase)記錄在上面,是跟已宣告基準分開的觀察,不構成移動這個日期的理由。自 v1 那列的 `2026-05-11` 以來,沒有重跑過完整 cycle。
 
 ### Known breaking changes
 
+**v2 → v3**(bundle `2.0.0` → `3.0.0`)。每個 Requirement 與 Scenario 標題現在都必須帶穩定 ID,由第 13 項檢查驗證:一份在 v2 下合法的 `spec.md`(標題沒有編號)沒遷移就過不了驗證。Migration:[從 v2 遷移到 v3](#從-v2-遷移到-v3)。Rollback:把 bundle 釘回 `2.x.y`。
+
 **v1 → v2**(bundle `1.0.1` → `2.0.0`)。TDD 適用性註記與 RED/GREEN 證據成為規範要求並被驗證(第 8–12 項檢查),所以一份在 v1 下合法的 `tasks.md` 沒遷移就過不了驗證,而沒有跟 task 編號 1:1 對鍵的 `plan.md` 會在第 12 項失敗。`plan` artifact 的 skill PRECHECK 隨 `superpowers:writing-plans` 依賴一併移除。Migration:[從 v1 遷移到 v2](#從-v1-遷移到-v2)。Rollback:把 bundle 釘回 `1.0.1`。
 
-未來 schema graph 結構性變動(artifact 增刪、`requires:` edge 變動、PRECHECK 變動)會記錄在這裡並附 migration note。
+未來的 schema major 升版——不論是原本合法的 artifact 變不合法、artifact 增刪、`requires:` edge 變動,還是 PRECHECK 形狀變動——都會記錄在這裡並附 migration note。
 
 採用者:版本 pin 在表中之上即可。要查自己專案的 runtime 現況,跑 `openspec list` + `openspec schemas` + `claude plugin list`。
 

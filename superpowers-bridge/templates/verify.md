@@ -216,6 +216,52 @@ a repeated key BLOCKs on its own, whatever the other side holds):
 
 ---
 
+## 9. Identity Integrity — Check 13
+
+Reports the verify instruction's check 13 (Requirement / Scenario heading identity). A BLOCK
+here means the change is not verified for archive.
+
+Check title, copied from the schema — do not paraphrase:
+
+13. **Identity integrity** (deterministic in what it decides, agent-executed like checks 8-12; BLOCKs are of two kinds)
+
+**Verdict**:
+
+- [ ] ✅ PASS — preview 成功，13.C／13.D 沒有任何 finding，13.E 每一項比對都完成且一致
+- [ ] ⛔ BLOCK — 至少一項 finding（見下方兩表）
+
+Check 13 的 BLOCK 分兩種、彼此不吸收：同一個 count mismatch 可能同時產生
+VIOLATION 與 UNDETERMINABLE 兩種 finding，兩張表都要分別列出，**不得**
+合併寫成一句「ID verification failed」。
+
+**VIOLATION findings**（check 完整跑完某條規則後發現違反 REQ-1～REQ-4，
+或一個可靠配對的 13.E 比對結果不一致）：
+
+| 依據（13.C / 13.D / 13.E） | 檔案 / heading / 位置 | 說明（雙方數值或內容） |
+|---|---|---|
+| — | — | — |
+
+**UNDETERMINABLE findings**（check 無法可靠跑完——preview 失敗、CLI 輸出
+缺資料或形狀不符、配對不可靠；未跑完本身不是違規，也不得記成違規）：
+
+| 依據（13.B / 13.E） | 對象 | 說明 |
+|---|---|---|
+| — | — | — |
+
+若無 finding，兩張表都填「無」——不得省略整個表格。
+
+**宣稱邊界摘要**（僅摘要，不重述規範文字；完整定義見
+`openspec/specs/contract-identity/spec.md` 的 REQ-8——**archive 前**該檔案
+還在本 change 底下的 `specs/contract-identity/spec.md`）：check 13 是一組
+決定論、機器可判的規則，由 verify agent 依 instruction 執行；它不是
+harness 層強制、不可繞過的 archive-time gate——verify agent 沒跑它時，本
+schema 沒有機制攔截這個疏漏。它只確立 candidate state 與本 change 在
+13.C 到 13.E 範圍內的結論，**不**確立「退役的 ID 不會被重新配用」、「一個
+scenario ID 不會透過 MODIFIED 全文替換或 archive 悄悄消失」、「同一個 ID
+底下的語意沒有被弱化」，或「capability 改名後 ID 存活」。
+
+---
+
 ## Overall Decision
 
 - [ ] ✅ PASS — 可進入 finishing-a-development-branch 與 archive
