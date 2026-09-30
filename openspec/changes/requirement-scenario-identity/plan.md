@@ -27,8 +27,8 @@ Binding non-goals carried from design.md（不是 spec 原文，但每個 entry 
 
 ## 1.1 — 身分 mutation fixtures
 
-- **Delivers:** 新目錄 `docs/superpowers/poc/2026-09-30-identity-mutation-fixtures/fixtures/` 下的一組 fixtures。每個 fixture 是一個自足的迷你 repo（主 spec＋一個 change），除了要測的那一件身分缺陷，其餘都合規；合起來涵蓋 `contract-identity` 所有以 identity check 判定為 THEN 的 scenario（清單見 tasks.md 1.1）。
-- **Acceptance:** tasks.md 1.1 列出的每個 scenario ID 至少被一個 fixture 涵蓋，或在 1.2 的覆蓋表中記為覆蓋缺口，並附當時的實測指令與輸出。每個違規 fixture 只破壞一件事：同一個 fixture 除了那一件之外，拿 `contract-identity` REQ-1 至 REQ-6 逐條檢查都找不到第二個缺陷。每個 fixture 在自己的目錄內跑 `openspec validate --all` 的結果都有記錄；預期會被 check 1 擋下的（若有）在預期答案表註明。不動舊 f1–f13 目錄的任何檔案（`git status` 在該目錄下無變動）。
+- **Delivers:** 新目錄 `docs/superpowers/poc/2026-09-30-identity-mutation-fixtures/fixtures/` 下的一組 fixtures。每個 fixture 是一個自足的迷你 repo（主 spec＋一個 change）。正向對照 fixture 全部合規；違規與無法判定 fixture 只有一個作者引入的 mutation source，其餘都合規；合起來涵蓋 `contract-identity` 所有以 identity check 判定為 THEN 的 scenario（清單見 tasks.md 1.1）。
+- **Acceptance:** tasks.md 1.1 列出的每個 scenario ID 至少被一個 fixture 涵蓋，或在 1.2 的覆蓋表中記為覆蓋缺口，並附當時的實測指令與輸出。每個違規或無法判定的 fixture 只有一個作者主動引入的 mutation source：拿 `contract-identity` REQ-1 至 REQ-6 逐條檢查，找不到第二個獨立引入的缺陷。一個 mutation 必然同時觸發多條規則時（例如 ADDED 重用現有 ID，同時觸犯 REQ-3 與 REQ-4），這些連帶命中是合法的，不算第二個缺陷；1.2 的預期答案表逐一列出主要違規與連帶命中，並說明為什麼避不開。主要違規與連帶命中的區分只供作者分析，不作為盲測的評分標準。盲測評分模型（2026-09-30 使用者裁定，2.1 與 3.1 皆適用）：每個 fixture 有一個預期最終判定（通過或 BLOCK），以及零或多個必須出現的 BLOCK 類別（違規、無法判定）；執行者的判定正確，當且僅當最終判定相同、且回報的 BLOCK 類別集合與預期集合相同。一個 fixture 同時觸發兩類時（例如 requirement 數量比對已完成且不一致記為違規，其後 scenario 無法可靠配對記為無法判定），兩類都要回報。不要求理由逐字一致，不要求執行者指出作者定義的主要違規；執行者另外列出可由同一 mutation 推導出的違規細節，不算判錯。每個 fixture 在自己的目錄內跑 `openspec validate --all` 的結果都有記錄；預期會被 check 1 擋下的（若有）在預期答案表註明。不動舊 f1–f13 目錄的任何檔案（`git status` 在該目錄下無變動）。
 - **Blocked by:** none
 - **Interfaces:** 產出 fixture 目錄名稱與「破壞了什麼」，供 1.2（預期答案表與覆蓋表）、1.3（打亂副本）、2.1、3.1 使用。
 
@@ -61,6 +61,8 @@ Binding non-goals carried from design.md（不是 spec 原文，但每個 entry 
   - 候選狀態的 CLI 核對在暫存複本上執行，change 層的核對對歸檔前的狀態執行。
   - `--deltas-only` 的輸出只讀 stdout。
   - scenario 陣列的欄位是 `requirement.scenarios`。
+  - 從文字計數的方法（2026-09-30 使用者裁定）：逐行比對，行首精確等於 `### Requirement:` 算一條 requirement、精確等於 `#### Scenario:` 算一個 scenario，大小寫與空白照字面，不辨識 code block 等 markdown 結構。這是已知的保守限制：code block 內形似標題的行會使計數與 CLI 不一致而 BLOCK。
+  - 預演歸檔成功的判準：結束碼 0 且暫存複本中的 change 已移入 `openspec/changes/archive/`；只看結束碼不夠（openspec 1.3.1 中止歸檔時結束碼仍是 0，見 1.1 的 `author-run.md`）。
   - 「違規」與「無法判定」分開記錄，而且都沒有降級出口。
   - 宣稱邊界：check 13 不被描述成 executable Gate。
 
@@ -110,7 +112,7 @@ Binding non-goals carried from design.md（不是 spec 原文，但每個 entry 
 ## 5.2 — 補號遷移驗收
 
 - **Delivers:** 本 change 以預演歸檔實證 design D7：歸檔後，本 repo 主 spec 全部帶 ID，正文不變。
-- **Acceptance:** 在暫存複本跑 `openspec archive requirement-scenario-identity -y`，結束碼是 0。預演後的主 spec 必須符合：
+- **Acceptance:** 在暫存複本跑 `openspec archive requirement-scenario-identity -y`，結束碼是 0，而且預期的歸檔狀態轉換確實發生：暫存複本中原本的 change 路徑已不存在，`openspec/changes/archive/` 下出現對應的已歸檔 change。只看結束碼不夠——openspec 1.3.1 在歸檔中止（輸出 `Aborted. No files were changed.`）時結束碼仍是 0（實測見 `docs/superpowers/poc/2026-09-30-identity-mutation-fixtures/author-run.md`）。預演後的主 spec 必須符合：
   - `plan-contract`、`tdd-claim-accuracy`、`tdd-evidence-contract` 共 10 條 requirement、37 個 scenario 全部帶合法 ID。
   - `repo-guidance` 為 `REQ-PB` 加 `REQ-PB-S1`／`REQ-PB-S2`。
   - `contract-identity` 為 `REQ-1`–`REQ-8`。

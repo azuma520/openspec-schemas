@@ -12,6 +12,10 @@
 
 - [x] **Plan Contract + TDD evidence contract** — 把步驟導向的 `plan` artifact 換成逐任務的執行契約(寫的是「完成的定義」,不是「怎麼做」);TDD 適用性標註(`TDD: applicable` / `TDD: n/a — <原因>`)與 RED/GREEN 紀錄現在跟著 `tasks.md` 走,verify 只檢查有沒有存在、結構對不對,不是不可繞過的強制關卡(schema major 2、bundle 2.0.0)
 
+## v3 — 已釋出
+
+- [x] **Contract identity(Requirement / Scenario 穩定 ID)** — 每個 Requirement 與 Scenario 標題現在都帶穩定、可被機器引用的 ID(`### Requirement: <REQ-ID> <description>` / `#### Scenario: <REQ-ID>-S<m> <description>`),改措辭不會斷掉;新 ID 的配置依固定規則。verify 新增的第 13 項檢查,以決定性方式判定這個 change 的歸檔後候選狀態有沒有缺號、重號、前綴錯位,並與 OpenSpec CLI 的 JSON 交叉核對(schema major 3、bundle 3.0.0)。這一版只做身分層——`tasks.md` 的 `Contracts:` 承接標註、驗收台帳、可執行(不可繞過)的 gate 都留給後續 change。
+
 ## v1.x — 後續 backlog
 
 這些項目記錄在 `~/.claude/plans/pr-quizzical-oasis.md`(實作 plan):

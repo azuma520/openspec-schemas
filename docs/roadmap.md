@@ -12,6 +12,10 @@ This repository is actively maintained as a side project. The roadmap below sket
 
 - [x] **Plan Contract + TDD evidence contract** — replaced the step-prescribing `plan` artifact with a per-task execution contract (what "done" means, not how to get there); TDD applicability (`TDD: applicable` / `TDD: n/a — <reason>`) and RED/GREEN records now travel with `tasks.md`, checked by verify for presence and structure only, not enforced as a non-bypassable gate (schema major 2, bundle 2.0.0)
 
+## v3 — Released
+
+- [x] **Contract identity (Requirement / Scenario stable IDs)** — every Requirement and Scenario heading now carries a stable, machine-referenceable ID (`### Requirement: <REQ-ID> <description>` / `#### Scenario: <REQ-ID>-S<m> <description>`) that survives a rewording; new-ID allocation follows a fixed rule. Verify's new check 13 deterministically judges the change's post-archive candidate state for missing/duplicate/misplaced IDs, cross-checked against the OpenSpec CLI's JSON (schema major 3, bundle 3.0.0). This is the identity layer only — a `Contracts:` annotation on tasks, a verification-results ledger, and an executable (non-bypassable) gate stay out of scope for later changes.
+
 ## v1.x — In follow-up backlog
 
 These items are tracked in `~/.claude/plans/pr-quizzical-oasis.md` (the implementation plan):
