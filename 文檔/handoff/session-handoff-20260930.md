@@ -58,3 +58,58 @@ Python 失敗 → 寫 ??:?? + 區塊內附註原因。
 
 1. 讀 `session-handoff-20260929.md` 的 Session 18:04 區塊與凍結的四份 artifacts，寫 tasks.md。
 2. 追 issue #19 有無回應。
+
+
+## Session 09:20
+
+### 一、本 session 主題
+
+寫 `requirement-scenario-identity` 的 tasks.md 與 plan.md：使用者裁定盲測執行方式（決定一 B、決定二 C），兩份經 Codex 文件審（tasks 2 輪、plan 3 輪）後一起 commit（`7809ef4`）。
+
+### 二、完成事項
+
+- **tasks.md**（12 步驟、5 組）：①身分 mutation fixtures＋盲測器材（開跑前凍結）→ ②RED 盲測 baseline（完成前不得改 `schema.yaml`）→ ③check 13＋GREEN 雙人盲測（同一 task）、specs 作者規則＋`version: 3` → ④連動表面（templates、bridge README en/zh-TW、VERSION、version-check.yml、CLAUDE.md、roadmap、根目錄 README bridges 表）→ ⑤dogfood 同步、補號遷移驗收、Verification Strategy 試行紀錄。檔頭註解承載裁定全文與 RED 順序理由。
+- **使用者裁定（2026-09-30）**：判定交給對本 change 無脈絡、看不到預期答案的 subagent；RED 1 位、GREEN／conformance 2 位；同模型（RED 與 GREEN 同一個，派工時明確指定並記錄）、同 blind prompt、同 fixture 副本、同規則來源與操作程序，差別只在獨立 context；執行者不得得知預期判定；兩位不一致不投票、記為 rule ambiguity 並 BLOCK；不做統計實驗；結果表至少記 fixture／預期／RED 實際／GREEN A／GREEN B／是否一致／不一致或失敗類型。AI 補充、使用者同意：PRECHECK 與 check 5 讀 repo git 紀錄，fixture 天生不滿足，標「不適用於 fixture」；RED 問的是「checks 1–12 有沒有任何一條抓到身分缺陷」。
+- **plan.md**：12 條合約 entry 與 tasks 1:1；9 條全域約束經程式逐字比對 spec 原文。
+- **文件審**：tasks r1 ⛔（3 🔴：`openspec instructions {specs,verify}` 跑不動、bridge README 現行版本句未涵蓋、根目錄 README bridges 表漏列）→ r2 ✅。plan r1 ⛔（2 🔴：3.1／3.2 依賴環、覆蓋清單漏 REQ-4-S6／REQ-7-S1／REQ-7-S3）→ r2 ⛔（拆兩段仍是 task 層級環）→ r3 ✅（原 3.1＋3.2 合併為新 3.1、原 3.3 改編 3.2）。`review-state.js note doc_review pass` 已記；審查暫存檔已由使用者清除。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **下一步＝apply，從 tasks 1.1 做 fixtures**。開工先讀 tasks.md 檔頭裁定；fixtures 落在 `docs/superpowers/poc/2026-09-30-identity-mutation-fixtures/`，每個是含主 spec＋change 的迷你 `openspec/`。
+- [#接力] 歸檔後 follow-up（照舊）：`contract-identity` 的 `## Purpose` 會是 CLI 產生的 TBD，要補。
+- [#接力] 未 commit、照舊保留：`backlog-crosscheck-shadow.json`、`2026-08-27-brainstorm-產品承諾.md`。
+- [#待確認] Stop hook 偵測不到非 Read 工具讀 handoff（延續 08:39 區塊），使用者尚未決定是否進 backlog。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **TDD applicable 的 task，GREEN 必須在自己的 task 內取得。** Plan Contract 的「Blocked by」以整個 task 為單位；GREEN 若要另一個 task 產出，就形成依賴環，把 task 拆成前後兩段也繞不過（plan r2 Codex 擋下）。動作版：寫 plan 前逐一確認每個 applicable task 的 GREEN 取得在自身 task 內。
+- （延續）查「已決」的範圍含上一個同類 change 的所有 artifact——本次先讀 fix-v2 tasks.md 再動筆，照做了。
+
+**【當日洞見】**
+
+- 覆蓋核對要把權威來源全列出來比，不靠記憶列：tasks 1.1 首版漏 3 個 scenario，把 spec 38 個 scenario 全列逐條比才補齊。
+- 「schema 改完就無法補 RED」理由不精確：舊規則文字 `git show` 拿得回。RED 排在改 schema 前的真正理由是它記錄「修改前實際跑過」這個事實。
+- scratchpad 清理：AI 的 `rm` 被全域 `~/.claude/settings.json` 的 `deny: Bash(rm *)` 擋（對話授權越不過、allow 也蓋不過 deny）。提過三案（維持現狀／移到 ask／專用清理腳本），**使用者 2026-09-30 選維持現狀**：審完由 AI 給指令、使用者用 `!` 跑。不進 backlog。
+
+**【學習候選】**
+
+1. **Case**：plan 首版把 GREEN 取得放在另一個 task，形成依賴環；拆兩段仍不行，最後合併成一個 task。
+2. **Candidate Pattern**：TDD 證據（RED／GREEN）由誰產生，要與 task 邊界一致。
+3. **Evidence**：本次 1 例。**Hypothesis**。
+4. **Minimum Sufficient Intervention**：不新增規則——schema plan instruction 已定義 Blocked by；Observe。
+5. **Promotion**：History only。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（7c6842b、開工於 2026-09-30T08:42:48）。
+
+- `7809ef4` docs(openspec): add tasks and plan for requirement-scenario-identity — A `openspec/changes/requirement-scenario-identity/plan.md`、A `openspec/changes/requirement-scenario-identity/tasks.md`
+- 本 handoff（本區塊）。
+- 非本 session、照舊未 commit：`backlog-crosscheck-shadow.json`、`2026-08-27-brainstorm-產品承諾.md`。
+
+### 六、下一步建議
+
+1. 進 apply：做 tasks 1.1 的 fixtures（先讀 tasks.md 檔頭裁定）。
+2. 追 issue #19（sd0x adapter Windows alloc）有無回應。
