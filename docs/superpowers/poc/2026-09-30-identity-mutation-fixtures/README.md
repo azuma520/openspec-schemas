@@ -159,7 +159,7 @@ RED 實際對每個 fixture 都是 `PASS {}`（checks 1–12 對這批身分缺�
 - **GREEN round 1（instrument v1）**：A 22/22；B 21/22 — v13（`v13-main-req-in-fence`）：B 的逐條理由把不可靠的 scenario 配對判為「無法判定」，但手寫的 BLOCK 類別清單只列了「違規」→ 類型：操作對應不清。此發現促成 check-13 文字澄清（見 `blind-kit/v2/FROZEN.md` 「Fix round 1」）。證據：[`blind-runs/green-r1/report-green-A.md`](./blind-runs/green-r1/report-green-A.md)、[`report-green-B.md`](./blind-runs/green-r1/report-green-B.md)。
 - **GREEN round 2（instrument v1，規則已澄清）**：A 22/22；B 21/22 — v06（`v06-migration-non-numeric`）：check-13 那一行寫的是 BLOCK／違規（判定正確），但手寫的 `FINAL` 行卻是 `PASS`（自我矛盾）→ 類型：reporting／grading instability（量測器材缺陷，不是規則文字缺陷）。B 在兩輪都把類別字寫成簡體或簡繁混雜，並使用非標準的逐條檢查標籤。證據：[`blind-runs/green-r2/report-green-A.md`](./blind-runs/green-r2/report-green-A.md)、[`report-green-B.md`](./blind-runs/green-r2/report-green-B.md)。
 - **使用者裁定**：這是量測器材修正，不是規則改動；round 1、2 保留作為資料，不算官方 GREEN；v2 只改輸出契約；重跑一次即可，不做 v3。
-- **RED provenance（使用者裁定，逐字引用自 `.superpowers/sdd/plan/progress.md` 第 81 行）**："Ruling (user, 2026-09-30) RED provenance = hybrid: round-1 RED (prompt v1, pre-edit) stays the official chronological RED; prompt-v2 + old rules run = 'RED replay / baseline replication' — does NOT replace RED, verifies prompt v2 did not change baseline verdicts and gives GREEN a same-instrument control; GREEN = prompt v2 + new rules. If replay ≠ original RED → STOP (prompt v2 was not a pure instrument repair)."。Replay 結果（`blind-runs/v2-replay/`）：22/22 FINAL: PASS，與 original RED 一致（未觸發 STOP）。
+- **RED provenance（使用者裁定，逐字引用自 [`sdd-ledger.md`](./sdd-ledger.md) 第 81 行）**："Ruling (user, 2026-09-30) RED provenance = hybrid: round-1 RED (prompt v1, pre-edit) stays the official chronological RED; prompt-v2 + old rules run = 'RED replay / baseline replication' — does NOT replace RED, verifies prompt v2 did not change baseline verdicts and gives GREEN a same-instrument control; GREEN = prompt v2 + new rules. If replay ≠ original RED → STOP (prompt v2 was not a pure instrument repair)."。Replay 結果（`blind-runs/v2-replay/`）：22/22 FINAL: PASS，與 original RED 一致（未觸發 STOP）。
 - **觀察到的三類失敗面（供 5.3 使用）**：規則解讀（rule interpretation）、執行不穩定（execution instability）、回報／評分不穩定（reporting/grading instability）。
 
 ## 4. 怎麼重跑
@@ -176,3 +176,57 @@ RED 實際對每個 fixture 都是 `PASS {}`（checks 1–12 對這批身分缺�
 4. 用本檔第一張表（預期答案表）比對，寫入第三張表（結果表）。評分模型：最終判定（通過／BLOCK）相同、且回報的 BLOCK 類別集合與預期集合相同，才算判對；不要求理由逐字一致，不要求指出哪個是「主要」違規。兩位 GREEN 判定不一致時，不投票、不取多數、不找第三人——記為「判定不穩定」，該 fixture 不算 GREEN。
 
 ⚠️ **本檔（含預期答案表、覆蓋表）不交給執行者**——執行者只拿到打亂後的 fixture 副本、規則文字與固定操作指示（1.3 的器材）。fixtures 是純 markdown，沒有任何工具依賴。
+
+## 5. Verification Strategy 試行觀察（5.3）
+
+> 只記觀察，不修改正式設計或既有契約。事實與證據路徑並列；沒有資料可回答的題目寫「無」並說明原因。
+
+### Q1 — regression（RED→GREEN）顯示了什麼
+
+RED（checks 1–12，舊規則）對全部 22 個 fixture 一律回報 `PASS {}`——包括 17 個刻意植入身分缺陷的 subject fixture（`u01`、`v01`–`v16`）。這證實了 2.1 前提檢查的假設：舊 verify（checks 1–12）對這批身分缺陷全部無感（§3a「前提檢查」；證據：本檔 §3 結果表「RED 實際」欄、`blind-runs/red/report-red.md`）。
+
+GREEN（3.1 寫入 check 13 之後、以 v2 器材做的官方重跑）把同一批 17 個 subject 全部從 `PASS {}` 翻成預期的 `BLOCK` 且類別集合正確；5 個 conformance-only fixture（`p01`–`p05`）維持 `通過 {}` 不變。兩位獨立執行者 A、B 22/22 皆與預期答案 MATCH、FINAL 逐案例逐字一致（證據：本檔 §3 結果表「GREEN 執行者 A／B」欄、`blind-runs/v2-green/report-green-A.md`、`report-green-B.md`；`./sdd-ledger.md`〔本次 SDD 工作的 append-only 追蹤紀錄，複製進 repo 做成時點記錄〕第 88 行「GREEN v2 result: A 22/22, B 22/22, NONCONFORMING 0…」）。
+
+即 check 13 把 regression 從「全部漏放（PASS）」翻成「全部正確擋下（BLOCK，類別集合對）」，且這個翻轉在兩位互相獨立的執行者間可重現一致。
+
+### Q2 — 第二位（conformance）執行者多抓到什麼
+
+| round | 結果 | 多抓到什麼 | 類型 |
+|---|---|---|---|
+| round 1（instrument v1） | A 22/22；B 21/22（v13 不一致） | B 的逐條檢查理由把 v13 的不可靠 scenario 配對正確判為「無法判定」，但手寫的 BLOCK 類別清單只列了「違規」，遺漏「無法判定」——暴露 check 13 文字本身在「配對不可靠時要不要另計一類」上不夠清楚，促成 check-13 文字澄清 | 規則文字歧義（後續已修） |
+| round 2（instrument v1，規則已澄清） | A 22/22；B 21/22（v06 不一致） | B 對 v06 的逐條檢查判定寫的是 `BLOCK／違規`（判定正確），但手寫的 `FINAL` 行卻是 `PASS`（自我矛盾）——暴露的是回報格式本身不穩定，不是規則文字問題 | 回報／評分器材缺陷 |
+| v2 官方重跑（instrument v2，只改輸出契約） | A 22/22、B 22/22，NONCONFORMING 0，A/B FINAL 逐案例逐字一致 | 無——B 在這輪沒有多抓到任何 A 沒抓到的東西，兩位執行者結果完全重合 | — |
+
+證據：本檔 §3b「量測器材修正紀錄」；`blind-runs/green-r1/report-green-B.md`（case-16＝v13，簡體/混寫類別字實例見同檔 case-01/02 的「违规」「categories={违规}」）；`blind-runs/green-r2/report-green-B.md`；`blind-runs/v2-green/report-green-A.md`、`report-green-B.md`；`blind-kit/v2/FROZEN.md`；`./sdd-ledger.md` 第 72、77、88 行。
+
+### Q3 — 哪些規則出現不一致
+
+依來源分三類，不混記：
+
+1. **規則文字本身的歧義（rule-text ambiguity）**——已被規則澄清修正：
+   - check 13 對「scenario 配對不可靠時的類別歸屬」原文不夠清楚，被 round 1 的 v13 不一致案例揭露，隨後修正規則文字（`blind-kit/v2/FROZEN.md`；`./sdd-ledger.md` 第 72、73 行）。
+   - 3.1 part A 在任何盲測開跑**前**，task review 就找到並修正了 4 輪規則文字缺陷（I1：REQ-4 無 ID 的新標題在預演失敗時未回報；I2：RENAMED／REMOVED 計數不符後的類別歸屬模糊；I3：已同步 capability 的候選態不可得，裁定為 fail-closed BLOCK；I4：文字誤稱「任何已套用的 delta 都會中止預演」，被覆審者一則本非範圍內的附註揪出，經 controller 探測證實為假——`./sdd-ledger.md` 第 58、65、66、69、70 行）。這些是審查在盲測前就攔下的規則文字缺陷，不是執行者之間的不一致，但同屬「規則文字曾經不清楚」這一類事實。
+
+2. **回報／評分器材缺陷（reporting/grading instability）**——不是規則文字問題：
+   - round 2 的 v06：B 逐條檢查判定正確（`BLOCK／違規`），但手寫 `FINAL` 行卻寫 `PASS`，自我矛盾（`blind-runs/green-r2/report-green-B.md`；`./sdd-ledger.md` 第 77 行）。
+   - B 在 round 1、2 兩輪都把類別字寫成簡體或簡繁混寫（如「违规」、「违规」），並使用非標準的逐條檢查標籤與大括號寫法（`categories={违规}`）（`blind-runs/green-r1/report-green-B.md` case-01/02；`blind-kit/v2/FROZEN.md`）。v2 器材改成嚴格四／五 token 集合與固定 `FINAL: BLOCK | categories=<list>` 語法後，此類缺陷未再出現於官方 v2 重跑（`blind-runs/v2-green/`）。
+
+3. **執行環境問題（execution-environment issues）**——不影響判定但值得記錄：
+   - RED 重演（v2-replay）的執行者一度在 kit 內寫了一個輔助檔案，隨後自行刪除並回報 kit 乾淨；「不要讀 kit 以外的檔案」只是指示，不是技術隔離（`./sdd-ledger.md` 第 86 行；`blind-kit/v2/FROZEN.md`「已知限制」節；`./sdd-ledger.md` 第 43 行「blind executors' do-not-read-repo boundary is instruction-only」）。
+
+### Q4 — 哪些判斷值得日後升為 executable Gate（candidate for later evaluation，非承諾）
+
+| candidate | 觀察到的理由 |
+|---|---|
+| FINAL 彙整一致性檢查（逐條判定 vs 案例 FINAL 是否自相矛盾） | round 2 v06：逐條寫 `BLOCK／違規`，FINAL 卻寫 `PASS`（`blind-runs/green-r2/report-green-B.md`） |
+| 逐行計數 / CLI 交叉核對（check 13 的文字計數 vs `openspec show --json` 的 `requirementCount`／`scenarios.length`） | check 13 的判定依賴純文字逐行計數（非 AST），5.2 的補號遷移驗收用 CLI JSON 交叉核對過一次且全部一致，但那是人工跑的，不是自動化步驟（`migration-acceptance.md` §「CLI 交叉核對」） |
+| 歸檔預演成功判定（exit code 0 之外，還要驗證 change 真的移入 `archive/`） | `u01-modified-no-match` 預演印出 `Aborted. No files were changed.` 但結束碼仍是 0（`author-run.md`；本檔預期答案表 u01 列）；5.2 的補號遷移驗收重申同一模式（`migration-acceptance.md` §「狀態轉換證明」） |
+| kit 邊界技術隔離（把「不要讀 kit 以外的檔案」從指示升級為技術限制） | v2-replay 執行者曾在 kit 內寫入又刪除輔助檔案，證實邊界目前只靠指示遵守（`./sdd-ledger.md` 第 86 行） |
+| 類別字詞彙正規化（強制固定 ASCII token 集合，拒絕簡體／混寫／大括號變體） | B 在 v1 器材兩輪都寫出簡體或混寫類別字與非標準大括號語法；v2 器材改成固定 token 集合後未再出現（`blind-runs/green-r1/report-green-B.md`；`blind-kit/v2/FROZEN.md`） |
+
+### 量測本身的教訓
+
+- **exit code 0 ≠ success**——歸檔預演可能中止（`Aborted. No files were changed.`）卻仍回結束碼 0；成功必須以「change 是否真的移入 `archive/`」判定（`author-run.md`；`migration-acceptance.md` §「狀態轉換證明」）。
+- **line/byte equality ≠ the semantic contract**——`repo-guidance` 歸檔後出現 3 行純空白差異，逐行/逐位元組比對會誤判為「內容改變」；實際的語意契約（ID 之外的內容不變）用排除標題行與空白行後的 diff 驗證才成立（`migration-acceptance.md` §「補測：標題與空白行都排除後的 diff」；判定：Approved deviation，2026-09-30）。
+- **器材必須先凍結、先審查，才能開跑**——v2 輸出契約在正式重跑前經過一輪審查（Needs fixes → fix round 1 → 複審通過才凍結），凍結後的 SHA-256 記在 `blind-kit/v2/FROZEN.md`；沒有先凍結先審，round 1/2 的器材缺陷會混進判定結果，難以分辨是規則問題還是器材問題。
+- **評分器（grader）必須在盲測開跑前寫好並自測**——`blind-kit/v2/grade.py` 在 GREEN v2 重跑前已完成並跑過 `--selftest`（含 `NO_VERDICT` 案例），使得重跑產出的報告可以立即用同一支腳本評分，而不必事後回頭決定怎麼判讀自由格式文字（`blind-kit/v2/FROZEN.md`「Fix round 1」節第 3 點）。

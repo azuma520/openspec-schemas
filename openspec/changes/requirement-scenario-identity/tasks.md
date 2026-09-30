@@ -228,9 +228,11 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
 
 ## 5. 收尾：用新規則判本 change 自己
 
-- [ ] 5.1 同步 dogfood 副本（`openspec/schemas/superpowers-bridge/` 與 `superpowers-bridge/` 內容一致），`openspec schema validate superpowers-bridge` 與 `openspec schemas` 成功，`openspec instructions verify --change requirement-scenario-identity` render 出的內容含 check 13
+- [x] 5.1 同步 dogfood 副本（`openspec/schemas/superpowers-bridge/` 與 `superpowers-bridge/` 內容一致），`openspec schema validate superpowers-bridge` 與 `openspec schemas` 成功，`openspec instructions verify --change requirement-scenario-identity` render 出的內容含 check 13
   - TDD: n/a — configuration / copy step；以 `diff -r` 為空作控制（只抽查標題看不到規則內文的差異）
-- [ ] 5.2 補號遷移驗收（design D7）：在暫存複本對本 change 實跑 `openspec archive requirement-scenario-identity -y`，預演歸檔後的主 spec 中 `plan-contract`、`tdd-claim-accuracy`、`tdd-evidence-contract` 共 10 條 requirement、37 個 scenario 全部帶 ID，`repo-guidance` 為 `REQ-PB`＋`REQ-PB-S1`／`REQ-PB-S2`，`contract-identity` 為 `REQ-1`–`REQ-8`；這四個既有 capability 的內文除標題外與歸檔前逐行一致；CLI 數量交叉核對一致
+  - 驗收紀錄：見 `docs/superpowers/poc/2026-09-30-identity-mutation-fixtures/migration-acceptance.md`
+- [x] 5.2 補號遷移驗收（design D7）：在暫存複本對本 change 實跑 `openspec archive requirement-scenario-identity -y`，預演歸檔後的主 spec 中 `plan-contract`、`tdd-claim-accuracy`、`tdd-evidence-contract` 共 10 條 requirement、37 個 scenario 全部帶 ID，`repo-guidance` 為 `REQ-PB`＋`REQ-PB-S1`／`REQ-PB-S2`，`contract-identity` 為 `REQ-1`–`REQ-8`；這四個既有 capability 的內文除標題外與歸檔前逐行一致；CLI 數量交叉核對一致
   - TDD: n/a — 遷移驗收的一次性實跑；記錄的指令輸出即證據
-- [ ] 5.3 Verification Strategy 試行紀錄：結果表完整（無空欄），另附簡短觀察——regression（RED→GREEN）顯示了什麼、兩位 conformance 執行者多抓到什麼、哪些規則出現不一致、哪些判斷值得日後升為 executable Gate。只記觀察，不修改正式設計或既有契約
+  - 驗收紀錄：approved deviation — repo-guidance 有 3 行純空白差異，非空白內容確認一致，見 `docs/superpowers/poc/2026-09-30-identity-mutation-fixtures/migration-acceptance.md`
+- [x] 5.3 Verification Strategy 試行紀錄：結果表完整（無空欄），另附簡短觀察——regression（RED→GREEN）顯示了什麼、兩位 conformance 執行者多抓到什麼、哪些規則出現不一致、哪些判斷值得日後升為 executable Gate。只記觀察，不修改正式設計或既有契約
   - TDD: n/a — prose/doc-only record；以結果表每列對應一個 fixture 目錄驗證
