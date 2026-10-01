@@ -68,3 +68,5 @@
 1. 進 worktree → 決定這輪改動怎麼 commit（使用者明示授權）。
 2. verify → retrospective → archive（使用者協助 rm）→ 併回 main → main dogfood 重同步；doc_review 併入 verify／retro 文件一起送審，Codex 換新 thread。
 3. 兩個待確認：I3 專用驗收案例要不要補；canonical repo 用 JiangWay 還是 azuma520。
+
+> 補記（收工後、2026-10-01）：使用者授權後，worktree 分支已提交本輪改動 3 個 commit——`01f9825` fix(poc) grader、`fc2f1b7` fix(schema) check 13／bridge 文件、`3b8c035` docs(poc) 紀錄與 GREEN 重跑證據；worktree 乾淨、未 push。三、接力棒第一條與六、下一步建議第 1 點的「決定怎麼 commit」已完成，下次直接從 verify 開始。
