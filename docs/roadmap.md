@@ -38,4 +38,4 @@ When real demand surfaces:
 - [ ] **`obra-bridge`** — broader integration with other obra/* tools (if the user community grows)
 - [ ] **Domain-specific schemas** — e.g., a `data-pipeline` schema variant with stronger schema-validation artifacts
 
-Want to suggest a bridge? Open an issue at <https://github.com/JiangWay/openspec-schemas/issues>.
+Want to suggest a bridge? Open an issue at <https://github.com/azuma520/openspec-schemas/issues>.

@@ -78,7 +78,7 @@ openspec schemas                              # smoke test:列得出來才算裝
 ```
 
 - `openspec` CLI 已裝在本機(`openspec --version` → 1.3.1);沒有的話 `npm i -g @fission-ai/openspec` 或 `npx @fission-ai/openspec`。
-- 這個驗證**只驗結構**(artifact 欄位、`requires:` 邊、YAML 形狀)。`instruction:` 裡的 prompt 文字改壞了 CI 一樣是綠的 —— prompt 層的正確性只能靠人讀,這點 bridge README 的 Compatibility 段已明講。
+- 這個驗證**只驗結構**,而且只驗得到一部分:2026-10-01 實測,`requires:` 指向不存在的 artifact、依賴形成環會被擋;**刪掉一條 `requires:` 邊、鍵名拼錯(如 `requirez:`)都照樣通過**。`instruction:` 裡的 prompt 文字改壞了 CI 一樣是綠的 —— prompt 層的正確性只能靠人讀,這點 bridge README 的 Compatibility 段已明講。
 - 必須複製到 `openspec/schemas/` 底下才驗得動;直接在 repo 根跑 `openspec schema validate` 會找不到。
 - Windows:上面用 bash 語法(Bash tool / `!` 前綴都走 bash),不要改寫成 PowerShell。
 
@@ -202,7 +202,7 @@ Compatibility 表的列鍵用的是 **schema major(`v3`)**,不是 bundle 版本 
 
 - `version-check.yml` 每週一 14:00 UTC 跑:比對 npm 上的 `@fission-ai/openspec` 與 obra/superpowers 最新 release,與 README 釘住的 baseline 有差就開/更新一張帶 `upstream-version-check` label 的 issue。**漂移不算失敗**(workflow 保持綠);只有「用最新版驗 schema 失敗」才 fail run。
 - `upstream-version-check` label 由 workflow 每次執行時保證存在(README 的 Upstream Drift badge 靠它解析),不要手動刪。
-- bridge README 的 badge URL 硬寫了 `JiangWay/openspec-schemas`;repo 若改名 / 換 owner,badge 與 issue 連結要一起改。
+- 本 repo 是 `JiangWay/openspec-schemas` 的 fork;CI 與每週 drift 檢查在 fork 上跑。bridge README 的 badge、drift issue 連結、安裝 / 升級的 `git clone` URL、adopters fragment 連結,以及 roadmap 的開 issue 連結,都硬寫了 `azuma520/openspec-schemas`(2026-10-01 起);repo 若改名 / 換 owner,這些要一起改。`LICENSE` 的著作權人 `JiangWay` 是原作者紀錄,不跟著改。fork 的 Issues 必須開著(drift issue 開在這裡);排程 workflow 在 fork 上曾從未跑過,2026-10-01 開 Issues 後以 `workflow_dispatch` 手動觸發驗證成功(run 36840373547、建立 issue #2)。
 - 兩支 workflow 都固定 Node 24 + `actions/checkout@v6` / `setup-node@v6` / `github-script@v9`。
 
 ## Codex 審查在 Windows 本機怎麼派(2026-09-29 起)

@@ -4,7 +4,7 @@
 
 ## Workflow routing (read on session start)
 
-This repo uses [`superpowers-bridge`](https://github.com/JiangWay/openspec-schemas/tree/main/superpowers-bridge) to bridge OpenSpec and Superpowers. Integration rules (language, artifact paths, PRECHECK) follow that bridge's README; this section is the routing guidance for Claude.
+This repo uses [`superpowers-bridge`](https://github.com/azuma520/openspec-schemas/tree/main/superpowers-bridge) to bridge OpenSpec and Superpowers. Integration rules (language, artifact paths, PRECHECK) follow that bridge's README; this section is the routing guidance for Claude.
 
 ### Entry routing
 
@@ -47,4 +47,4 @@ When all 5 hold → proactively suggest "ready to `/opsx:propose`?" — wait for
 
 Every task in `tasks.md` carries a `TDD:` applicability annotation (`applicable` or `n/a — <reason>`); applicable tasks record RED/GREEN evidence under the same checkbox. Grammar and record shape are defined once, in the `tasks` artifact instruction in the bridge's `schema.yaml` — don't restate them here.
 
-Full detail: [superpowers-bridge README §Entry & exit gates](https://github.com/JiangWay/openspec-schemas/blob/main/superpowers-bridge/README.md#entry--exit-gates).
+Full detail: [superpowers-bridge README §Entry & exit gates](https://github.com/azuma520/openspec-schemas/blob/main/superpowers-bridge/README.md#entry--exit-gates).

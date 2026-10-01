@@ -38,4 +38,4 @@
 - [ ] **`obra-bridge`** — 廣義對 obra/* 其他工具的整合(如果使用者社群成長)
 - [ ] **領域特定 schema** — 例如 `data-pipeline` 變體,加強 schema validation artifact
 
-想提議新 bridge?到 <https://github.com/JiangWay/openspec-schemas/issues> 開 issue。
+想提議新 bridge?到 <https://github.com/azuma520/openspec-schemas/issues> 開 issue。

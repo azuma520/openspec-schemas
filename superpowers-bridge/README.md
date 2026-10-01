@@ -2,8 +2,8 @@
 
 [English](./README.md) · [繁體中文](./README.zh-TW.md)
 
-[![Schema Structure](https://github.com/JiangWay/openspec-schemas/actions/workflows/validate-schemas.yml/badge.svg?branch=main)](https://github.com/JiangWay/openspec-schemas/actions/workflows/validate-schemas.yml)
-[![Upstream Drift](https://img.shields.io/github/issues-search/JiangWay/openspec-schemas?query=is%3Aopen%20label%3Aupstream-version-check&label=Upstream%20Drift&color=yellow)](https://github.com/JiangWay/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check)
+[![Schema Structure](https://github.com/azuma520/openspec-schemas/actions/workflows/validate-schemas.yml/badge.svg?branch=main)](https://github.com/azuma520/openspec-schemas/actions/workflows/validate-schemas.yml)
+[![Upstream Drift](https://img.shields.io/github/issues-search/azuma520/openspec-schemas?query=is%3Aopen%20label%3Aupstream-version-check&label=Upstream%20Drift&color=yellow)](https://github.com/azuma520/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check)
 [![OpenSpec baseline](https://img.shields.io/badge/OpenSpec_baseline-1.3.1-0277bd)](#compatibility)
 [![Superpowers baseline](https://img.shields.io/badge/Superpowers_baseline-v5.1.0-0277bd)](#compatibility)
 
@@ -23,7 +23,7 @@ Copy and paste this into Claude Code in your project root:
 Install the superpowers-bridge schema for OpenSpec into this project:
 
 1. Verify the project has an `openspec/` directory (run `openspec init` if missing).
-2. Clone https://github.com/JiangWay/openspec-schemas to a temp dir.
+2. Clone https://github.com/azuma520/openspec-schemas to a temp dir.
 3. Copy the `superpowers-bridge/` subdirectory to `openspec/schemas/superpowers-bridge/`.
 4. Run `openspec schema validate superpowers-bridge` to verify.
 5. Run `openspec schemas` and confirm `superpowers-bridge` is listed.
@@ -37,7 +37,7 @@ Install the superpowers-bridge schema for OpenSpec into this project:
 ### Method 2: Manual bash (CI / non-Claude environments)
 
 ```bash
-git clone https://github.com/JiangWay/openspec-schemas /tmp/oss
+git clone https://github.com/azuma520/openspec-schemas /tmp/oss
 cp -R /tmp/oss/superpowers-bridge ~/your-project/openspec/schemas/superpowers-bridge
 
 # Optional: insert workflow-routing fragment into CLAUDE.md
@@ -64,7 +64,7 @@ In your project root, paste this into Claude Code:
 Upgrade the superpowers-bridge schema in this project:
 
 1. Verify `openspec/schemas/superpowers-bridge/` already exists (upgrade, not fresh install). If missing, abort and tell me to use the install instructions instead.
-2. Clone https://github.com/JiangWay/openspec-schemas to a temp dir.
+2. Clone https://github.com/azuma520/openspec-schemas to a temp dir.
 3. Show me the diff between the local `openspec/schemas/superpowers-bridge/` and the cloned `superpowers-bridge/` (use `diff -ruN`). Wait for my ack before overwriting.
 4. After my ack, overwrite the local schema dir with the cloned one.
 5. Run `openspec schema validate superpowers-bridge` to verify.
@@ -83,7 +83,7 @@ Upgrade the superpowers-bridge schema in this project:
 
 ```bash
 # 1. Get the latest bundle
-git clone https://github.com/JiangWay/openspec-schemas /tmp/oss-upgrade
+git clone https://github.com/azuma520/openspec-schemas /tmp/oss-upgrade
 
 # 2. Review the diff first (don't overwrite blindly)
 diff -ruN ~/your-project/openspec/schemas/superpowers-bridge /tmp/oss-upgrade/superpowers-bridge
@@ -581,8 +581,8 @@ The contract is three layers — **baseline declaration + automated drift detect
 
 | Layer | Mechanism | Catches | When it fires |
 |---|---|---|---|
-| Structural | [`validate-schemas.yml`](../.github/workflows/validate-schemas.yml) on every push/PR; [`version-check.yml`](../.github/workflows/version-check.yml) weekly against latest OpenSpec | Schema-graph breaks (field renames, removed `requires:` edges, PRECHECK syntax changes) | CI run fails red |
-| Drift notification | [`version-check.yml`](../.github/workflows/version-check.yml) weekly, compares baseline above against latest npm / GitHub release | Pinned ≠ latest upstream | Opens / updates a [labelled drift issue](https://github.com/JiangWay/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check) for human review (workflow stays green — drift is normal, not a failure) |
+| Structural | [`validate-schemas.yml`](../.github/workflows/validate-schemas.yml) on every push/PR; [`version-check.yml`](../.github/workflows/version-check.yml) weekly against latest OpenSpec | Structural errors the OpenSpec schema validator reports — e.g. a `requires:` entry naming an artifact that does not exist, or a dependency cycle. **Not caught** (verified 2026-10-01): a removed `requires:` edge, a misspelled key such as `requirez:`, and any change to `instruction:` text including PRECHECK — those need human review | CI run fails red |
+| Drift notification | [`version-check.yml`](../.github/workflows/version-check.yml) weekly, compares baseline above against latest npm / GitHub release | Pinned ≠ latest upstream | Opens / updates a [labelled drift issue](https://github.com/azuma520/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check) for human review (workflow stays green — drift is normal, not a failure) |
 | End-to-end workflow | **Not automated** | Behavioral changes inside Superpowers skills (renames, prose rewrites altering PRECHECK semantics, transitive-dependency changes); subtle OpenSpec engine semantic shifts | A human reads upstream release notes when the drift issue fires |
 
 The "Baseline as of" date is bumped when a maintainer manually re-runs a full cycle against the listed versions and confirms nothing degraded. Until then, the date marks human attestation, not an automated test pass. **Two exceptions, stated so the rows and this definition do not disagree:** the v2 row's `2026-09-01` and the v3 row's `2026-09-30` are each a **CLI-level attestation only** — CLI behaviour under the row's `version:` (validate / schemas / new / status / instructions for v2; `schema validate` plus the 22 identity mutation fixtures under `validate` / `archive` / `show` for v3) against openspec `1.3.1` — **not** a full prompt-layer cycle re-run. Neither date reflects a Superpowers re-verification: the Superpowers column is unbumped in both rows, and the environment `requirement-scenario-identity` actually exercised (Superpowers `v6.4.1`, apply phase only) is recorded above as an observation distinct from the declared baseline, not as grounds to move this date. No full cycle has been re-run since the v1 row's `2026-05-11`.

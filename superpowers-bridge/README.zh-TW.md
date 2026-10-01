@@ -2,8 +2,8 @@
 
 [English](./README.md) · [繁體中文](./README.zh-TW.md)
 
-[![Schema Structure](https://github.com/JiangWay/openspec-schemas/actions/workflows/validate-schemas.yml/badge.svg?branch=main)](https://github.com/JiangWay/openspec-schemas/actions/workflows/validate-schemas.yml)
-[![Upstream Drift](https://img.shields.io/github/issues-search/JiangWay/openspec-schemas?query=is%3Aopen%20label%3Aupstream-version-check&label=Upstream%20Drift&color=yellow)](https://github.com/JiangWay/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check)
+[![Schema Structure](https://github.com/azuma520/openspec-schemas/actions/workflows/validate-schemas.yml/badge.svg?branch=main)](https://github.com/azuma520/openspec-schemas/actions/workflows/validate-schemas.yml)
+[![Upstream Drift](https://img.shields.io/github/issues-search/azuma520/openspec-schemas?query=is%3Aopen%20label%3Aupstream-version-check&label=Upstream%20Drift&color=yellow)](https://github.com/azuma520/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check)
 [![OpenSpec baseline](https://img.shields.io/badge/OpenSpec_baseline-1.3.1-0277bd)](#相容性)
 [![Superpowers baseline](https://img.shields.io/badge/Superpowers_baseline-v5.1.0-0277bd)](#相容性)
 
@@ -23,7 +23,7 @@
 Install the superpowers-bridge schema for OpenSpec into this project:
 
 1. Verify the project has an `openspec/` directory (run `openspec init` if missing).
-2. Clone https://github.com/JiangWay/openspec-schemas to a temp dir.
+2. Clone https://github.com/azuma520/openspec-schemas to a temp dir.
 3. Copy the `superpowers-bridge/` subdirectory to `openspec/schemas/superpowers-bridge/`.
 4. Run `openspec schema validate superpowers-bridge` to verify.
 5. Run `openspec schemas` and confirm `superpowers-bridge` is listed.
@@ -37,7 +37,7 @@ Install the superpowers-bridge schema for OpenSpec into this project:
 ### 方法 2:手動 bash(CI / 非 Claude 環境)
 
 ```bash
-git clone https://github.com/JiangWay/openspec-schemas /tmp/oss
+git clone https://github.com/azuma520/openspec-schemas /tmp/oss
 cp -R /tmp/oss/superpowers-bridge ~/your-project/openspec/schemas/superpowers-bridge
 
 # 可選:把 workflow-routing fragment 插進 CLAUDE.md
@@ -64,7 +64,7 @@ claude plugin install superpowers@claude-plugins-official  # 若尚未安裝
 Upgrade the superpowers-bridge schema in this project:
 
 1. Verify `openspec/schemas/superpowers-bridge/` already exists (upgrade, not fresh install). If missing, abort and tell me to use the install instructions instead.
-2. Clone https://github.com/JiangWay/openspec-schemas to a temp dir.
+2. Clone https://github.com/azuma520/openspec-schemas to a temp dir.
 3. Show me the diff between the local `openspec/schemas/superpowers-bridge/` and the cloned `superpowers-bridge/` (use `diff -ruN`). Wait for my ack before overwriting.
 4. After my ack, overwrite the local schema dir with the cloned one.
 5. Run `openspec schema validate superpowers-bridge` to verify.
@@ -83,7 +83,7 @@ Upgrade the superpowers-bridge schema in this project:
 
 ```bash
 # 1. 取最新的 bundle
-git clone https://github.com/JiangWay/openspec-schemas /tmp/oss-upgrade
+git clone https://github.com/azuma520/openspec-schemas /tmp/oss-upgrade
 
 # 2. 先看差異(不直接覆蓋)
 diff -ruN ~/your-project/openspec/schemas/superpowers-bridge /tmp/oss-upgrade/superpowers-bridge
@@ -581,8 +581,8 @@ Requirement 標題現在的形式是 `### Requirement: <REQ-ID> <description>`,S
 
 | 層級 | 機制 | 抓什麼 | 觸發時機 |
 |---|---|---|---|
-| 結構性 | [`validate-schemas.yml`](../.github/workflows/validate-schemas.yml) 每次 push/PR;[`version-check.yml`](../.github/workflows/version-check.yml) 每週對 latest OpenSpec 跑 | schema graph 結構性破壞(欄位改名、`requires:` 邊移除、PRECHECK 語法變動) | CI run 變紅 |
-| Drift 通知 | [`version-check.yml`](../.github/workflows/version-check.yml) 每週,把基準 vs 最新 npm / GitHub release 字串比對 | Pinned ≠ latest upstream | 開 / 更新 [labelled drift issue](https://github.com/JiangWay/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check),由人類檢核(workflow 維持綠 — drift 是正常狀態,不是錯誤) |
+| 結構性 | [`validate-schemas.yml`](../.github/workflows/validate-schemas.yml) 每次 push/PR;[`version-check.yml`](../.github/workflows/version-check.yml) 每週對 latest OpenSpec 跑 | OpenSpec schema 驗證器會報的結構錯誤 —— 例如 `requires:` 指向不存在的 artifact、依賴形成環。**抓不到**(2026-10-01 實測):刪掉一條 `requires:` 邊、鍵名拼錯(如 `requirez:`)、`instruction:` 文字(含 PRECHECK)的任何改動 —— 這些要靠人審 | CI run 變紅 |
+| Drift 通知 | [`version-check.yml`](../.github/workflows/version-check.yml) 每週,把基準 vs 最新 npm / GitHub release 字串比對 | Pinned ≠ latest upstream | 開 / 更新 [labelled drift issue](https://github.com/azuma520/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check),由人類檢核(workflow 維持綠 — drift 是正常狀態,不是錯誤) |
 | 端對端 workflow | **未自動化** | Superpowers skill 內部行為改變(改名、改寫 prose 影響 PRECHECK 語意、傳遞依賴變動);OpenSpec 引擎語意微調 | drift issue 觸發時,人類讀 upstream release notes |
 
 「基準日期」由 maintainer 手動重跑完整 cycle 確認沒退步後才推進。在那之前,日期代表的是人類聲明,不是自動測試通過。**有兩個例外,寫在這裡是為了讓那兩列與這個定義不互相矛盾:** v2 那列的 `2026-09-01` 與 v3 那列的 `2026-09-30` 都**只是 CLI 層級的聲明** —— 各自那一列 `version:` 之下的 CLI 行為(v2 是 validate / schemas / new / status / instructions;v3 是 `schema validate` 加上 22 個 identity mutation fixtures 跑過 `validate` / `archive` / `show`)對 openspec `1.3.1` 跑過 —— **不是**一次完整的 prompt-layer cycle 重跑。這兩個日期都不代表對 Superpowers 重新查證過:兩列的 Superpowers 欄位都沒有推進,`requirement-scenario-identity` 實際用到的環境(Superpowers `v6.4.1`,僅 apply phase)記錄在上面,是跟已宣告基準分開的觀察,不構成移動這個日期的理由。自 v1 那列的 `2026-05-11` 以來,沒有重跑過完整 cycle。

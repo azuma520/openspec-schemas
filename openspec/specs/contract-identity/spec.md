@@ -1,7 +1,7 @@
 # contract-identity Specification
 
 ## Purpose
-TBD - created by archiving change requirement-scenario-identity. Update Purpose after archive.
+Give every Requirement and Scenario in a `superpowers-bridge` spec a stable identity that survives rewording, and define the verify-time identity check (check 13): the heading grammar, how an ID is kept across a rename, denotes exactly one contract, and is allocated for a new one, which state the check judges and how its counts are cross-checked against the OpenSpec CLI, how its two kinds of block are reported, and what the check does not guarantee.
 ## Requirements
 ### Requirement: REQ-1 Requirement and Scenario headings carry a stable identity
 

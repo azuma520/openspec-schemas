@@ -4,7 +4,7 @@
 
 ## 變更工作流(Claude Code 啟動先讀)
 
-本 repo 採用 [`superpowers-bridge`](https://github.com/JiangWay/openspec-schemas/tree/main/superpowers-bridge) 銜接 OpenSpec 與 Superpowers。整合規則(語言、artifact 路徑、PRECHECK)以該 bridge README 為準;以下是給 Claude 的 routing 指引。
+本 repo 採用 [`superpowers-bridge`](https://github.com/azuma520/openspec-schemas/tree/main/superpowers-bridge) 銜接 OpenSpec 與 Superpowers。整合規則(語言、artifact 路徑、PRECHECK)以該 bridge README 為準;以下是給 Claude 的 routing 指引。
 
 ### 入口分流
 
@@ -47,4 +47,4 @@
 
 `tasks.md` 每個任務都要有 `TDD:` 適用性標註(`applicable` 或 `n/a — <理由>`);適用的任務要在同一層級補上 RED/GREEN 紀錄。標註文法與紀錄格式只在 bridge 的 `schema.yaml` 的 `tasks` artifact instruction 定義一次——此處不重複。
 
-詳細見 [superpowers-bridge README §進入與離開的判斷](https://github.com/JiangWay/openspec-schemas/blob/main/superpowers-bridge/README.zh-TW.md#進入與離開的判斷entry--exit-gates)。
+詳細見 [superpowers-bridge README §進入與離開的判斷](https://github.com/azuma520/openspec-schemas/blob/main/superpowers-bridge/README.zh-TW.md#進入與離開的判斷entry--exit-gates)。
