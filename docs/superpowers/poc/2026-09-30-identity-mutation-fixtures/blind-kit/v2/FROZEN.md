@@ -4,13 +4,13 @@
 
 修這一版的理由（user ruling 2026-09-30）：v1 的盲測 prompt 產生了一個回報缺陷——執行者在同一份報告裡，對某條檢查寫下 BLOCK/違規的判定，卻又手寫一行 `FINAL: PASS` 的最終結論（見 `blind-runs/green-r1/report-green-A.md`、`report-green-B.md`、`blind-runs/green-r2/report-green-A.md`、`report-green-B.md` 裡多處 `BLOCK 類別` 之後緊接 `FINAL: PASS` 的例子）；執行者也把類別字寫成簡體或簡繁混雜（`违规`、`違规`、`无法判定`），或寫非標準的每條檢查標籤（`BLOCK 類別: (none)`），使評分不可靠。v2 只修這個輸出契約，不動判斷邏輯、不動 fixtures、不動規則來源。
 
-## SHA-256（fix round 1 之後的目前值；round 0 的舊值見「Fix round 1」節）
+## SHA-256（fix round 2 之後的目前值；更早的值見「Fix round 1」「Fix round 2」節）
 
 | 檔案 | SHA-256 |
 |---|---|
 | `v2/prompt.md` | `61871c23e2da1e504a7b68276fe2a566459b99119034d80099897a06c7ee5ca8` |
 | `v2/procedure.md` | `fe431e4edf16f059120c64d65af7dc97854636364f61b9a5c77bdfa3e249c492` |
-| `v2/grade.py` | `c9484c00c4ac545af6e3046a91303c20d177f62b409b3a5b7a8b44e4e529ebe0` |
+| `v2/grade.py` | `ebf174df491b2772a1b6a0bc64e82686e3a1602a8e939dec8b066502216e9adf`（fix round 2；round 1 值 `c9484c00…ebe0` 是 2026-09-30 官方評分當時使用的版本） |
 
 ## v1 → v2 diff summary（只改輸出契約）
 
@@ -32,6 +32,8 @@
   ```
 
   與本 brief 指定的預期雜湊一致（未 BLOCKED）。
+
+  （2026-10-01 後記：check 13 本體其後因 I3 分支互斥句修正；對最終規則檔 `a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504` 以同一份 v2 prompt／procedure 與 fix round 2 grader 重跑 GREEN，見 `../../blind-runs/v3-green/` 與 README §3。）
 
 ## `grade.py` 用法
 
@@ -73,3 +75,23 @@ python grade.py --selftest   # 驗證 grader 本身：PASS、BLOCK 各類別組�
 ### 遺留項目
 
 `blind-kit/v2/__pycache__/` 目錄是本次自測時 `python -c "import grade"` 產生的副作用,不屬於凍結集合,但本 session 的 rm 權限被拒（sandbox deny）,無法自行刪除。留給有 rm 權限的人清掉；它不影響 `prompt.md`／`procedure.md`／`grade.py` 三份凍結檔案的雜湊或內容。
+
+## Fix round 2（2026-10-01，使用後修正：code review r1 P1）
+
+**發現**（Codex code review r1）：`split_report_into_cases` 把同一個案例代號的多個 `## <case>` 區段存進字典時，後一段直接覆蓋前一段；被覆蓋的區段完全不經過 FINAL 檢查。Codex 實測：在官方 GREEN-A 報告前插入另一段寫 `FINAL: PASS` 的 `## case-11`，舊 grader 仍回報 `MATCH=22, NONCONFORMING_OUTPUT=0`。這是器材缺陷，不是規則或執行者的問題。
+
+**修法**（只動 `grade.py`；`prompt.md`、`procedure.md` 不動）：`split_report_into_cases` 另外回傳重複出現的案例代號；`grade()` 對這些代號一律判 `NONCONFORMING_OUTPUT`（「case … has more than one section」），不評分。`run_selftest()` 新增一個走完整評分路徑的案例（同一代號兩段、前後結論矛盾）——修改前實跑為 `[FAIL]`（舊 grader 判成 MATCH），修改後通過；自測全部 16 案例通過。
+
+**對既有結論的影響**（使用者裁定 2026-10-01：修器材、重評既有報告、不重派執行者；任何一份結果改變就停）：以 round 1 grader（`c9484c00…ebe0`，取自 HEAD）與 fix round 2 grader 分別評分三份官方報告，逐案例比對：
+
+| 報告 | round 1 grader | fix round 2 grader | 逐案例相同 |
+|---|---|---|---|
+| `blind-runs/v2-green/report-green-A.md` | MATCH 22 / DIFF 0 / NONCONFORMING 0 | MATCH 22 / DIFF 0 / NONCONFORMING 0 | 是 |
+| `blind-runs/v2-green/report-green-B.md` | MATCH 22 / DIFF 0 / NONCONFORMING 0 | MATCH 22 / DIFF 0 / NONCONFORMING 0 | 是 |
+| `blind-runs/v2-replay/report-replay.md` | MATCH 5 / DIFF 17 / NONCONFORMING 0 | MATCH 5 / DIFF 17 / NONCONFORMING 0 | 是 |
+
+三份報告各有 22 個案例區段、沒有重複代號，所以舊 grader 的缺陷在官方評分時沒有被觸發；修正後正式結果不變。
+
+| 檔案 | round 1 SHA-256（官方評分時使用） | round 2 SHA-256（目前值） |
+|---|---|---|
+| `v2/grade.py` | `c9484c00c4ac545af6e3046a91303c20d177f62b409b3a5b7a8b44e4e529ebe0` | `ebf174df491b2772a1b6a0bc64e82686e3a1602a8e939dec8b066502216e9adf` |

@@ -21,6 +21,8 @@ Compares each case's parsed verdict against the answer key's 預期判定 /
 file), via 違規->VIOLATION, 無法判定->UNDETERMINABLE, 通過->PASS.
 
 Prints one line per fixture: MATCH / DIFF / NONCONFORMING_OUTPUT, and totals.
+A case code with more than one '## <case>' section is NONCONFORMING_OUTPUT
+(fix round 2, 2026-10-01).
 
 Fix round 1 (2026-09-30): prompt.md v2 gained a fifth per-check token,
 NO_VERDICT, for a non-blocking outcome the check's own rule text does not
@@ -64,15 +66,21 @@ FINAL_BLOCK_RE = re.compile(r"^FINAL: BLOCK \| categories=([^\s]+)$")
 
 
 def split_report_into_cases(report_text):
-    """Return {case_code: block_text} for each '## <case>' section."""
+    """Return ({case_code: block_text}, duplicated_codes) for the '## <case>'
+    sections. A code with more than one section is listed in duplicated_codes
+    and must not be graded (fix round 2: keeping only the last section let an
+    earlier, contradicting section vanish unseen)."""
     matches = list(CASE_HEADER_RE.finditer(report_text))
     cases = {}
+    duplicated = set()
     for i, m in enumerate(matches):
         code = m.group(1)
         start = m.end()
         end = matches[i + 1].start() if i + 1 < len(matches) else len(report_text)
+        if code in cases:
+            duplicated.add(code)
         cases[code] = report_text[start:end]
-    return cases
+    return cases, duplicated
 
 
 def parse_final_line(block_text):
@@ -201,7 +209,7 @@ def grade(report_text, mapping_text, readme_text):
     """Return (results, totals) where results is a list of
     (fixture_name, status, detail) sorted by fixture_name, and totals is a
     dict of status -> count."""
-    cases = split_report_into_cases(report_text)
+    cases, duplicated = split_report_into_cases(report_text)
     mapping = parse_mapping(mapping_text)
     answers = parse_answer_key(readme_text)
 
@@ -210,6 +218,11 @@ def grade(report_text, mapping_text, readme_text):
         if case_code not in cases:
             results.append(
                 (fixture, "NONCONFORMING_OUTPUT", f"case {case_code} missing from report")
+            )
+            continue
+        if case_code in duplicated:
+            results.append(
+                (fixture, "NONCONFORMING_OUTPUT", f"case {case_code} has more than one section")
             )
             continue
 
@@ -351,6 +364,32 @@ def run_selftest():
         print(f"[{marker}] {name}: {status} -> {got}")
         if not ok:
             failures.append(name)
+
+    # Fix round 2 (2026-10-01): a case code that appears in more than one
+    # '## <case>' section must be NONCONFORMING_OUTPUT on the full grading
+    # path -- an earlier section must not be silently overwritten by a later one.
+    dup_report = (
+        "## case-01\n\nFINAL: PASS\n\n"
+        "## case-02\n\nFINAL: BLOCK | categories=VIOLATION\n\n"
+        "## case-01\n\nFINAL: BLOCK | categories=VIOLATION\n"
+    )
+    dup_mapping = "| 代號 | 原始 fixture |\n|---|---|\n| case-01 | fx-a |\n| case-02 | fx-b |\n"
+    dup_readme = (
+        "| fixture | a | b | c | 預期判定 | 預期 BLOCK 類別 |\n"
+        "|---|---|---|---|---|---|\n"
+        "| fx-a | - | - | - | BLOCK | {違規} |\n"
+        "| fx-b | - | - | - | BLOCK | {違規} |\n"
+    )
+    dup_results, _ = grade(dup_report, dup_mapping, dup_readme)
+    dup_status = {fx: status for fx, status, _ in dup_results}
+    ok = (
+        dup_status.get("fx-a") == "NONCONFORMING_OUTPUT"
+        and dup_status.get("fx-b") == "MATCH"
+    )
+    marker = "ok" if ok else "FAIL"
+    print(f"[{marker}] duplicate case section on the full grading path: {dup_results}")
+    if not ok:
+        failures.append("duplicate case section on the full grading path")
 
     print()
     if failures:
