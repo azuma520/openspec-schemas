@@ -193,3 +193,61 @@
 1. 併回 main（需授權，非 fast-forward）→ main dogfood schema 重同步到 v3 → 在 main 確認後把 Identity 任務標完成。
 2. 補 `contract-identity` 主 spec 的 `## Purpose`（目前是 TBD）。
 3. push 前：處理 `origin/main` 落後，並決定 README 正式指向哪個 repo（`JiangWay`／`azuma520`；Install 的 `git clone` 目前會裝到 v1）。
+
+## Session 17:16
+
+### 一、本 session 主題
+
+補記：16:56 收工（`de469a4`）之後，同一個對話接著把收尾做完——併回 main、Identity 結案、fork 的 drift 機制驗證、push 前文件修正、push 與遠端確認。前一區塊三、六欄列的「下一步」已大部分完成，以本區塊為準。
+
+### 二、完成事項
+
+- **併回 main**（使用者授權）：`c1befb4`（merge `de469a4` + `8009ab3`，無衝突）。git 層比對：openspec／superpowers-bridge／`.github`／CLAUDE.md／README／docs 與分支 tip 相同。dogfood 副本兩度由使用者重同步（`openspec/schemas/` 為 gitignore、不進 commit），`diff -r` 相同、`version: 3`／`3.0.0`、`schema validate` 通過。
+- **Identity 任務標 DONE**：依使用者完成條件（併回 main 並在 main 確認，不綁 push）。上層「superpowers-bridge 下一代改造」現為 `next_branch=5`、可升子項 ≥2，未自動標下一步。
+- **fork 的 drift 機制**（使用者裁定 A'：先讓機制活起來再改連結）：`azuma520/openspec-schemas` 原本 Issues 關閉、`version-check.yml` 在 fork 上從未跑過（workflow 狀態一直是 active，排程未跑的原因未確認）。開啟 Issues → `workflow_dispatch` 手動觸發 run 36840373547 → success、建立 `upstream-version-check` label、開 issue #2（OpenSpec 釘 `1.3.1`／最新 `1.14.0`；Superpowers 釘 `v5.1.0`／最新 `v6.4.2`；schema 對 `1.14.0` 驗證通過）。
+- **連結依用途改指 fork**：安裝／升級 `git clone`、CI badge、drift badge 與 issue 連結、adopters fragment、roadmap 開 issue 連結 → `azuma520`；`LICENSE` 著作權人 `JiangWay` 不改；CLAUDE.md 改寫該說明並記下 fork 關係與手動驗證。
+- **CI 能力宣稱修正**（Codex 文件審 🔴，屬既有說法）：實測 OpenSpec 1.3.1——`requires:` 指向不存在 artifact、依賴成環會被擋；刪掉一條 `requires:` 邊、鍵名拼錯（`requirez:`）照樣通過；instruction／PRECHECK 文字不驗。bridge README 相容性表「結構性」列（en／zh）與 CLAUDE.md「沒有 build / test / lint」節改成只寫實測事實。
+- **`contract-identity` 主 spec 補 `## Purpose`**（涵蓋 REQ-1～REQ-8）。
+- **文件審**：Codex gpt-6.1-sol 新 thread `01a0f6b6-…` → ⛔（上一條）→ 修 → 同 thread 回覆 1 次 → ✅ Mergeable；doc_review 已記 pass。
+- **commit `da4541f`**（9 檔，使用者授權）→ **push**（使用者授權、限這一次、無 force）：`dfaedbe..da4541f -> main`；遠端 `Validate schemas` 對 `da4541f` success；`contract-identity` spec、bridge 目錄、drift issue 頁、CI badge 四個網址皆 200；遠端 `VERSION` 為 `3.0.0`。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **本補記的 commit 尚未 push**：使用者把 push 授權限定在 `da4541f` 那一次；這份 handoff commit 的 push 要再問。
+- [#接力] **issue #2（上游版本落後）**：Superpowers 落後為既知（等 brainstorming 漂移修好）；OpenSpec `1.3.1` → `1.14.0` 是新差距，另案處理，不屬本次收尾。
+- [#注意] 每週排程在 fork 上會不會自動跑，要等下週一（2026-10-05）看 Actions 是否出現排程 run。
+- [#接力] 延後的 🟡：bridge README 的 release 說明沒講清 `v3.0.0` tag 尚未打（本地與遠端都沒有該 tag）。
+- [#接力] 上層「superpowers-bridge 下一代改造」要選下一步（≥2 條可升子項，需使用者決定）。
+- [#接力] 暫存可清：scratchpad 的 `archive-oracle/`、`docrev4/`、`mut1/`、`mut-*`（權限擋 AI 刪除）。
+- [#接力] 未 commit、照舊保留：`backlog-crosscheck-shadow.json`、`2026-08-27-brainstorm-產品承諾.md`。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **「設定打開了」≠「機制驗證可用」**：drift badge 改指 fork 前，先開 Issues、手動觸發 workflow、確認 label 與 issue 真的建出來，badge 的 0 才是「檢查過而且是 0」（使用者裁定 A'）。
+
+**【當日洞見】**
+
+- 文件裡「CI 會抓 X」這類能力宣稱，要用改壞的副本實跑才知道真假；本次三項全是誤宣稱，其中「鍵名拼錯照樣通過」連 CLAUDE.md 原有說法都低估了 CI 的盲區。
+- dogfood 副本是 gitignore 的本機複製，不進 commit；使用者曾以為要一起提交，查 `git check-ignore` 即釐清。
+- fork 預設關 Issues、排程 workflow 也可能不跑；以 fork 為正式發佈處時，這兩項要主動確認。
+
+**【學習候選】**
+
+沒有（「實跑驗證能力宣稱」已在記憶 `feedback_claim_first_discriminating_oracle` 的「代理指標不對準 claim」範圍內，本次是其實例，不另立）。
+
+### 五、檔案異動
+
+錨來源：沿用本 session 開工 commit（12bb193），接續 16:56 區塊之後——`de469a4..da4541f`。
+
+- `c1befb4` merge（worktree 分支 10 個 commit 進 main）
+- `da4541f`：`CLAUDE.md`、`docs/roadmap.md`、`docs/roadmap.zh-TW.md`、`openspec/specs/contract-identity/spec.md`、`superpowers-bridge/README.md`、`superpowers-bridge/README.zh-TW.md`、`superpowers-bridge/templates/adopters/CLAUDE.md.fragment.md`、`.zh-TW.md`、`workflow-harness/work-map.jsonl`
+- 本 handoff 補記
+- repo 外：GitHub fork 設定（Issues 開啟）、run 36840373547、issue #2、label `upstream-version-check`
+
+### 六、下一步建議
+
+1. push 本補記的 commit（需再授權）。
+2. 處理 issue #2：評估 OpenSpec `1.14.0` 相容性（schema 已對它驗證通過），決定是否提升基準。
+3. 為「superpowers-bridge 下一代改造」選下一條工作（候選含 `task-20261001-retro-template-writing-plans`、Verification Strategy 研究、verify/sync lifecycle）。
