@@ -29,7 +29,7 @@ openspec-schemas/                     ← 本 repo
 │       └── retrospectives/           ← 結案複盤
 └── superpowers-bridge/                ← 第一個 bridge,自包式 schema bundle
     ├── README.md / .zh-TW.md         ← 完整 bridge 文件(含 install/upgrade + integration runbook)
-    ├── VERSION                       ← bundle SemVer(2.0.0),與 schema.yaml 的 version: 2 是兩回事
+    ├── VERSION                       ← bundle SemVer(3.0.0),與 schema.yaml 的 version: 3 是兩回事
     ├── schema.yaml                   ← 唯一的行為來源:artifacts DAG + instruction prompts + apply 編排
     └── templates/                    ← artifact 模板(8 個 artifact 各一份)
         ├── brainstorm.md / proposal.md / design.md / spec.md
@@ -182,9 +182,9 @@ Orca 方向的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k �
 
 | 你改了什麼 | 必須同步改什麼 | 不改的後果 |
 |---|---|---|
-| `superpowers-bridge/README.md` 的 Compatibility 表格格式 | `version-check.yml` 的 `Read pinned versions` step | **CI 直接 fail**。它用 ``grep -E '^\| v2 \| `'`` 抓那一行(取第一筆),再用 ``awk -F'`'`` 取第 2、4 個 backtick 欄位 —— 表格必須維持「第一欄 `v2`、OpenSpec 版本與 Superpowers 版本各自包在單一 backtick 裡」的形狀 |
+| `superpowers-bridge/README.md` 的 Compatibility 表格格式 | `version-check.yml` 的 `Read pinned versions` step | **CI 直接 fail**。它用 ``grep -E '^\| v3 \| `'`` 抓那一行(取第一筆),再用 ``awk -F'`'`` 取第 2、4 個 backtick 欄位 —— 表格必須維持「第一欄 `v3`、OpenSpec 版本與 Superpowers 版本各自包在單一 backtick 裡」的形狀 |
 | `schema.yaml` 的 verify / retrospective 時序或 PRECHECK | README「六個值得記住的設計觸點」#5 #6 + 繁中版 | 已知限制的文件化失效(這是 PR #970 顧慮 #2 的唯一應對) |
-| `schema.yaml` 的 artifact 增刪 / `requires:` 邊 | bridge README 的 Artifact DAG + Lifecycle 段、`templates/` 對應模板、`docs/roadmap.md` | schema major 需從 2 bump,且 README 要新增 migration guide(見 Versioning 段) |
+| `schema.yaml` 的 artifact 增刪 / `requires:` 邊 / 新增規範性檢查(原本合法的 artifact 變不合法) | bridge README 的 Artifact DAG + Lifecycle 段、`templates/` 對應模板、`docs/roadmap.md` | schema major 需從 3 bump,且 README 要新增 migration guide(見 Versioning 段) |
 | 新增 bridge 目錄 | `validate-schemas.yml` 的 `matrix.bridge` + 頂層 `README.md` 的 bridges 表(en + zh-TW) | 新 bridge 完全不進 CI,沒人驗 |
 | bridge README 的 routing / 前門規則 | `templates/adopters/CLAUDE.md.fragment.md` + `.zh-TW.md` | 採用者貼進自己 CLAUDE.md 的規則與 README 說法不一致 |
 | CLI 指令、slash command 名稱 | bridge README 的「CLI cheat sheet」 | 使用者照抄跑不動 |
@@ -193,10 +193,10 @@ Orca 方向的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k �
 
 | 識別碼 | 位置 | 什麼時候動 |
 |---|---|---|
-| schema major | `schema.yaml: version: 2` | 只有 schema graph 契約破壞(artifact 增刪、`requires:` 改、PRECHECK 形狀改)才 bump |
-| bundle release | `superpowers-bridge/VERSION` + git tag(`v2.x.y`,發版時打) | 這包的 SemVer 發版,包含純文字修訂;`2.x.y` 都屬 schema major 2 |
+| schema major | `schema.yaml: version: 3` | 只有 schema graph 契約破壞才 bump——原本合法的 artifact 變不合法(獨立即足夠)、artifact 增刪、`requires:` 改、PRECHECK 形狀改,任一成立即算 |
+| bundle release | `superpowers-bridge/VERSION` + git tag(`v3.x.y`,發版時打) | 這包的 SemVer 發版,包含純文字修訂;`3.x.y` 都屬 schema major 3 |
 
-Compatibility 表的列鍵用的是 **schema major(`v2`)**,不是 bundle 版本 —— 改 VERSION 不要順手去動那張表的第一欄(會打爆上面的 CI grep)。
+Compatibility 表的列鍵用的是 **schema major(`v3`)**,不是 bundle 版本 —— 改 VERSION 不要順手去動那張表的第一欄(會打爆上面的 CI grep)。
 
 ## CI / 自動化的既有約定
 

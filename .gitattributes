@@ -26,6 +26,7 @@ docs/superpowers/poc/**/*.txt text eol=lf
 docs/superpowers/poc/**/*.sh text eol=lf
 docs/superpowers/poc/**/*.py text eol=lf
 docs/superpowers/poc/**/*.json text eol=lf
+docs/superpowers/poc/**/*.yaml text eol=lf
 
 # superpowers-bridge：bundle 文字內容以 LF 進 blob（2026-09-10，fix-v2 branch review）。core.autocrlf=true 下
 # 每次編輯會把一個模板從 CRLF 靜默正規化成 LF、產生整檔幻影 diff。與上面 POC 段同一套做法：

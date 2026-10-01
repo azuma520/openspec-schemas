@@ -1,0 +1,6 @@
+Read the file prompt.md in the kit directory below, then procedure.md in the same directory, and carry out what they say exactly. They are your complete instructions.
+
+KIT_DIRECTORY: {KIT}
+REPORT_FILE_PATH: {REPORT}
+
+Do not read any file outside KIT_DIRECTORY and your own scratch copies. Do not spawn subagents. When the report file is complete, reply with only: DONE and the report file path.
