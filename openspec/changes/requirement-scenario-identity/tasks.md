@@ -50,6 +50,7 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
   - TDD: n/a — prose/doc-only；以「每個 fixture 目錄都有一列、每一列都有目錄」與「覆蓋表的每個 scenario ID 都存在於 contract-identity spec」兩項對讀驗證
 - [x] 1.3 準備盲測器材並在 2.1 開跑前凍結：打亂命名的 fixture 副本（中性名稱，放在 repo 之外的暫存目錄；RED 與 GREEN 各自重新打亂，GREEN 兩位執行者拿同一份）、打亂名 ↔ 原名對照表（不交給執行者）、固定的 blind prompt（只描述輸入與回報格式：逐 fixture、逐 check 回報判定與理由，BLOCK 時分「違規」與「無法判定」；PRECHECK 與 check 5 回報「不適用於 fixture」）、固定操作程序、規則來源的取得方式（RED＝修改前 commit 的 verify instruction，以 `git show <base commit>:superpowers-bridge/schema.yaml` 取得並記下 commit；GREEN＝3.1 寫入 check 13 後的 verify instruction）。prompt 與程序在 RED、GREEN 之間只有規則來源這一個變數
   - TDD: n/a — 實驗器材準備；控制方式是器材凍結後的內容雜湊或全文存檔，事後可比對 RED／GREEN 用的是同一份 prompt 與程序
+  - 驗收紀錄：approved deviation — 「RED 與 GREEN 之間只有規則來源一個變數」未逐字成立：RED（2.1）用 prompt v1，GREEN（3.1）用 prompt v2（器材修正，只改回報格式）；使用者裁定 RED provenance 採混合，另以 replay（prompt v2＋修改前規則）取得同器材對照，22/22 與 original RED 一致。plan 1.3 原文保留不改。見 `docs/superpowers/poc/2026-09-30-identity-mutation-fixtures/README.md` §3b、`sdd-ledger.md` 第 81、86 行
 
 ## 2. RED：修改 schema 前的盲測 baseline
 
@@ -69,7 +70,7 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
   - GREEN:
     - subject: u01-modified-no-match::BLOCK {無法判定}
     - outcome: PASS
-    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a; both reached BLOCK {無法判定}; graded by blind-kit/v2/grade.py (blind-runs/v2-green/)
+    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504 (final check 13, rerun 2026-10-01); both reached BLOCK {無法判定}; graded by blind-kit/v2/grade.py fix round 2 (blind-runs/v3-green/)
   - RED:
     - subject: v01-req-no-id::BLOCK {違規}
     - outcome: FAIL
@@ -78,7 +79,7 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
   - GREEN:
     - subject: v01-req-no-id::BLOCK {違規}
     - outcome: PASS
-    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a; both reached BLOCK {違規}; graded by blind-kit/v2/grade.py (blind-runs/v2-green/)
+    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504 (final check 13, rerun 2026-10-01); both reached BLOCK {違規}; graded by blind-kit/v2/grade.py fix round 2 (blind-runs/v3-green/)
   - RED:
     - subject: v02-scenario-no-id::BLOCK {違規}
     - outcome: FAIL
@@ -87,7 +88,7 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
   - GREEN:
     - subject: v02-scenario-no-id::BLOCK {違規}
     - outcome: PASS
-    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a; both reached BLOCK {違規}; graded by blind-kit/v2/grade.py (blind-runs/v2-green/)
+    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504 (final check 13, rerun 2026-10-01); both reached BLOCK {違規}; graded by blind-kit/v2/grade.py fix round 2 (blind-runs/v3-green/)
   - RED:
     - subject: v03-id-no-description::BLOCK {違規}
     - outcome: FAIL
@@ -96,7 +97,7 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
   - GREEN:
     - subject: v03-id-no-description::BLOCK {違規}
     - outcome: PASS
-    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a; both reached BLOCK {違規}; graded by blind-kit/v2/grade.py (blind-runs/v2-green/)
+    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504 (final check 13, rerun 2026-10-01); both reached BLOCK {違規}; graded by blind-kit/v2/grade.py fix round 2 (blind-runs/v3-green/)
   - RED:
     - subject: v04-prefix-mismatch::BLOCK {違規}
     - outcome: FAIL
@@ -105,7 +106,7 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
   - GREEN:
     - subject: v04-prefix-mismatch::BLOCK {違規}
     - outcome: PASS
-    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a; both reached BLOCK {違規}; graded by blind-kit/v2/grade.py (blind-runs/v2-green/)
+    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504 (final check 13, rerun 2026-10-01); both reached BLOCK {違規}; graded by blind-kit/v2/grade.py fix round 2 (blind-runs/v3-green/)
   - RED:
     - subject: v05-rename-changes-id::BLOCK {違規}
     - outcome: FAIL
@@ -114,7 +115,7 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
   - GREEN:
     - subject: v05-rename-changes-id::BLOCK {違規}
     - outcome: PASS
-    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a; both reached BLOCK {違規}; graded by blind-kit/v2/grade.py (blind-runs/v2-green/)
+    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504 (final check 13, rerun 2026-10-01); both reached BLOCK {違規}; graded by blind-kit/v2/grade.py fix round 2 (blind-runs/v3-green/)
   - RED:
     - subject: v06-migration-non-numeric::BLOCK {違規}
     - outcome: FAIL
@@ -123,7 +124,7 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
   - GREEN:
     - subject: v06-migration-non-numeric::BLOCK {違規}
     - outcome: PASS
-    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a; both reached BLOCK {違規}; graded by blind-kit/v2/grade.py (blind-runs/v2-green/)
+    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504 (final check 13, rerun 2026-10-01); both reached BLOCK {違規}; graded by blind-kit/v2/grade.py fix round 2 (blind-runs/v3-green/)
   - RED:
     - subject: v07-added-existing-id::BLOCK {違規}
     - outcome: FAIL
@@ -132,7 +133,7 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
   - GREEN:
     - subject: v07-added-existing-id::BLOCK {違規}
     - outcome: PASS
-    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a; both reached BLOCK {違規}; graded by blind-kit/v2/grade.py (blind-runs/v2-green/)
+    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504 (final check 13, rerun 2026-10-01); both reached BLOCK {違規}; graded by blind-kit/v2/grade.py fix round 2 (blind-runs/v3-green/)
   - RED:
     - subject: v08-main-two-blocks::BLOCK {違規}
     - outcome: FAIL
@@ -141,7 +142,7 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
   - GREEN:
     - subject: v08-main-two-blocks::BLOCK {違規}
     - outcome: PASS
-    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a; both reached BLOCK {違規}; graded by blind-kit/v2/grade.py (blind-runs/v2-green/)
+    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504 (final check 13, rerun 2026-10-01); both reached BLOCK {違規}; graded by blind-kit/v2/grade.py fix round 2 (blind-runs/v3-green/)
   - RED:
     - subject: v09-two-added-same-id::BLOCK {違規}
     - outcome: FAIL
@@ -150,7 +151,7 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
   - GREEN:
     - subject: v09-two-added-same-id::BLOCK {違規}
     - outcome: PASS
-    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a; both reached BLOCK {違規}; graded by blind-kit/v2/grade.py (blind-runs/v2-green/)
+    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504 (final check 13, rerun 2026-10-01); both reached BLOCK {違規}; graded by blind-kit/v2/grade.py fix round 2 (blind-runs/v3-green/)
   - RED:
     - subject: v10-dup-scenario-id::BLOCK {違規}
     - outcome: FAIL
@@ -159,7 +160,7 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
   - GREEN:
     - subject: v10-dup-scenario-id::BLOCK {違規}
     - outcome: PASS
-    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a; both reached BLOCK {違規}; graded by blind-kit/v2/grade.py (blind-runs/v2-green/)
+    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504 (final check 13, rerun 2026-10-01); both reached BLOCK {違規}; graded by blind-kit/v2/grade.py fix round 2 (blind-runs/v3-green/)
   - RED:
     - subject: v11-added-non-numeric::BLOCK {違規}
     - outcome: FAIL
@@ -168,7 +169,7 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
   - GREEN:
     - subject: v11-added-non-numeric::BLOCK {違規}
     - outcome: PASS
-    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a; both reached BLOCK {違規}; graded by blind-kit/v2/grade.py (blind-runs/v2-green/)
+    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504 (final check 13, rerun 2026-10-01); both reached BLOCK {違規}; graded by blind-kit/v2/grade.py fix round 2 (blind-runs/v3-green/)
   - RED:
     - subject: v12-added-below-max::BLOCK {違規}
     - outcome: FAIL
@@ -177,7 +178,7 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
   - GREEN:
     - subject: v12-added-below-max::BLOCK {違規}
     - outcome: PASS
-    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a; both reached BLOCK {違規}; graded by blind-kit/v2/grade.py (blind-runs/v2-green/)
+    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504 (final check 13, rerun 2026-10-01); both reached BLOCK {違規}; graded by blind-kit/v2/grade.py fix round 2 (blind-runs/v3-green/)
   - RED:
     - subject: v13-main-req-in-fence::BLOCK {違規, 無法判定}
     - outcome: FAIL
@@ -186,7 +187,7 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
   - GREEN:
     - subject: v13-main-req-in-fence::BLOCK {違規, 無法判定}
     - outcome: PASS
-    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a; both reached BLOCK {違規, 無法判定}; graded by blind-kit/v2/grade.py (blind-runs/v2-green/)
+    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504 (final check 13, rerun 2026-10-01); both reached BLOCK {違規, 無法判定}; graded by blind-kit/v2/grade.py fix round 2 (blind-runs/v3-green/)
   - RED:
     - subject: v14-main-sc-in-fence::BLOCK {違規}
     - outcome: FAIL
@@ -195,7 +196,7 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
   - GREEN:
     - subject: v14-main-sc-in-fence::BLOCK {違規}
     - outcome: PASS
-    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a; both reached BLOCK {違規}; graded by blind-kit/v2/grade.py (blind-runs/v2-green/)
+    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504 (final check 13, rerun 2026-10-01); both reached BLOCK {違規}; graded by blind-kit/v2/grade.py fix round 2 (blind-runs/v3-green/)
   - RED:
     - subject: v15-delta-sc-in-fence::BLOCK {違規}
     - outcome: FAIL
@@ -204,7 +205,7 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
   - GREEN:
     - subject: v15-delta-sc-in-fence::BLOCK {違規}
     - outcome: PASS
-    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a; both reached BLOCK {違規}; graded by blind-kit/v2/grade.py (blind-runs/v2-green/)
+    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504 (final check 13, rerun 2026-10-01); both reached BLOCK {違規}; graded by blind-kit/v2/grade.py fix round 2 (blind-runs/v3-green/)
   - RED:
     - subject: v16-skip-request::BLOCK {違規}
     - outcome: FAIL
@@ -213,7 +214,10 @@ plan.md 要把它寫成阻斷依賴（3.1 被 2.1 阻斷），不能只是說明
   - GREEN:
     - subject: v16-skip-request::BLOCK {違規}
     - outcome: PASS
-    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a; both reached BLOCK {違規}; graded by blind-kit/v2/grade.py (blind-runs/v2-green/)
+    - invocation: two independent blind executors (sonnet A, B) per blind-kit/v2/prompt.md, rule schema.yaml sha256 a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504 (final check 13, rerun 2026-10-01); both reached BLOCK {違規}; graded by blind-kit/v2/grade.py fix round 2 (blind-runs/v3-green/)
+  - 驗收紀錄：approved deviation — 上方 RED 的 invocation 為 prompt v1、GREEN 為 prompt v2，與 plan 1.3「只有規則來源一個變數」不逐字相符；處理與證據同 1.3 的驗收紀錄（replay 22/22 與 original RED 一致）。
+  - GREEN 後修改紀錄（2026-10-01，歷史敘述）：① 全分支總審 r1 後，verify instruction 在 check 13 本體以外改了兩處（FRESHNESS 段加入 check 13 例外句、check 13 前加區塊標題 `CHECK 13 — CONTRACT IDENTITY.`）；當時 check 13 本體（從 `13. **Identity integrity**` 那行到 `REVIEW JUDGEMENTS` 前一行，含該空白行；LF 換行、每行含尾端換行）的 sha256 仍是 `b5d970761e166fbd281e96db116a9ea97307da06cc90f5658d96190ff7380c90`，與原 GREEN 規則檔 `blind-runs/green-r2/schema-green-r2.yaml`（f2eea915…）相同。② 其後 Codex code review r1 發現 check 13 本體內 I3（已 sync capability）分支的互斥句（13.B SYNCED CAPABILITY 清單與 13.E 開頭把 13.E 比對列為無法判定，INTERACTION 段卻說 preview 成功時照常比對），使用者裁定修正以對齊 I3 裁定（只有依賴 pre-sync 基準的判斷記無法判定；13.E 兩半都不讀 pre-sync 主 spec），check 13 本體因此改變（span sha256 `026648370fbcf15e0ee27f9afd4cf87433d38a3d4f13f3420dc75e4660cfe5d4`）。**最終 ship 的 check 13 已不同於原 GREEN 盲測文字**；原 GREEN（`blind-runs/v2-green/`）保留為 provenance，不再作為最終文字的直接證據。③ 使用者裁定對最終文字重跑 GREEN（不是重試到過：被測物改變了）：規則檔 `schema.yaml` sha256 `a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504`（副本 `blind-runs/v3-green/schema-green-v3.yaml`），器材 v2 prompt／procedure 不變、grader 為 fix round 2，兩位全新 sonnet 執行者 A、B，重新打亂（seed 87309），A、B 皆 MATCH 22／DIFF 0／NONCONFORMING 0、FINAL 逐案相同，跑完 kit 雜湊未變（`blind-runs/v3-green/`）。上方 17 筆 GREEN 紀錄指向這次重跑。
+  - 證據限制：I3 分支（已 sync 的 capability）**不在**凍結的 22 個 fixture 涵蓋範圍內——沒有任何 fixture 讓 check 3 記為 ✓ Already synced。因此這次重跑的 22/22 只證明「修正後的 check 13 沒有破壞既有 22 個案例」，**不證明** I3 分支本身經過盲測驗證。
 - [x] 3.2 更新 `specs` instruction：標題語法（`### Requirement: <REQ-ID> <description>`、`#### Scenario: <REQ-ID>-S<m> <description>`）、改名保 ID（RENAMED 的 FROM／TO local ID 必須相同，唯一例外是補號遷移）、新號配置兩層（檢查層由 check 13 驗；發號層要求作者連同 `openspec/changes/archive/` 的 delta spec 查歷史最大號、往上取，check 13 不驗這一層）。並將 `version:` 改為 3
   - TDD: n/a — 作者表面的規則文字，本 change 沒有可重跑案例驗證作者行為；以逐句對讀 contract-identity REQ-1、REQ-2、REQ-4 驗證，並以 1.1 的 fixtures 不需改寫、照樣成立作旁證
 

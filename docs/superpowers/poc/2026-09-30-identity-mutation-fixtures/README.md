@@ -83,7 +83,7 @@
 
 ## 3. 結果表
 
-「RED 實際」欄已由 2.1 填入（見下方「RED 執行紀錄」）；「GREEN 執行者 A／B」欄留空，由 3.1 填入。RED、GREEN 執行者所用的模型記在下方「RED 執行紀錄」表，以及 tasks.md 對應 task（2.1、3.1）底下各一行紀錄——兩處都記，上面的結果表本身不重複記模型名稱。「不一致或失敗的類型」欄的可能值：規則不清、讀錯狀態、CLI 資料不足、操作對應不清、忽略規則、重跑不一致（plan.md §3.1）。
+「RED 實際」欄由 2.1 填入（見下方「RED 執行紀錄」）；「GREEN 執行者 A／B」欄由 3.1 填入，目前內容是對最終 check 13 的重跑（2026-10-01，`blind-runs/v3-green/`），與 2026-09-30 的 GREEN（`blind-runs/v2-green/`）逐案判定相同。RED、GREEN 執行者所用的模型記在下方「RED 執行紀錄」表，以及 tasks.md 對應 task（2.1、3.1）底下各一行紀錄——兩處都記，上面的結果表本身不重複記模型名稱。「不一致或失敗的類型」欄的可能值：規則不清、讀錯狀態、CLI 資料不足、操作對應不清、忽略規則、重跑不一致（plan.md §3.1）。
 
 | fixture | 預期判定（含類別集合） | RED 實際 | GREEN 執行者 A | GREEN 執行者 B | A/B 是否一致 | 不一致或失敗的類型 |
 |---|---|---|---|---|---|---|
@@ -115,7 +115,8 @@
 | run | 執行者 | 模型 | 日期 | 規則來源（hash） | 原始回報 |
 |---|---|---|---|---|---|
 | RED（2.1） | 1 位盲測執行者（general-purpose subagent，無先前脈絡） | sonnet（`claude-sonnet-5`） | 2026-09-30 | `superpowers-bridge/schema.yaml` @ `git show 42c3d24`（hash 見 `blind-kit/FROZEN.md`） | [`blind-runs/red/report-red.md`](./blind-runs/red/report-red.md)（對照表：[`blind-runs/red/mapping.md`](./blind-runs/red/mapping.md)） |
-| GREEN（3.1，official） | 2 位互相獨立的盲測執行者 A、B（同一份打亂副本，各自獨立 context） | sonnet（`claude-sonnet-5`） | 2026-09-30 | `superpowers-bridge/schema.yaml`（working tree，含 check 13）@ sha256 `f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a` | 執行者 A：[`blind-runs/v2-green/report-green-A.md`](./blind-runs/v2-green/report-green-A.md)；執行者 B：[`blind-runs/v2-green/report-green-B.md`](./blind-runs/v2-green/report-green-B.md)；對照表：[`blind-runs/v2-green/mapping.md`](./blind-runs/v2-green/mapping.md)；評分器：`blind-kit/v2/grade.py`（instrument v2, round 1；見 `blind-kit/v2/FROZEN.md`）——A 22/22 MATCH、B 22/22 MATCH、NONCONFORMING 0、A/B FINAL 每一案例逐字一致 |
+| GREEN（3.1，final check 13 重跑，現行證據） | 2 位全新、互相獨立的盲測執行者 A、B（同一份重新打亂的副本，seed 87309，各自獨立 context） | sonnet（`claude-sonnet-5`） | 2026-10-01 | `superpowers-bridge/schema.yaml`（修正 I3 分支互斥句後的最終版）@ sha256 `a78e207c4fe5f7482424577d31b35e654866d7bbaaeee71d1f32f0788d012504`（副本 [`blind-runs/v3-green/schema-green-v3.yaml`](./blind-runs/v3-green/schema-green-v3.yaml)） | 執行者 A：[`blind-runs/v3-green/report-green-A.md`](./blind-runs/v3-green/report-green-A.md)；執行者 B：[`blind-runs/v3-green/report-green-B.md`](./blind-runs/v3-green/report-green-B.md)；對照表：[`blind-runs/v3-green/mapping.md`](./blind-runs/v3-green/mapping.md)；評分器：`blind-kit/v2/grade.py`（fix round 2；見 `blind-kit/v2/FROZEN.md`）——A 22/22 MATCH、B 22/22 MATCH、NONCONFORMING 0、A/B FINAL 每一案例逐字一致；跑完 kit 雜湊未變。限制：I3 分支（已 sync 的 capability）不在 22 個 fixture 涵蓋範圍內，22/22 只證明修正未破壞既有案例 |
+| GREEN（3.1，2026-09-30，provenance——check 13 本體其後已修正，不再是最終文字的直接證據） | 2 位互相獨立的盲測執行者 A、B（同一份打亂副本，各自獨立 context） | sonnet（`claude-sonnet-5`） | 2026-09-30 | `superpowers-bridge/schema.yaml`（working tree，含 check 13）@ sha256 `f2eea915b79bfb35f9d45bde937c7790ee950469f38aa9372893bce2ee3b2a7a` | 執行者 A：[`blind-runs/v2-green/report-green-A.md`](./blind-runs/v2-green/report-green-A.md)；執行者 B：[`blind-runs/v2-green/report-green-B.md`](./blind-runs/v2-green/report-green-B.md)；對照表：[`blind-runs/v2-green/mapping.md`](./blind-runs/v2-green/mapping.md)；評分器：`blind-kit/v2/grade.py`（instrument v2, round 1；見 `blind-kit/v2/FROZEN.md`）——A 22/22 MATCH、B 22/22 MATCH、NONCONFORMING 0、A/B FINAL 每一案例逐字一致 |
 
 ## 3a. RED 結果與 TDD subject 清單（2.1）
 
@@ -185,7 +186,7 @@ RED 實際對每個 fixture 都是 `PASS {}`（checks 1–12 對這批身分缺�
 
 RED（checks 1–12，舊規則）對全部 22 個 fixture 一律回報 `PASS {}`——包括 17 個刻意植入身分缺陷的 subject fixture（`u01`、`v01`–`v16`）。這證實了 2.1 前提檢查的假設：舊 verify（checks 1–12）對這批身分缺陷全部無感（§3a「前提檢查」；證據：本檔 §3 結果表「RED 實際」欄、`blind-runs/red/report-red.md`）。
 
-GREEN（3.1 寫入 check 13 之後、以 v2 器材做的官方重跑）把同一批 17 個 subject 全部從 `PASS {}` 翻成預期的 `BLOCK` 且類別集合正確；5 個 conformance-only fixture（`p01`–`p05`）維持 `通過 {}` 不變。兩位獨立執行者 A、B 22/22 皆與預期答案 MATCH、FINAL 逐案例逐字一致（證據：本檔 §3 結果表「GREEN 執行者 A／B」欄、`blind-runs/v2-green/report-green-A.md`、`report-green-B.md`；`./sdd-ledger.md`〔本次 SDD 工作的 append-only 追蹤紀錄，複製進 repo 做成時點記錄〕第 88 行「GREEN v2 result: A 22/22, B 22/22, NONCONFORMING 0…」）。
+GREEN（3.1 寫入 check 13 之後、以 v2 器材做的官方重跑）把同一批 17 個 subject 全部從 `PASS {}` 翻成預期的 `BLOCK` 且類別集合正確；5 個 conformance-only fixture（`p01`–`p05`）維持 `通過 {}` 不變。兩位獨立執行者 A、B 22/22 皆與預期答案 MATCH、FINAL 逐案例逐字一致（證據：本檔 §3 結果表「GREEN 執行者 A／B」欄、`blind-runs/v2-green/report-green-A.md`、`report-green-B.md`；`./sdd-ledger.md`〔本次 SDD 工作的 append-only 追蹤紀錄，複製進 repo 做成時點記錄〕第 88 行「GREEN v2 result: A 22/22, B 22/22, NONCONFORMING 0…」）。2026-10-01 之後 check 13 本體因 I3 分支的互斥句被修正，最終文字已不同於這次 GREEN 的規則檔；對最終文字重跑 GREEN 的結果相同（A、B 各 22/22，`blind-runs/v3-green/`，見 §3「RED 執行紀錄」表與 tasks.md 3.1）。I3 分支不在 22 個 fixture 涵蓋範圍內。
 
 即 check 13 把 regression 從「全部漏放（PASS）」翻成「全部正確擋下（BLOCK，類別集合對）」，且這個翻轉在兩位互相獨立的執行者間可重現一致。
 
