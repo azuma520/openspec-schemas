@@ -132,3 +132,64 @@
 1. 寫 retrospective（內容見三、第二條）。
 2. 文件審一批（verify.md、retrospective、answer-key、ledger、README 新段落、tasks.md 新條；案例檔不送審）。
 3. 審過後：使用者授權 commit → archive（使用者協助 rm）→ 併回 main → main dogfood 重同步到 v3；程式碼審開新 Codex thread；push 前處理 `origin/main` 落後。
+
+## Session 16:56
+
+### 一、本 session 主題
+
+`requirement-scenario-identity` 收尾：寫 retrospective → 最終文件審（Fable 兩批＋Codex 窄複查兩輪）→ commit → archive（以暫存複本的真正 `openspec archive` 結果當標準答案）。另把 retrospective 的兩條經驗寫進記憶、模板缺陷登記成工作項。本交接寫在 main；change 的改動都在 worktree 分支，尚未併回 main。
+
+### 二、完成事項
+
+- **retrospective**（`retrospective.md`）：§0 數據＋六節分析，每條附出處；工時與非盲測派工次數照實標【未精確計數】。D10 觀察題依使用者裁定記為 sample 1／inconclusive-positive，不改 `templates/proposal.md`。
+- **§6 五條處置（使用者裁定）**：①oracle 分辨不出、②代理指標不對準 claim → 寫進記憶 `feedback_claim_first_discriminating_oracle.md`（兩種型態分開、共用上位原則）；③模板 skill 表仍列 `writing-plans` → 登記工作項 `task-20261001-retro-template-writing-plans`（範圍守窄）；④繼續觀察；⑤併入 `task-20260904-worktree-handoff-lifecycle`。
+- **最終文件審**：Fable 兩批（第 1 批帶使用者四個重點）皆 ✅ Mergeable、sentinel 驗證通過；修兩個已查證的事實錯誤（verify.md 的 plan.md 最後修改 commit、retrospective 的 diff 範圍說明）；使用者改派 Codex gpt-6.1-sol 窄複查（新 thread `01a0f695-…`）→ ✅ 但抓到更正句本身漏列 1.1 Delivers → 修 verify.md、ledger 兩處 → 同 thread 回覆 1 次 → ✅ 無新問題。doc_review 已記 pass。偏離「文件審 fallback sticky」已記 `[DEVIATION]`（ledger 第 126 行）。
+- **兩個 fixture `.openspec.yaml`**：使用者裁定算案例輸入，不重跑程式碼審。
+- **commit**：worktree `e441785`（verify、retrospective、ledger）；main `74f45f9`（工作地圖登記）。
+- **archive**：暫存複本跑 `openspec archive requirement-scenario-identity -y`（exit 0、移入 `archive/2026-10-01-requirement-scenario-identity/`、`Totals: + 8, ~ 11, - 0, → 10`、validate 5/5）當標準答案 → 複製進正式 worktree → 使用者 `rm` 原 change 目錄 → 整個 `openspec/` 對標準答案 `diff -r` 為空、`openspec validate --all` 5 passed、無進行中 change → commit `8009ab3`（18 檔）。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **併回 main**（需使用者授權）：分支領先 main 10 個 commit、main 領先分支 5 個（交接 commit）→ 不是 fast-forward。之後 main 的 dogfood 副本重同步到 v3：`rm -rf openspec/schemas/superpowers-bridge && cp -R superpowers-bridge openspec/schemas/`。
+- [#接力] **Identity 任務的完成條件（使用者裁定）**：併回 main 成功 → 在 main 上確認 Identity artifacts／schema 狀態正確 → 標 `DONE`。不綁 push（push 是發布責任）。目前維持「正在做」。
+- [#接力] `contract-identity` 主 spec 的 `## Purpose` 是 CLI 產生的 TBD，要另補（tasks.md 檔頭既定的 archive 後 follow-up）。
+- [#注意] push 前兩件：①`origin/main` 落後本機 main（verify 時 28，現已 29 以上）；②bridge README 同檔指向兩個 repo——spec 連結 `azuma520`，badge／Install `git clone`／drift issue／adopters fragment 仍是 `JiangWay`，而 `JiangWay` main 是 bundle 1.0.0，照 v3 README 安裝會裝到 v1。正式發佈用哪個 repo 待使用者決定（本 change 前既存，不在本 change 修）。spec 連結在 archive 推上 `azuma520` main 前為 404。
+- [#接力] 未記進 ledger 的紀錄（使用者裁定，避免再開文件審）：Codex 窄複查第 2 輪 ✅（同 thread 回覆 1 次），以本交接為準。
+- [#接力] 暫存可清：`scratchpad/archive-oracle/`（archive 標準答案，已驗證完）。
+- [#接力] 未 commit、照舊保留（main）：`backlog-crosscheck-shadow.json`、`2026-08-27-brainstorm-產品承諾.md`。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **寫更正句之前，先對原始證據跑一次查證命令**，不論措辭來自審查者、使用者還是自己。本日 verify.md 更正句照抄建議寫成「只改 Acceptance」，Codex 抓到 1.1 Delivers 也改了，多花一輪。
+- **手動繞過工具動作時，以工具在暫存複本實跑的結果當標準答案，最後對整個樹做 `diff`**，不是只比被搬的目錄。本日 archive 即如此，最終 `diff` 為空。
+
+**【當日洞見】**
+
+- 「文件審 fallback sticky」的前提是 Codex 不可用，但今天程式碼審其實已在用 Codex。使用者問「為什麼不是 Codex」時，我先把原因誤說成「Codex 在 Windows 失敗」，再更正。
+- Fable 子 agent 的輸出檔是空的，驗證審查結論格式只能用通知裡的原文另寫成檔；用 heredoc 寫大段含特殊字元的報告會壞，改用 Write 工具才成功。
+- Codex 新對話會整份重讀，不只看改過的行，能抓到只送 diff 時看不到的問題。
+- worktree 分支與 main 互相領先（10／5），併回時不是 fast-forward。
+
+**【學習候選】**
+
+1. **Case**：修正事實錯誤時照抄別人建議的措辭，更正句本身又不精確。
+2. **Candidate Pattern**：寫入任何更正句前，對它引用的原始證據跑一次查證命令。
+3. **Evidence**：本日 1 例；全域 CLAUDE.md 已有同一條（N=7），屬既有規則的又一例。**Hypothesis**。
+4. **Minimum Sufficient Intervention**：不新增規則；Observe（是否為全域條文案例數加一由使用者決定）。
+5. **Promotion**：History only（由使用者決定）。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（12bb193、開工於 2026-10-01T14:40:28）——列 12bb193..HEAD。
+
+- main：`74f45f9` `workflow-harness/work-map.jsonl`（新增 `task-20261001-retro-template-writing-plans`）；本 handoff
+- worktree 分支：`e441785`（`verify.md`、`retrospective.md`、`sdd-ledger.md`）；`8009ab3`（archive：13 檔移入 `openspec/changes/archive/2026-10-01-requirement-scenario-identity/`、4 個主 spec 修改、新增 `openspec/specs/contract-identity/spec.md`）
+- repo 外：記憶 `feedback_claim_first_discriminating_oracle.md` 與 `MEMORY.md` 索引一行
+
+### 六、下一步建議
+
+1. 併回 main（需授權，非 fast-forward）→ main dogfood schema 重同步到 v3 → 在 main 確認後把 Identity 任務標完成。
+2. 補 `contract-identity` 主 spec 的 `## Purpose`（目前是 TBD）。
+3. push 前：處理 `origin/main` 落後，並決定 README 正式指向哪個 repo（`JiangWay`／`azuma520`；Install 的 `git clone` 目前會裝到 v1）。
