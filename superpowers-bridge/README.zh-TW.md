@@ -402,7 +402,7 @@ Main agent 讀 `plan.md`,為每個 task 派發 fresh subagent。每個 subagent 
 - 它們判定的只有**結構、格式與基數(cardinality)**,**絕不判定證據的真假**。它們讀的是註記與紀錄的存在與結構;它們不確立證據是真的(證據由 agent 自行提交;那份保證落在 review 層,也隨著 review 層一起打折),不證明開發過程真的是測試先行,也不評斷語意品質。
 - 語意層面的問題 —— RED 的 `failure:` 摘錄到底是行為失敗還是 harness 錯誤、被引用的 subject 是否真的在測這個 task 所宣稱的東西、`n/a` 的理由站不站得住、以及標為 `n/a` 的 task 是不是反而帶了紀錄 —— 在 instruction 裡被列為 **review 判斷**(R1–R4),是以 review 的 blocking finding 回報,而不是某一項檢查的結果。
 
-**第 13 項(schema v3 新增)—— identity integrity。** 每個 Requirement 與 Scenario 標題都必須帶穩定、唯一的 ID(見[從 v2 遷移到 v3](#從-v2-遷移到-v3))。第 13 項判定的對象是這個 change 的歸檔後 *候選狀態* —— 在一份暫存複本上實跑 archive preview 產生,絕不靠推理去猜合併結果 —— 對照這條規則,並把從文字數出的 requirement / scenario 數量與 OpenSpec CLI 的 JSON 輸出交叉核對。它的 BLOCK 分兩種、絕不混稱一種:**違規**(檢查完成、發現規則被破壞)或**無法判定**(檢查本身無法可靠完成 —— 例如 archive preview 失敗)——兩種都沒有降級或警告級的通過。跟第 8–12 項一樣,它在**判定什麼**上是決定性的、在**怎麼跑**上是 agent 執行的:schema 要求它在 archive 之前跑、失敗要 block,但這**不是** Harness 層級、無法繞過的 gate —— 如果 verify agent 跳過它,本 schema 沒有任何機制會攔截這個遺漏。它不確立退休的 ID 不會被重新指派、Scenario ID 不會透過全文替換或 archive 無聲消失、同一個未改動的 ID 底下語意沒有被削弱,也不確立 ID 能在 capability 改名後存活。完整的規則集與這個宣稱邊界由 `contract-identity` capability spec(openspec-schemas repository 的 [`openspec/specs/contract-identity/spec.md`](https://github.com/JiangWay/openspec-schemas/blob/main/openspec/specs/contract-identity/spec.md)——它**不隨**本 bundle 內含,單獨複製的 `superpowers-bridge/` 目錄裡沒有這個檔)擁有 —— 本 README 只是摘要,不另加內容。
+**第 13 項(schema v3 新增)—— identity integrity。** 每個 Requirement 與 Scenario 標題都必須帶穩定、唯一的 ID(見[從 v2 遷移到 v3](#從-v2-遷移到-v3))。第 13 項判定的對象是這個 change 的歸檔後 *候選狀態* —— 在一份暫存複本上實跑 archive preview 產生,絕不靠推理去猜合併結果 —— 對照這條規則,並把從文字數出的 requirement / scenario 數量與 OpenSpec CLI 的 JSON 輸出交叉核對。它的 BLOCK 分兩種、絕不混稱一種:**違規**(檢查完成、發現規則被破壞)或**無法判定**(檢查本身無法可靠完成 —— 例如 archive preview 失敗)——兩種都沒有降級或警告級的通過。跟第 8–12 項一樣,它在**判定什麼**上是決定性的、在**怎麼跑**上是 agent 執行的:schema 要求它在 archive 之前跑、失敗要 block,但這**不是** Harness 層級、無法繞過的 gate —— 如果 verify agent 跳過它,本 schema 沒有任何機制會攔截這個遺漏。它不確立退休的 ID 不會被重新指派、Scenario ID 不會透過全文替換或 archive 無聲消失、同一個未改動的 ID 底下語意沒有被削弱,也不確立 ID 能在 capability 改名後存活。完整的規則集與這個宣稱邊界由 `contract-identity` capability spec(openspec-schemas repository 的 [`openspec/specs/contract-identity/spec.md`](https://github.com/azuma520/openspec-schemas/blob/main/openspec/specs/contract-identity/spec.md)——它**不隨**本 bundle 內含,單獨複製的 `superpowers-bridge/` 目錄裡沒有這個檔)擁有 —— 本 README 只是摘要,不另加內容。
 
 失敗會回到對應 artifact 修正後重跑 verify。
 
@@ -510,7 +510,7 @@ bundle release `3.x.y` 是 schema major `v3` 的一個 published cut,一如 `2.x
 
 ### 從 v2 遷移到 v3
 
-Requirement 標題現在的形式是 `### Requirement: <REQ-ID> <description>`,Scenario 標題則是 `#### Scenario: <REQ-ID>-S<m> <description>`;新配置的 Requirement ID 形如 `REQ-<n>`(正整數)。完整語法與新 ID 配置規則只定義在一個地方,就是 `contract-identity` capability spec(openspec-schemas repository 的 [`openspec/specs/contract-identity/spec.md`](https://github.com/JiangWay/openspec-schemas/blob/main/openspec/specs/contract-identity/spec.md)——它**不隨**本 bundle 內含,單獨複製的 `superpowers-bridge/` 目錄裡沒有這個檔)—— 請直接讀那裡,不要另抄一份。
+Requirement 標題現在的形式是 `### Requirement: <REQ-ID> <description>`,Scenario 標題則是 `#### Scenario: <REQ-ID>-S<m> <description>`;新配置的 Requirement ID 形如 `REQ-<n>`(正整數)。完整語法與新 ID 配置規則只定義在一個地方,就是 `contract-identity` capability spec(openspec-schemas repository 的 [`openspec/specs/contract-identity/spec.md`](https://github.com/azuma520/openspec-schemas/blob/main/openspec/specs/contract-identity/spec.md)——它**不隨**本 bundle 內含,單獨複製的 `superpowers-bridge/` 目錄裡沒有這個檔)—— 請直接讀那裡,不要另抄一份。
 
 對於在 `2.x.y` bundle 下開始、目前仍 in-flight 的 change,升級 schema 目錄之後:
 

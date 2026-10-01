@@ -253,7 +253,7 @@ VIOLATION 與 UNDETERMINABLE 兩種 finding，兩張表都要分別列出，**�
 
 **宣稱邊界摘要**（僅摘要，不重述規範文字；完整定義見
 openspec-schemas repository 的 `openspec/specs/contract-identity/spec.md` 的 REQ-8，
-<https://github.com/JiangWay/openspec-schemas/blob/main/openspec/specs/contract-identity/spec.md>
+<https://github.com/azuma520/openspec-schemas/blob/main/openspec/specs/contract-identity/spec.md>
 ——該 spec **不隨** `superpowers-bridge/` bundle 內含，單獨複製 bundle 的專案裡沒有這個檔）：check 13 是一組
 決定論、機器可判的規則，由 verify agent 依 instruction 執行；它不是
 harness 層強制、不可繞過的 archive-time gate——verify agent 沒跑它時，本
