@@ -49,7 +49,7 @@
 
 | Capability | Sync 狀態 | 備註 |
 |---|---|---|
-| — | ✓ 已 sync / ✗ 待 sync / N/A | — |
+| — | ✓ Already synced / ✗ Needs sync / N/A | — |
 
 ---
 
@@ -211,8 +211,9 @@ a repeated key BLOCKs on its own, whatever the other side holds):
 > **§2, §7 and §8's checks 8–11 and 12**; an edit to `plan.md` reaches **check 12 only**.
 > Scope is deliberately those two files — staleness for the checks reading `specs/`,
 > `design.md`, commit state or `docs/` is not addressed here and must not be claimed
-> to be. This is agent-executed like the checks themselves: **nothing in this schema
-> detects a stale result.**
+> to be — except check 13, which states its own staleness rule (13.F) over the main
+> specs and the change's delta files (§9). This is agent-executed like the checks
+> themselves: **nothing in this schema detects a stale result.**
 
 ---
 
@@ -227,7 +228,7 @@ Check title, copied from the schema — do not paraphrase:
 
 **Verdict**:
 
-- [ ] ✅ PASS — preview 成功，13.C／13.D 沒有任何 finding，13.E 每一項比對都完成且一致
+- [ ] ✓ PASS — preview 成功，13.C／13.D 沒有任何 finding，13.E 每一項比對都完成且一致
 - [ ] ⛔ BLOCK — 至少一項 finding（見下方兩表）
 
 Check 13 的 BLOCK 分兩種、彼此不吸收：同一個 count mismatch 可能同時產生
@@ -251,8 +252,9 @@ VIOLATION 與 UNDETERMINABLE 兩種 finding，兩張表都要分別列出，**�
 若無 finding，兩張表都填「無」——不得省略整個表格。
 
 **宣稱邊界摘要**（僅摘要，不重述規範文字；完整定義見
-`openspec/specs/contract-identity/spec.md` 的 REQ-8——**archive 前**該檔案
-還在本 change 底下的 `specs/contract-identity/spec.md`）：check 13 是一組
+openspec-schemas repository 的 `openspec/specs/contract-identity/spec.md` 的 REQ-8，
+<https://github.com/JiangWay/openspec-schemas/blob/main/openspec/specs/contract-identity/spec.md>
+——該 spec **不隨** `superpowers-bridge/` bundle 內含，單獨複製 bundle 的專案裡沒有這個檔）：check 13 是一組
 決定論、機器可判的規則，由 verify agent 依 instruction 執行；它不是
 harness 層強制、不可繞過的 archive-time gate——verify agent 沒跑它時，本
 schema 沒有機制攔截這個疏漏。它只確立 candidate state 與本 change 在

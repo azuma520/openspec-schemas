@@ -909,6 +909,8 @@ artifacts:
           only — that an entry's contract text actually describes its
           task is review judgement, never this check.
 
+      CHECK 13 — CONTRACT IDENTITY.
+
       13. **Identity integrity** (deterministic in what it decides,
           agent-executed like checks 8-12; BLOCKs are of two kinds):
 
@@ -1043,10 +1045,12 @@ artifacts:
             existing, an ADDED ID "the main spec already holds", a
             RENAMED FROM's referent, a MODIFIED entry's resolution and
             its current scenario set, and the current maxima of
-            13.D.3; and in 13.E, both the change-level and the
-            candidate-state comparisons for that capability — is
-            recorded as UNDETERMINABLE with the reason "required
-            pre-sync state unavailable". An ID that the delta and the
+            13.D.3 — is recorded as UNDETERMINABLE with the reason
+            "required pre-sync state unavailable". Neither half of
+            13.E reads the pre-sync main spec, so neither is in that
+            list: the change-level half reads the delta file and the
+            CLI's parse of it, and the candidate-state half reads the
+            preview's output. An ID that the delta and the
             synced main spec both carry is NOT recorded as a
             collision or as any other violation: no violation may
             rest on the post-sync main spec as baseline. Judgements
@@ -1063,9 +1067,10 @@ artifacts:
             capability (13.C and the 13.E candidate half are
             undeterminable for all of them); if it SUCCEEDED, the
             candidate-state parts run normally for every capability,
-            the synced one included. Either way the current-state
-            parts of the NON-synced capabilities (13.D in full, the
-            13.E change-level half) run normally, and the synced
+            the synced one included. Either way the 13.E change-level
+            half runs normally for every capability, the synced one
+            included, 13.D runs in full for the NON-synced
+            capabilities, and the synced
             capability's main-spec-reading judgements stay
             UNDETERMINABLE with the reason "required pre-sync state
             unavailable", with no violation resting on the post-sync
@@ -1203,9 +1208,11 @@ artifacts:
           disagreement blocks WITHOUT presuming which side is right,
           and the check never adjusts a count to make the sides agree.
           Each comparison reads the CLI against the state it judges.
-          For a capability check 3 recorded as synced, both halves
-          below are undeterminable (13.B SYNCED CAPABILITY), not
-          compared. Read ONLY STDOUT of every CLI call below: openspec 1.3.1
+          A capability check 3 recorded as synced is compared like
+          any other: neither half below reads the pre-sync main spec
+          (13.B SYNCED CAPABILITY), and the candidate-state half runs
+          only after a successful preview, for every capability
+          alike. Read ONLY STDOUT of every CLI call below: openspec 1.3.1
           writes `Warning: Ignoring flags not applicable to change:
           scenarios` to STDERR for `--deltas-only`, and a capture that
           mixes the two streams does not parse as JSON — that would be
@@ -1405,6 +1412,10 @@ artifacts:
       - Scope is deliberately those two files. The other checks read
         `specs/`, `design.md`, commit state or `docs/`; staleness for
         those is not addressed here and MUST NOT be claimed to be.
+        Check 13 is the one exception: it states its own staleness
+        rule in 13.F, over the main specs and the change's delta
+        files, and that rule is agent-executed on the same terms as
+        this section.
       - This is agent-executed like the checks themselves. Nothing in
         this schema detects a stale result — there is no digest of the
         checked state and no mechanism that compares one. Surfaces
