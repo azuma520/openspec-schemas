@@ -70,3 +70,65 @@
 3. 兩個待確認：I3 專用驗收案例要不要補；canonical repo 用 JiangWay 還是 azuma520。
 
 > 補記（收工後、2026-10-01）：使用者授權後，worktree 分支已提交本輪改動 3 個 commit——`01f9825` fix(poc) grader、`fc2f1b7` fix(schema) check 13／bridge 文件、`3b8c035` docs(poc) 紀錄與 GREEN 重跑證據；worktree 乾淨、未 push。三、接力棒第一條與六、下一步建議第 1 點的「決定怎麼 commit」已完成，下次直接從 verify 開始。
+
+
+## Session 14:05
+
+### 一、本 session 主題
+
+`requirement-scenario-identity`：新加的 contract-identity spec 連結改指 fork（`azuma520`）；為 check 13 的 I3（已同步 capability）分支補 2 個成對定點驗收案例並跑過；開 repo 本機 `core.longpaths=true`；跑完 verify（⚠️ PASS WITH WARNINGS，checks 1–13 全過）。本交接寫在 main，所有改動都在 worktree（分支 `worktree-requirement-scenario-identity`）。
+
+### 二、完成事項
+
+- **canonical repo 定案**：使用者裁定不回上游、fork 是正式版本 → 本 change 新加的 3 處 contract-identity spec 連結（README en／zh-TW 各 2 處、`templates/verify.md` 1 處）改成 `azuma520/openspec-schemas`；其餘既有 `JiangWay` 連結（badge、drift issue、adopter 範本）不在本 change 處理。dogfood 副本同步、`diff -r` 相同。
+- **post-fix I3 focused acceptance — 2 paired cases**（盲測組外、不是第 23、24 題）：`i3-mixed-synced-and-violation`（預期 BLOCK {VIOLATION, UNDETERMINABLE}）與 `i3-synced-only`（預期 BLOCK {UNDETERMINABLE}），放 `docs/superpowers/poc/2026-09-30-identity-mutation-fixtures/focused-i3/`。拆兩題的原因：單一案例時「A 被誤判成衝突」不改變 FINAL。派工前凍結答案檔與對照表、以假報告證明評分器分得出兩條錯誤路徑；一位全新 sonnet、一次、不重試 → MATCH 2／DIFF 0／NONCONFORMING 0，kit 雜湊前後相同。tasks.md 3.1、fixtures README §3、ledger 已記錄（含證明範圍：只讀 FINAL、單一樣本、其他 I3 形狀未涵蓋）。
+- **commit `95e4d87`**（使用者授權）：上述連結修改＋focused-i3 全部證據，29 檔。
+- **長路徑**：最深新路徑 172 字元，在 worktree（根 84 字元）下 git 讀 `.gitattributes` 撞 260 上限 → 使用者裁定開 repo 本機 `core.longpaths=true`（存在主 repo `.git/config`、所有 worktree 共用），不改已凍結證據；已記入 ledger 環境摩擦（此設定不隨 repo 發佈、不構成跨機器可攜性保證）。
+- **verify**（`openspec/changes/requirement-scenario-identity/verify.md`）：結構驗證 5/5；12 task 全完成、無延後；checks 8–12 全過（3.1 有 17 組 RED/GREEN）；check 13 PASS（預演歸檔成功、0 違規、0 無法判定）；5 個 capability 皆 Needs sync。警告：①ledger 1 行與 verify.md 未 commit、分支未 push ②`docs/superpowers/specs/` 有 5 份維護者設計文件（合法存留、本 change 未動）。checks 2/3/7–13 用 scratchpad 腳本執行，事前以弄壞的 tasks 副本與 5 個已知答案 fixture 驗過；第一次跑時腳本有兩個 bug（cmd 不認 `2>/dev/null`、check 3 只比標題），修好才採用。retrospective PRECHECK 已對 verify.md 實跑通過。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] worktree 未 commit：`openspec/changes/requirement-scenario-identity/verify.md`（新檔）、`sdd-ledger.md` 1 行（長路徑環境摩擦）——先送文件審、再經使用者授權 commit。
+- [#接力] 下一步寫 retrospective：5.2 空白行差異成因（repo-guidance 手寫有空行、archive 重新序列化不保留）、grader 與 check 13 修正、GREEN 重跑、I3 定點驗收（含證明範圍）、環境摩擦（長路徑、Write 被擋、hook 誤判）、D10 的 Retrospective 觀察題。
+- [#接力] 文件審一批：verify.md、retrospective、`focused-i3/answer-key.md`、ledger、fixtures README 新增段落、tasks.md 3.1 新增條；案例檔不送審（使用者裁定，與 186 份 fixture 慣例一致）。文件審 fallback 仍 sticky（Fable）。程式碼審要開新 Codex thread（舊 thread 已回覆 3 次）。
+- [#接力] 之後：commit → archive（使用者協助 `rm`）→ 併回 main → main 的 `openspec/schemas/` 重同步到 v3。
+- [#注意] `origin/main` 落後本機 `main` 28 個 commit；push 時要處理。
+- [#接力] scratchpad 可清：本 session `96389da4-…/scratchpad/`（i3、i3-kit、i3-report、verify 腳本與預演暫存）；正式證據已在 repo。
+- [#接力] 未 commit、照舊保留（main）：`backlog-crosscheck-shadow.json`、`2026-08-27-brainstorm-產品承諾.md`。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **測試開跑前，先確認評分分得出對錯。** 兩種不同行為若得到同一個可觀察結果，測試就分辨不了；要拆成各對一個主張的案例，並先用假報告證明評分器分得出每條錯誤路徑（本日：單一案例下 A 被誤判成衝突會被 B 的 VIOLATION 吸收）。
+- **驗證腳本先拿故意弄壞的輸入與已知答案驗過，才信它的「全過」。** 本日 check 13 腳本第一次跑有兩個 bug，兩個都會產生形式正常的錯誤結論。
+
+**【當日洞見】**
+
+- Windows 深層 worktree 路徑讓 git 超過 260 字元；本機開長路徑只修好這台，不代表 repo 可攜。
+- `origin/main` 過時（落後 28 個 commit），使 verify PRECHECK 數到 33、實際 8；push 前要處理。
+- 盲測執行者的 Write 工具以「像報告檔」為由被擋，改用 Bash 成功——worktree／工具摩擦又一例。
+- hook 把 shell 指令裡的中文誤判成 `python -c` 內含中文而擋下；加 `PYTHONUTF8=1` 即過。
+
+**【學習候選】**
+
+1. **Case**：單一案例的 FINAL 分不出「A 被誤判成衝突」與「判對」，改為兩個成對案例。
+2. **Candidate Pattern**：測試開跑前列出可能的錯誤行為，逐一確認每種都會改變可觀察結果。
+3. **Evidence**：本 session 1 例。**Hypothesis**。
+4. **Minimum Sufficient Intervention**：不新增規則；Observe。
+5. **Promotion**：History only（由使用者決定）。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（01775da、開工於 2026-10-01T09:34:24）——列 01775da..HEAD（main 上 0 筆）。worktree 分支：
+
+- `95e4d87` test(poc)：`superpowers-bridge/README.md`、`README.zh-TW.md`、`templates/verify.md`（spec 連結改 azuma520）；`openspec/changes/requirement-scenario-identity/tasks.md`（3.1 新增 I3 定點驗收條）；`docs/superpowers/poc/2026-09-30-identity-mutation-fixtures/{README.md, sdd-ledger.md}`；新增 `focused-i3/`（answer-key、mapping、report、2 個 fixtures）
+- 未 commit：`verify.md`（新）、`sdd-ledger.md`（1 行）
+- main：本 handoff
+- 環境：主 repo `.git/config` 加 `core.longpaths=true`（不進版控）
+
+### 六、下一步建議
+
+1. 寫 retrospective（內容見三、第二條）。
+2. 文件審一批（verify.md、retrospective、answer-key、ledger、README 新段落、tasks.md 新條；案例檔不送審）。
+3. 審過後：使用者授權 commit → archive（使用者協助 rm）→ 併回 main → main dogfood 重同步到 v3；程式碼審開新 Codex thread；push 前處理 `origin/main` 落後。
