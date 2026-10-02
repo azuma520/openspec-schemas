@@ -1,0 +1,160 @@
+## Apply: demo
+Schema: superpowers-bridge
+
+### Context Files
+- brainstorm: C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-workspaces-openspec-schemas-issue2-compat-spike\30689260-5557-460e-a21d-fa8c31fe4c37\scratchpad\run-v1140\openspec\changes\demo\brainstorm.md
+- proposal: C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-workspaces-openspec-schemas-issue2-compat-spike\30689260-5557-460e-a21d-fa8c31fe4c37\scratchpad\run-v1140\openspec\changes\demo\proposal.md
+- design: C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-workspaces-openspec-schemas-issue2-compat-spike\30689260-5557-460e-a21d-fa8c31fe4c37\scratchpad\run-v1140\openspec\changes\demo\design.md
+- specs: C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-workspaces-openspec-schemas-issue2-compat-spike\30689260-5557-460e-a21d-fa8c31fe4c37\scratchpad\run-v1140\openspec\changes\demo\specs\auth\spec.md
+- tasks: C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-workspaces-openspec-schemas-issue2-compat-spike\30689260-5557-460e-a21d-fa8c31fe4c37\scratchpad\run-v1140\openspec\changes\demo\tasks.md
+- plan: C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-workspaces-openspec-schemas-issue2-compat-spike\30689260-5557-460e-a21d-fa8c31fe4c37\scratchpad\run-v1140\openspec\changes\demo\plan.md
+- verify: C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-workspaces-openspec-schemas-issue2-compat-spike\30689260-5557-460e-a21d-fa8c31fe4c37\scratchpad\run-v1140\openspec\changes\demo\verify.md
+- retrospective: C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-workspaces-openspec-schemas-issue2-compat-spike\30689260-5557-460e-a21d-fa8c31fe4c37\scratchpad\run-v1140\openspec\changes\demo\retrospective.md
+
+### Progress
+2/3 complete
+
+### Tasks
+- [x] 1.1 Add password reset
+- [ ] 1.2 Manual smoke on staging
+- [x] 2.1 Update login docs
+
+### Instruction
+Before implementing, set up an isolated workspace and executor:
+
+0. **Pre-flight — verify required Superpowers skills**:
+
+   This schema's apply phase requires the following skills.
+   Confirm each appears in your available skills list before
+   proceeding:
+
+   - superpowers:using-git-worktrees
+   - superpowers:subagent-driven-development
+     (which dispatches superpowers:requesting-code-review;
+      TDD applicability is declared per task in tasks.md, and
+      applicable tasks record their evidence there —
+      superpowers:test-driven-development is not separately
+      invoked by this schema, though an implementer may
+      self-trigger it)
+   - superpowers:finishing-a-development-branch
+
+   If any required skill is missing, STOP and inform the user —
+   do NOT proceed and do NOT silently fall back to manual
+   implementation. The user can install the Superpowers plugin,
+   or explicitly opt into the manual fallback path described at
+   the end of this instruction.
+
+   Additionally, confirm the project's expected CLI tools are
+   on PATH. The exact list depends on the project — read
+   plan.md and surface any tool mentioned (e.g., `mvn`/`mvnw`,
+   `docker`, `python3`, `jq`, `glab`/`gh`, `node`/`npm`). If
+   a tool is missing, surface as WARNING (not STOP) — the user
+   may have a fallback. Print the missing list once at apply
+   start so the user isn't surprised mid-cycle.
+
+1. **Workspace**: Use the Skill tool to invoke
+   **superpowers:using-git-worktrees** to create an isolated
+   git worktree for this change.
+
+2. **Executor — subagent-driven-development**:
+
+   Use the Skill tool to invoke
+   **superpowers:subagent-driven-development** to execute
+   the plan.md contract entries with fresh subagents per task.
+
+   Tell the executor:
+   - Read plan.md in this change directory for the per-task
+     execution contract entries (each states what "done" means
+     for one task, not how to get there)
+   - Update tasks.md checkboxes as coarse tasks complete
+   - Work within the created worktree
+
+   IMPORTANT — how TDD and code review actually arrive:
+
+   TDD applicability is annotation-driven from tasks.md: every
+   task carries a `- TDD:` list item under its own checkbox
+   declaring whether TDD applies to it, and tasks.md is the
+   single source of truth for that. A plan.md entry may echo a
+   task's applicability but never redefines it.
+   Every task annotated `TDD: applicable` owes, for each subject
+   it names, exactly one RED record and one GREEN record under its
+   own checkbox in tasks.md as part of that task's completion
+   claim — the pairing unit is the subject, not the task. The `tasks` artifact's
+   instruction is the definition of the annotation grammar and
+   the record shape — read it there and have the executor do the
+   same; do not restate it here or in plan.md.
+
+   What this schema checks, and what it does not: the verify
+   artifact requires deterministic (machine-evaluable) checks of
+   the PRESENCE and STRUCTURE of those annotations and records
+   before archive, and blocks on failure. Those checks are run
+   by the verify agent following the verify instruction —
+   instruction-mediated, not a Harness-enforced, non-bypassable
+   gate. The schema does not judge the semantics or the
+   authenticity of the evidence: whether an `n/a` reason holds,
+   whether a RED outcome is a behavioural failure rather than a
+   harness error, and whether the records reflect what actually
+   ran are review judgements, and that assurance degrades with
+   the review layer.
+
+   Code review is structural: subagent-driven-development
+   dispatches reviewer subagents during execution and a final
+   review before apply concludes (it may batch several small
+   same-shape tasks into one reviewed diff — not strictly one
+   reviewer per task).
+
+   This schema does NOT support `superpowers:executing-plans`
+   as a fallback for non-subagent platforms. Per its SKILL.md,
+   executing-plans dispatches no independent reviewer — a
+   single agent executes the plan and self-checks — and
+   upstream itself directs users to subagent-driven-development
+   whenever subagents are available. (TDD is not the
+   differentiator: applicability and evidence are carried by
+   the tasks.md annotations and the evidence contract described
+   above, whichever executor runs the tasks.) If your platform
+   lacks subagent support, use the built-in `spec-driven`
+   schema instead of this one.
+
+3. **Verification**: When all tasks are done, produce the
+   `verify` artifact by invoking **openspec-verify-change**
+   to check completeness, correctness, and coherence.
+   Re-run verify until all blocking issues are resolved.
+
+4. **Retrospective (write while context is hot)**:
+
+   Once verify.md shows no blocking issues, produce the
+   `retrospective` artifact BEFORE opening any PR. Run the
+   retrospective artifact's instruction (which has its own
+   PRECHECK confirming verify.md exists and is not FAIL).
+
+   Why now, not after PR: retrospective is part of this cycle's
+   deliverables and should land in the same PR. Writing it after
+   PR merge produces a separate trailing commit and loses the
+   hot context (running tests, fresh fix memory).
+
+5. **Archive (sync spec delta + move folder)**:
+
+   After retrospective.md is written, run `openspec archive -y`
+   (or invoke `/opsx:archive`). This:
+   - syncs delta specs from `openspec/changes/<name>/specs/`
+     into `openspec/specs/<capability>/spec.md`
+   - moves the change folder to
+     `openspec/changes/archive/YYYY-MM-DD-<name>/`
+
+   The PR diff after archive contains the COMPLETE cycle state:
+   all 8 artifacts done, spec synced into main specs, change
+   under archive/.
+
+6. **Completion (PR is the LAST step)**:
+
+   After retrospective + archive are both done, use the Skill
+   tool to invoke **superpowers:finishing-a-development-branch**.
+
+   The branch's PR diff MUST contain the complete archived
+   cycle. If it doesn't (e.g., because retrospective or archive
+   was skipped), STOP and complete those first.
+
+   This is the canonical opening sequence for the PR — do NOT
+   reorder.
+
+No project context or operation guidance configured.

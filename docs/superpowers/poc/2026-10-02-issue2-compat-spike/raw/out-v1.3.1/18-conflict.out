@@ -1,0 +1,13 @@
+
+Proposal warnings in proposal.md (non-blocking):
+  ⚠ Why section must be at least 50 characters
+  ⚠ Requirement must contain SHALL or MUST keyword
+  ⚠ Requirement must have at least one scenario
+  ⚠ Requirement must contain SHALL or MUST keyword
+  ⚠ Requirement must have at least one scenario
+Task status: ✓ Complete
+
+Specs to update:
+  auth: update
+auth ADDED failed for header "### Requirement: REQ-4 Password reset" - already exists
+Aborted. No files were changed.

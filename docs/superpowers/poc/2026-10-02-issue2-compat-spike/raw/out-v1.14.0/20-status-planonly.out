@@ -1,0 +1,16 @@
+- Loading change status...
+Change: demo
+Schema: superpowers-bridge
+Change root: C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-workspaces-openspec-schemas-issue2-compat-spike\30689260-5557-460e-a21d-fa8c31fe4c37\scratchpad\x20-v1140\openspec\changes\demo
+Progress: 6/8 artifacts complete
+
+[x] brainstorm
+[x] proposal
+[x] design
+[x] specs
+[x] tasks
+[x] plan
+[ ] verify
+[-] retrospective (blocked by: verify)
+
+Next: openspec instructions verify --change "demo" --json

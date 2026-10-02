@@ -1,0 +1,2 @@
+task 1 not found in openspec/changes/demo/plan.md (no heading matching 'Task 1')
+exit=3

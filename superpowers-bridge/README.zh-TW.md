@@ -4,7 +4,7 @@
 
 [![Schema Structure](https://github.com/azuma520/openspec-schemas/actions/workflows/validate-schemas.yml/badge.svg?branch=main)](https://github.com/azuma520/openspec-schemas/actions/workflows/validate-schemas.yml)
 [![Upstream Drift](https://img.shields.io/github/issues-search/azuma520/openspec-schemas?query=is%3Aopen%20label%3Aupstream-version-check&label=Upstream%20Drift&color=yellow)](https://github.com/azuma520/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check)
-[![OpenSpec baseline](https://img.shields.io/badge/OpenSpec_baseline-1.3.1-0277bd)](#相容性)
+[![OpenSpec baseline](https://img.shields.io/badge/OpenSpec_baseline-1.14.0-0277bd)](#相容性)
 [![Superpowers baseline](https://img.shields.io/badge/Superpowers_baseline-v5.1.0-0277bd)](#相容性)
 
 > 把 [OpenSpec](https://github.com/Fission-AI/OpenSpec) 的 artifact 治理流程(**做什麼**)與 [obra/superpowers](https://github.com/obra/superpowers) 的執行技能(**怎麼做**)整合為單一工作流。額外提供 evidence-first 的 `retrospective` artifact,補上 Superpowers 沒有的 retro 能力。
@@ -542,19 +542,19 @@ Requirement 標題現在的形式是 `### Requirement: <REQ-ID> <description>`,S
 
 | superpowers-bridge | OpenSpec CLI | Superpowers plugin | 基準日期 |
 |---|---|---|---|
-| v3 | `1.3.1` | `v5.1.0` | 2026-09-30 |
+| v3 | `1.14.0` | `v5.1.0` | 2026-10-02 |
 | v2 | `1.3.1` | `v5.1.0` | 2026-09-01 |
 | v1 | `1.3.1` | `v5.1.0` | 2026-05-11 |
 
 > 新的 major 排在前面。每個 major 各留一列,v1 與 v2 那兩列保留給仍釘在 `1.x.y` 或 `2.x.y` bundle 的採用者。
 >
-> **v3 那列宣告的 Superpowers 基準跟 v1、v2 相同(`v5.1.0`,未推進)——v3 並沒有比 v2 更動到 Superpowers 這個依賴,而下方重新查證紀錄裡的 `brainstorming` 漂移也仍未解。實作這個 change 時實際用到的環境,另外記錄在下面,跟這個已宣告的基準是兩件事。** OpenSpec `1.3.1`:實作 `requirement-scenario-identity` 這個 change 期間,`openspec schema validate superpowers-bridge` 在拋棄式測試專案複本裡對 v3 schema 通過過;另外 22 個 identity mutation fixtures 跑過 `openspec validate` / `openspec archive` / `openspec show` —— 全部在 CLI `1.3.1` 之下。**實際觀察到的環境,不是已宣告的基準:** `requirement-scenario-identity` 這個 change 自己的 apply phase —— 且僅限它實際跑到的路徑,載入了 `using-git-worktrees` 與 `subagent-driven-development` 兩個 skill —— 在已安裝的 Superpowers `v6.4.1` 上跑過且通過。這不是一次完整的 `/opsx:new` → archive cycle;也不涵蓋那個 change 自己的 brainstorm 或 design phase,那兩個 phase 更早跑完、當時的 Superpowers 版本沒有記錄;這件事本身也不足以正當化推進已宣告的基準——那需要等 `brainstorming` 漂移修好之後,重跑一次完整的相容性查證。`v6.3.0` 仍未解的 finding 見下方重新查證紀錄,這一列不解決它們。
+> **v3 那列宣告的 Superpowers 基準跟 v1、v2 相同(`v5.1.0`,未推進)——v3 並沒有比 v2 更動到 Superpowers 這個依賴,而下方重新查證紀錄裡的 `brainstorming` 漂移也仍未解。實作這個 change 時實際用到的環境,另外記錄在下面,跟這個已宣告的基準是兩件事。** OpenSpec `1.14.0`(2026-10-02 由 `1.3.1` 推進):**OpenSpec `1.14.0` 已完成 CLI 層級相容性確認** —— 不是一次完整的 workflow 執行,見下方 2026-10-02 的重新查證紀錄。更早之前,在 OpenSpec `1.3.1` 之下:實作 `requirement-scenario-identity` 這個 change 期間,`openspec schema validate superpowers-bridge` 在拋棄式測試專案複本裡對 v3 schema 通過過;另外 22 個 identity mutation fixtures 跑過 `openspec validate` / `openspec archive` / `openspec show` —— 全部在 CLI `1.3.1` 之下。**實際觀察到的環境,不是已宣告的基準:** `requirement-scenario-identity` 這個 change 自己的 apply phase —— 且僅限它實際跑到的路徑,載入了 `using-git-worktrees` 與 `subagent-driven-development` 兩個 skill —— 在已安裝的 Superpowers `v6.4.1` 上跑過且通過。這不是一次完整的 `/opsx:new` → archive cycle;也不涵蓋那個 change 自己的 brainstorm 或 design phase,那兩個 phase 更早跑完、當時的 Superpowers 版本沒有記錄;這件事本身也不足以正當化推進已宣告的基準——那需要等 `brainstorming` 漂移修好之後,重跑一次完整的相容性查證。`v6.3.0` 仍未解的 finding 見下方重新查證紀錄,這一列不解決它們。
 >
 > v2 那列的 OpenSpec 欄位是 **CLI 層級的聲明**,不是一次完整的 prompt-layer cycle:`version: 2` 之下的 CLI 行為已在 2026-09-01 於一個隔離的測試專案中、對 openspec `1.3.1` 跑過**整個 CLI 介面**(validate / schemas / new / status / instructions)。Superpowers 欄位則**與 v1 相同未動** —— v2 是移除一個依賴而不是新增,而且沒有人對更新的 Superpowers release 重跑過完整 cycle,推進它等於宣稱一個沒人做過的查核。對 `v6.3.0` 查了什麼、沒查什麼,見下方的重新查證紀錄。
 
 ### 重新查證紀錄
 
-上表記錄的是本 schema **撰寫當時**所對齊的版本,不因局部查證而推進。本段記錄對更新版 upstream 的階段性查證,讓「看過了」和「重跑過完整 cycle」之間的差距保持可見。
+上表記錄的是本 schema 宣告相容的 upstream 版本。基準不因零散的抽查、或不足以支撐相容性宣稱的局部查證而推進;只有在明確限定相容性宣稱的範圍、並且對該範圍內的依賴介面完成足夠的重新查證之後,才可以推進 —— 下方 2026-10-02 的 OpenSpec `1.14.0` 推進就是這樣限定的(CLI 層級,不是完整的 agent workflow)。Superpowers 的基準則要等重跑過完整 cycle 才推進,因為 bridge 依賴 Superpowers 的是 skill 的行為,不是 CLI 介面。本段記錄對更新版 upstream 的階段性查證,讓「看過了」和「重跑過完整 cycle」之間的差距保持可見。
 
 **2026-08-26 — Superpowers `v6.3.0`**(局部查證,基準**未**推進)
 
@@ -575,6 +575,40 @@ Requirement 標題現在的形式是 `### Requirement: <REQ-ID> <description>`,S
 
 **仍未解:** 上面那條 `brainstorming` 漂移,它需要自己的一次 schema 改動。Superpowers 的基準列維持 `v5.1.0`,每週的 drift issue 也維持開啟直到它落地。
 
+**2026-10-02 — OpenSpec `1.14.0`:已完成 CLI 層級相容性確認**(OpenSpec 基準由 `1.3.1` 推進)
+
+bridge 對 OpenSpec 的 24 項依賴(逐項列在 [issue #2 相容性 spike 報告](https://github.com/azuma520/openspec-schemas/blob/main/docs/superpowers/poc/2026-10-02-issue2-compat-spike/report.md),O1–O24)都對 openspec `1.3.1` 與 `1.14.0` 逐項查證過:**16 項成立、8 項有變化需評估、0 項不成立。**查證方法是混合的,不是 24 項都做了對稱的雙版實測:20 項(O1–O10、O13、O14、O17–O24)用同一個 fixture 專案在兩版各跑一次對照;O15 只在 `1.14.0` 實測到(同一個測試在 `1.3.1` 沒走到那項檢查);O11、O12、O16 是讀原文查證(changelog、`openspec init` 產生的 skill、原始碼註解)。「有變化」是指 CLI 的行為不一樣了,但這 8 項目前都沒有讓 bridge 的依賴失效。brainstorm、plan、verify、retrospective 四個 artifact 的 `instruction` 在兩版都逐字原樣交到 agent 手上;`apply.instruction` 只在 `1.14.0` 的 `ready` 狀態確認逐字相同(`1.3.1` 對同一個 fixture 回的是 `all_done` 提示,不是這段 instruction)。bridge 讀的 JSON 欄位沒有任何一個被移除。基準的推進建立在對 bridge 所依賴介面的這次 CLI 層級重新查證上,不代表完整的 agent workflow 已在 `1.14.0` 驗過(見下方證據邊界)。
+
+| spike 項目 | `1.14.0` 改了什麼 | 碰到 bridge 的哪裡 |
+|---|---|---|
+| O9 | `- [~]`(延後任務)現在被算成**未完成**(`1.13.1` 起):`openspec list` 顯示 `2/3 tasks`,`instructions apply` 把它列成 `- [ ]`,`archive -y` 會警告 `1 incomplete task(s)` 然後繼續 | verify 的 check 2 與 check 7 把 `[~]` 定義成不算失敗;CLI 現在的看法和它相反 |
+| O12 | 產生出來的 `openspec-verify-change` skill 改讀 CLI 的任務進度,把每一個還沒完成的任務 —— 包括 `[~]` —— 都列為 CRITICAL(「Must fix before archive」) | verify artifact 會先呼叫這個 skill、再跑自己的檢查,所以用到 `[~]` 的 change 會對同一個任務拿到兩個相反的判定 |
+| O15 | 寫成第 3 層標題的 scenario 現在會被報出來(INFO,加上 ERROR「must include at least one scenario」,exit 1) | `schema.yaml` 的「Using 3 hashtags or bullets will fail silently」已經不符合 `1.14.0`(`1.3.1` 的行為這次沒有對照到) |
+| O18 | 被擋下的 archive 現在回 exit **1**(`1.3.1` 回 0),而且會留下一個空的 `changes/archive/` | check 13.B 的三條件成功判準仍然判得正確;其中「openspec 1.3.1 exits 0」那句現在只描述特定版本 |
+| O19 | 已經同步過、內容完全相同的 ADDED requirement 現在什麼都不做,所以那次 archive preview 會成功 | check 13.B 舉的觀察例(preview 以 `already exists` 中止)已經重現不了;SYNCED CAPABILITY 的規則本來就不依賴它 |
+| O20 | `show <capability> --type spec --json` 在每個 requirement 與 scenario 上多了 `name`;數量不變 | check 13.E 的「the CLI emits no heading text, so pairing is by position」已經不成立(照位置配對仍然可用) |
+| O21 | `show <change> --json --deltas-only` 不再往 stderr 寫 `Ignoring flags … scenarios` 警告;欄位不變(多了 `name`) | check 13.E 的 stderr 說明只適用 `1.3.1`;只讀 stdout 的做法仍然正確 |
+| O24 | artifact 寫到 `plan` 為止時,`openspec status` 最後一行會印 `Next: openspec instructions verify …` | 設計觸點 #6(verify 要在 apply 之後產出)—— CLI 現在會主動建議錯的順序;verify 的證據型 PRECHECK 仍然擋得住 |
+
+**證據邊界。** 這只是 CLI 層級的確認:指令是在一個隔離的測試專案(複製進 bridge)裡、於 Windows 上跑的。沒有任何 agent 在 `1.14.0` 下走過一次完整的 `/opsx:new` → archive cycle;22 個 identity mutation fixtures 沒有對 `1.14.0` 重跑;prompt 層的項目(例如 O12)是讀產生出來的 skill 判斷的,沒有實際執行。
+
+**2026-10-02 — Superpowers `v6.4.2`**(局部查證,基準**未**推進)
+
+同一個 spike 也把 bridge 對 Superpowers 的 18 項依賴對 `v6.4.2` 查過:8 項成立、3 項有變化、1 項未查證、6 項不成立。在本 schema 點名的 skill 當中,已安裝的 `v6.4.1` 與 `v6.4.2` 只差在 `writing-plans`。不成立的 6 項:
+
+| spike 項目 | bridge 的說法 | 對 `v6.4.2` 的結果 |
+|---|---|---|
+| S4 | `brainstorming` 會執行 `brainstorm` instruction 列的五個步驟 | ❌ 分三條路徑(spike / bounded / architectural);只有 architectural 會走那些步驟,而 `v6.4.1` 又在前面加了意圖確認與 HARD-GATE。這就是上面那條未解漂移,而且更深了 |
+| S5 | `brainstorming` 結束後會接到 `proposal` → `design` → `specs` → `tasks` | ❌ architectural 之後只能接 `writing-plans`;bounded 在核可後**直接進入實作**,不寫 plan 文件 |
+| S11 | `subagent-driven-development` 能執行本 schema 的 `plan.md` | ❌ 它的 `scripts/task-brief` 只認 `## Task N` 這種標題;Plan Contract 的 entry `## 1.1 — …` 會回 exit 3(`v6.0.0` 起就是這樣;dogfood 時已經遇過,當時由 controller 用 ruling 繞過) |
+| S12 | `finishing-a-development-branch` 提供 merge / PR / keep / discard,並清理 worktree | ❌ 只剩三個選項;discard 只在使用者明確要求時才做,PR 那個選項會保留 worktree |
+| S13 | `executing-plans` 不派獨立的 reviewer,也不提 TDD 與 code review | ❌ `v6.4.1` 重寫:它會載入 `test-driven-development`,並在最後派一次全新 context 的全分支 review(仍然沒有每個 task 一個 reviewer)。這筆取代上面 2026-08-26 那列的「✅ 仍成立」 |
+| S14 | 上游在有 subagent 時一律導向 `subagent-driven-development` | ❌ plan 交接時現在讓使用者在 Subagent-driven 與 Native(inline)執行之間選擇 |
+
+**為什麼基準維持 `v5.1.0`:** S4、S5、S13、S14 都是本 schema 自己的 instruction 文字或它寫明的理由,推進基準等於重新宣告它們成立;修正它們要動 `schema.yaml`,得走自己的 change。已登記兩條後續工作:重寫拒用 `executing-plans` 當 fallback 的理由,以及處理 `task-brief` 的標題格式相容缺口。
+
+完整方法、逐項證據與沒查的範圍:[issue #2 相容性 spike 報告](https://github.com/azuma520/openspec-schemas/blob/main/docs/superpowers/poc/2026-10-02-issue2-compat-spike/report.md)(在 openspec-schemas repository 裡;**不**隨本 bundle 內含)。
+
 ### 驗證機制
 
 契約分三層 — **基準聲明 + 自動 drift 偵測 + 人類檢核** — 不是自動相容性 enforcement。
@@ -585,7 +619,7 @@ Requirement 標題現在的形式是 `### Requirement: <REQ-ID> <description>`,S
 | Drift 通知 | [`version-check.yml`](../.github/workflows/version-check.yml) 每週,把基準 vs 最新 npm / GitHub release 字串比對 | Pinned ≠ latest upstream | 開 / 更新 [labelled drift issue](https://github.com/azuma520/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check),由人類檢核(workflow 維持綠 — drift 是正常狀態,不是錯誤) |
 | 端對端 workflow | **未自動化** | Superpowers skill 內部行為改變(改名、改寫 prose 影響 PRECHECK 語意、傳遞依賴變動);OpenSpec 引擎語意微調 | drift issue 觸發時,人類讀 upstream release notes |
 
-「基準日期」由 maintainer 手動重跑完整 cycle 確認沒退步後才推進。在那之前,日期代表的是人類聲明,不是自動測試通過。**有兩個例外,寫在這裡是為了讓那兩列與這個定義不互相矛盾:** v2 那列的 `2026-09-01` 與 v3 那列的 `2026-09-30` 都**只是 CLI 層級的聲明** —— 各自那一列 `version:` 之下的 CLI 行為(v2 是 validate / schemas / new / status / instructions;v3 是 `schema validate` 加上 22 個 identity mutation fixtures 跑過 `validate` / `archive` / `show`)對 openspec `1.3.1` 跑過 —— **不是**一次完整的 prompt-layer cycle 重跑。這兩個日期都不代表對 Superpowers 重新查證過:兩列的 Superpowers 欄位都沒有推進,`requirement-scenario-identity` 實際用到的環境(Superpowers `v6.4.1`,僅 apply phase)記錄在上面,是跟已宣告基準分開的觀察,不構成移動這個日期的理由。自 v1 那列的 `2026-05-11` 以來,沒有重跑過完整 cycle。
+「基準日期」由 maintainer 手動重跑完整 cycle 確認沒退步後才推進。在那之前,日期代表的是人類聲明,不是自動測試通過。**有兩個例外,寫在這裡是為了讓那兩列與這個定義不互相矛盾:** v2 那列的 `2026-09-01` 與 v3 那列的 `2026-10-02` 都**只是 CLI 層級的聲明** —— 各自那一列 `version:` 之下的 CLI 行為(v2 是 validate / schemas / new / status / instructions,對 openspec `1.3.1` 跑;v3 是 2026-09-30 用 `schema validate` 加上 22 個 identity mutation fixtures 跑過 `validate` / `archive` / `show`,對 openspec `1.3.1`,之後 2026-10-02 再把 bridge 用到的 CLI 介面 —— `schema validate` / `schemas` / `new change` / `status` / `instructions` / `validate` / `show` / `archive` —— 對 openspec `1.14.0` 跑過,那些 fixtures 沒有重跑)—— **不是**一次完整的 prompt-layer cycle 重跑。這兩個日期都不代表對 Superpowers 重新查證過:兩列的 Superpowers 欄位都沒有推進,`requirement-scenario-identity` 實際用到的環境(Superpowers `v6.4.1`,僅 apply phase)記錄在上面,是跟已宣告基準分開的觀察,不構成移動這個日期的理由。自 v1 那列的 `2026-05-11` 以來,沒有重跑過完整 cycle。
 
 ### Known breaking changes
 

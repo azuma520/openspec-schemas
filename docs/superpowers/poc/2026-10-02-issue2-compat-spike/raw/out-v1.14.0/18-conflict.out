@@ -1,0 +1,10 @@
+
+Proposal warnings in proposal.md (non-blocking):
+  ⚠ Why section must be at least 50 characters
+Task status: 2/3 tasks
+Warning: 1 incomplete task(s) found. Continuing due to --yes flag.
+
+Specs to update:
+  auth: update
+auth ADDED failed for header "### Requirement: REQ-4 Password reset" - already exists
+Aborted. No files were changed.

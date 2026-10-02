@@ -1,0 +1,23 @@
+## Apply: demo
+Schema: superpowers-bridge
+
+### Context Files
+- brainstorm: C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-workspaces-openspec-schemas-issue2-compat-spike\30689260-5557-460e-a21d-fa8c31fe4c37\scratchpad\run-v131\openspec\changes\demo\brainstorm.md
+- proposal: C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-workspaces-openspec-schemas-issue2-compat-spike\30689260-5557-460e-a21d-fa8c31fe4c37\scratchpad\run-v131\openspec\changes\demo\proposal.md
+- design: C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-workspaces-openspec-schemas-issue2-compat-spike\30689260-5557-460e-a21d-fa8c31fe4c37\scratchpad\run-v131\openspec\changes\demo\design.md
+- specs: C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-workspaces-openspec-schemas-issue2-compat-spike\30689260-5557-460e-a21d-fa8c31fe4c37\scratchpad\run-v131\openspec\changes\demo\specs\auth\spec.md
+- tasks: C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-workspaces-openspec-schemas-issue2-compat-spike\30689260-5557-460e-a21d-fa8c31fe4c37\scratchpad\run-v131\openspec\changes\demo\tasks.md
+- plan: C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-workspaces-openspec-schemas-issue2-compat-spike\30689260-5557-460e-a21d-fa8c31fe4c37\scratchpad\run-v131\openspec\changes\demo\plan.md
+- verify: C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-workspaces-openspec-schemas-issue2-compat-spike\30689260-5557-460e-a21d-fa8c31fe4c37\scratchpad\run-v131\openspec\changes\demo\verify.md
+- retrospective: C:\Users\user\AppData\Local\Temp\claude\C--Users-user-orca-workspaces-openspec-schemas-issue2-compat-spike\30689260-5557-460e-a21d-fa8c31fe4c37\scratchpad\run-v131\openspec\changes\demo\retrospective.md
+
+### Progress
+2/2 complete ✓
+
+### Tasks
+- [x] 1.1 Add password reset
+- [x] 2.1 Update login docs
+
+### Instruction
+All tasks are complete! This change is ready to be archived.
+Consider running tests and reviewing the changes before archiving.
