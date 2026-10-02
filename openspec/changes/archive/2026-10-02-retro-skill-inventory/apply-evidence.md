@@ -136,7 +136,7 @@ Row count: 6 (brainstorming, using-git-worktrees, subagent-driven-development, t
 
 ## Pre-archive doc-review fix round (2026-10-02, controller)
 
-Doc review r3 (fallback `contract-neutral-reviewer`) found that the template note's optional-aid exclusion lacked the qualifier REQ-5 ¶2 carries ("and that carries none of the class (2) disciplines"), although the final-review fix had added it to the schema. The template note now reads 「僅被列為「可能有用」、且不承載上述第二類紀律的輔助性 skill(例如 `superpowers:writing-plans`)不屬於這兩類」. The same exclusion wording was swept in this change's own records (design.md D2/D3, proposal.md, retrospective.md §4 copy of the note) and aligned. The schema text is unchanged.
+Doc review r3 (fallback `contract-neutral-reviewer`) found that the template note's optional-aid exclusion lacked the qualifier REQ-5 ¶2 carries ("and that carries none of the class (2) disciplines"), although the final-review fix had added it to the schema. The template note now reads 「僅被列為「可能有用」、且不承載上述第二類紀律的輔助性 skill(例如 `superpowers:writing-plans`)不屬於這兩類」. The same exclusion wording was swept in this change's own records (design.md D2/D3, proposal.md, retrospective.md §4 copy of the note) and aligned. The schema text is unchanged. `plan.md` 1.2 and `tasks.md` 1.2 keep their earlier, unqualified paraphrase on purpose: they are the pre-implementation contract snapshot (plan.md's global constraints bind the verbatim REQ-5 text), not rewritten to follow later fixes; editing them would also make verify checks 8–12 stale.
 
 Delivery re-check after the edit (worktree root):
 

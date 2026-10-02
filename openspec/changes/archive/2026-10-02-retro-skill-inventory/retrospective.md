@@ -1,11 +1,11 @@
 # Retrospective: retro-skill-inventory
 
 > Written: 2026-10-02 (after verify recorded ⚠️ PASS WITH WARNINGS)
-> Commit range: `a8e67b6..2b1019f`
+> Commit range: `a8e67b6..055a6ab`（archive commit 另計）
 > Worktree: `C:/Users/user/orca/workspaces/openspec-schemas/retro-skill-inventory`（Orca worktree，分支 `azuma520/retro-skill-inventory`）— 尚未 archive、未併回 main、未 push
 
 > **範圍說明。** `a8e67b6` 是 `origin/main`。範圍內 3 個 commit 中，`094dfac`、`da1e5f2` 是 apply 前的設計階段 checkpoint（brainstorm／proposal／design／specs／tasks／plan），
-> **實作只有 `2b1019f`**（使用者 2026-10-02 授權的單次 commit）。verify.md 與本檔寫於該 commit 之後、尚未 commit。
+> **主要實作在 `2b1019f`**（使用者 2026-10-02 授權的單次 commit）；**archive 前的完整最終狀態還包含 `055a6ab` 的補修**——其中 `superpowers-bridge/templates/retrospective.md` 說明文字補上 REQ-5 的限定條件（「且不承載上述第二類紀律」，文件審查第 3 輪指出），其餘是本 change 記錄的校正與 verify.md、本檔的入庫。兩者性質不同：前者是依 plan 的實作，後者是 archive 前審查後的補修。verify.md 寫於 `2b1019f` 之後、`055a6ab` 之前，描述的是補修前的樹；補修後的送達重驗記在 `apply-evidence.md`「Pre-archive doc-review fix round」段。
 
 ---
 
@@ -49,7 +49,12 @@ da1e5f2 chore(openspec): add retro-skill-inventory tasks and plan, record pre-ap
 - 📌 [nit | evidence: ledger「Controller slip」行] controller 打包總審資料時下了 `git add -N`（被禁止的 index 寫入），當場以 `git reset -q -- <file>` 撤銷，回讀 index 為空並記入 ledger、向使用者揭露。使用者裁定不因此新增流程規則。
 - 📌 [nit | evidence: 備援審查報告（存於 session scratchpad，不隨 archive 保存；結論已轉述於本條）] **本輪文件審查沒有取得 Codex 的獨立審查。** Codex 額度用完（`codex exec` exit 1：usage limit，至 2026-10-04），依規則改由 `contract-neutral-reviewer` 備援審查（✅ Mergeable、0 🔴、4 🟡；sentinel 驗證通過）。4 筆 🟡 中 3 筆是記錄的事實／出處錯誤，使用者 2026-10-02 裁定在 archive 前修正並以同一備援審查者複審，不等 Codex 恢復補審。
 - 🟡 [painful | evidence: 文件審查 r3；`apply-evidence.md`「Pre-archive doc-review fix round」段] **同一個缺陷，schema 修了、模板漏修。** 全分支總審抓到 schema 的排除句漏了 REQ-5 的限定條件（「且不帶第二類紀律」），修正時只改了 schema，模板說明裡同樣的句子沒有一起改，直到 archive 前的文件審查第 3 輪才被指出；archive 前已補齊，並掃過本 change 自己的記錄（design、proposal、本檔 §4）。這是既有紀律「修一類缺陷要掃完整 surface」的一個實例，使用者 2026-10-02 裁定不另升格成新規則。
-- 📌 [nit | evidence: ledger「Final fix wave」行] evidence 表一格（zh-TW:413）在 SDD 複審後由 controller 直接改正，沒有經過 SDD 複審者，偏離「controller 不自己修」；這格交由 archive 前的文件審查涵蓋（本輪由 contract-neutral-reviewer 備援執行，見上一條）。
+- 📌 [nit | evidence: ledger「Final fix wave」行] evidence 表一格（zh-TW:413）在 SDD 複審後由 controller 直接改正，沒有經過 SDD 複審者，偏離「controller 不自己修」；這格交由 archive 前的文件審查涵蓋（本輪由 contract-neutral-reviewer 備援執行，見本節「本輪文件審查沒有取得 Codex 的獨立審查」那一條）。
+- 📌 [nit | evidence: 文件審查第 4 輪報告（session scratchpad，不隨 archive 保存；要點轉述於本條）] **文件審查第 4 輪（✅ Mergeable、0 🔴）的 4 筆非阻擋意見與處置**（使用者 2026-10-02 裁定，不為此開第 5 輪審查）：
+  - 🟡 本檔範圍說明原寫「實作只有 `2b1019f`」，漏掉 `055a6ab` 的模板補修 → **已修**（見檔首範圍說明）。
+  - 🟡 `plan.md` 1.2 與 `tasks.md` 1.2 的排除句沒帶「不承載第二類紀律」限定條件 → **刻意保留、不是漏同步**：兩者是實作前的契約快照（pre-implementation contract snapshot），不追著後來的補修改寫；`plan.md` 的 global constraints 已逐字綁定 REQ-5 全文，且改動 tasks／plan 會讓 verify check 8–12 的結果過時。
+  - ⚪ 本檔兩處引號內的改寫句（「且不帶任何第二類紀律」「且不帶第二類紀律」）不是 schema／模板的逐字原文 → 留作觀察，不改；逐字原文見 `schema.yaml` 的「carrying neither discipline」與模板的「且不承載上述第二類紀律」。
+  - ⚪ `apply-evidence.md` 補修重驗段的指令把 `out.txt` 寫在 worktree 根目錄 → 留作觀察（指令衛生問題，不影響證據結論）。
 
 ## 3. Plan deviations
 
