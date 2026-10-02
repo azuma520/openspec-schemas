@@ -98,3 +98,72 @@
 1. `/opsx:apply` `retro-skill-inventory`（worktree + SDD），完成 verify、retrospective、Codex 文件審、archive；寫 retrospective 前先確認兩筆觀察要不要照記。
 2. issue #2 相容性 spike（`task-20261002-issue2-compat-spike`）。
 3. 回覆 verify-sync 是否標為 Verification Strategy 研究的下一步。
+
+## Session 15:20
+
+### 一、本 session 主題
+
+`retro-skill-inventory` 從 apply 一路收到 archive、併回 main 並 push；同時用 Orca 平行跑 issue #2 上游相容性 spike，依裁定 A1／B1／C1 收斂成一筆維護 commit 進 main 並 push，issue #2 留言記錄現況、保持 open。
+
+### 二、完成事項
+
+- **retro-skill-inventory 完整收尾**（schema superpowers-bridge）：
+  - apply：Orca worktree（從本地 main 開，因 origin/main 落後 2 commit）＋ SDD，兩批派工（1.1+1.2、2.1+2.2）各一次 task 審查，opus 全分支總審抓到 schema 排除句漏 REQ-5 限定條件並修正；實作者依 Anchor #4 不 commit，使用者授權單次 commit `2b1019f`。
+  - verify（⚠️ PASS WITH WARNINGS，13 項全過或不適用）→ retrospective（照使用者裁定記兩筆觀察：plan 重述 tasks＝部分證據；spec→plan 逐字副本同步義務＝既有決定新實例；另記 verify PRECHECK「commit 數 > 0」可假性通過、`git add -N` 失誤、證據生命週期短於宣告）。
+  - Codex 額度用完（至 10-04）→ 備援審查：程式碼 strict-reviewer ✅ Ready；文件 contract-neutral-reviewer 4 輪 ✅ Mergeable（每輪 🟡 依裁定修；r3 指出模板漏修限定條件＝同一缺陷只修一半）；precommit 走 repo 實際檢查通過。
+  - 授權 commit `055a6ab` → 授權 archive（`openspec archive -y` 成功，未撞目錄鎖，REQ-5 併入主 spec `tdd-claim-accuracy`）＋ commit `1f6d9ef` → finishing-a-development-branch 本地 fast-forward main。
+- **issue #2 相容性 spike**（Orca agent `issue2-compat-spike`）：OpenSpec 1.14.0 24 項 16 成立／8 有變化／0 不成立；Superpowers v6.4.2 18 項中 6 條 bridge 宣稱不成立。使用者裁定 A1（OpenSpec baseline→1.14.0，限定 CLI 層級）、B1（Superpowers 維持 v5.1.0）、C1（Known breaking changes 不動）。raw 從 213 檔精簡為 29 檔、修完引用；Codex 文件審（2 批）第一輪 2 個 🔴（查證範圍說太廣、重現說明跑不動）→ 修 → 同 thread 續審兩批 ✅。
+  - 分支 commit `02b0e46` → `git cherry-pick -n` 到 main ＋ `work-map.jsonl` 兩筆登記 → `a4b6601`（一筆語意完整的維護 commit）。
+  - 登記後續工作：`task-20261002-executing-plans-rationale`、`task-20261002-task-brief-heading-compat`（掛下一代改造）；spike 工作項標 DONE（`7f2a2bf`）。
+- **push**：`origin/main` `a8e67b6..7f2a2bf`（7 commits，fast-forward，無 force；push 前 fetch 確認遠端無獨有 commit、repo 無 pre-push hook）。CI `Validate schemas` 在 `7f2a2bf` 通過；README → spike 報告連結 HTTP 200。
+- **issue #2**：保持 open（`version-check.yml` 只找 open＋label 的 issue，關掉會另開新的）；授權發留言記錄 OpenSpec 已處理、Superpowers drift acknowledged（issuecomment-5947003458，回讀內容一致）。
+- **清理**：`retro-skill-inventory`、`issue2-compat-spike` 兩個 Orca worktree 與分支移除；舊 `requirement-scenario-identity` worktree 檢查 clean 且無獨有 commit 後解除註冊、刪分支；scratchpad 清空（使用者代刪）。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **下一代 bridge 下一步＝Verification Strategy 研究**（使用者裁定）。第一步不是開新理論：把 Identity、retro-skill-inventory、issue #2 三個案例，與 9/1 TDD Evidence、Plan Structure、9/10 contract drift 等既有研究逐項對照。上層問題：驗什麼（Claim）／怎麼驗（Method）／驗到哪停（Depth／stopping condition）。
+- [#不重議] `verify-sync lifecycle` 保持掛在 Verification Strategy 底下、**不標為研究的下一步**——它是 evidence lifecycle 子題、研究輸入之一，不是研究入口（使用者裁定，避免先解實作問題再回頭問整體設計）。
+- [#不重議] #6 `executing-plans` 拒用理由、#7 `task-brief` 缺口：baseline 刻意維持 v5.1.0 下的已知新版相容缺口，不是 blocker；研究時作為案例與約束，稍後接。
+- [#接力] `version-check.yml` 註解寫「Tuesday 22:00 Asia/Taipei」，cron `0 14 * * 1` 實際是**週一** 22:00 台北；只是註解錯、排程正確。下次排程 2026-10-05（一）22:00，順手看 issue #2 是否只多一則留言而非新開。
+- [#接力] issue #2 何時可關：Superpowers baseline 真正升版，或 version-check policy 增加「已知、刻意不升」的 drift 狀態。
+- [#接力] 本機空目錄 `.claude/worktrees/requirement-scenario-identity` 被不明程序佔用（`Device or resource busy`），不影響任何東西；重開機或關掉舊終端機後再 `rm -rf`。
+- [#接力] `v3.0.0` tag 仍未打（照舊）；`backlog-crosscheck-shadow.json`、`2026-08-27-brainstorm-產品承諾.md` 未 commit 照舊保留。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **修一類缺陷要掃完整範圍**：全分支總審抓到 schema 排除句漏限定條件，我只修了 schema、模板同一句沒改，直到文件審查第 3 輪才被指出。修完一處，先用同一組關鍵字掃所有載體（spec、schema、模板、change 自己的記錄）再送審。（使用者裁定：既有紀律的實例，不新增規則）
+- **修記錄時自己會引入新的記錄錯誤**：retrospective 插入新條目後，原本「見上一條」的相對指標指錯，兩輪審查都沒抓到、是我在 archive 前自己發現。插入或刪除條目後，回頭檢查「上一條／下一條」這類相對指標。
+
+**【當日洞見】**
+
+- **cherry-pick 的分支起點陷阱**：spike 分支從較舊的 main 開出，兩邊都在 `work-map.jsonl` 檔尾新增，cherry-pick 必然衝突。改用「`cherry-pick -n` 到 main、補檔、在 main 上 commit」，main 拿到的是一筆完整又乾淨的 commit。
+- **證據的壽命比宣告短**：retrospective／verify 隨 archive 永久保存，卻引用 worktree-local 的 SDD ledger 與 session scratchpad 報告，worktree 一拆、session 一結束就消失（已記為下一代 bridge 觀察）。
+- **verify PRECHECK「commit 數 > 0」會假性通過**：分支上有任何 commit 就過，證明不了實作已 commit（已記進 retrospective，留給 Verification Strategy 研究）。
+- **Codex 斷供時備援審查能扛完整個 change**：文件 4 輪、程式碼 1 輪；但每輪都會從前一輪修訂衍生的記錄中挑出新小問題，停點靠「🔴 才擋」與使用者裁定。
+
+**【學習候選】**
+
+- **Case**：同一缺陷 schema 修了、模板漏修（見紀律接力第一條）。
+- **Candidate Pattern**：修審查意見時，先用同一組關鍵字掃完所有載體再送審。
+- **Evidence**：既有紀律「一個缺陷＝一類缺陷」（全域 CLAUDE.md）與全域 review-fix-propagation skill 已涵蓋；本次是又一個實例。
+- **Minimum Sufficient Intervention**：不新增；下次修完審查意見時跑 review-fix-propagation skill。
+- **Promotion**：History only。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（da1e5f2、開工於 2026-10-02T10:08:25）——列 da1e5f2..HEAD
+
+- `2b1019f`：`superpowers-bridge/schema.yaml`、`superpowers-bridge/templates/retrospective.md`、`openspec/changes/retro-skill-inventory/{tasks,apply-evidence}.md`
+- `055a6ab`：retro change 的 `verify.md`、`retrospective.md`（新）、`design/proposal/brainstorm/apply-evidence.md`、模板補修
+- `1f6d9ef`：`openspec/changes/retro-skill-inventory/` → `openspec/changes/archive/2026-10-02-retro-skill-inventory/`；`openspec/specs/tdd-claim-accuracy/spec.md`（+REQ-5）
+- `a4b6601`：`superpowers-bridge/README.md`、`README.zh-TW.md`、`docs/superpowers/poc/2026-10-02-issue2-compat-spike/`（29 檔）、`workflow-harness/work-map.jsonl`
+- `7f2a2bf`：`workflow-harness/work-map.jsonl`
+- 本次收工：`文檔/handoff/session-handoff-20261002.md`（本區塊）、`workflow-harness/work-map.jsonl`（結算）
+
+### 六、下一步建議
+
+1. 開始 Verification Strategy 研究：先把 Identity、retro-skill-inventory、issue #2 三個案例與既有研究（9/1 TDD Evidence、Plan Structure、9/10 contract drift）逐項對照。
+2. 2026-10-05（一）22:00 後看 fork 每週排程：issue #2 應只多一則 drift 留言、不應新開 issue。
+3. 視研究進度再接 #6 `executing-plans` 拒用理由與 #7 `task-brief` 缺口（已登記，非 blocker）。
