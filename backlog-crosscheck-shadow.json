@@ -16,6 +16,14 @@
       "new_pairs": 0,
       "scanner_version": "1.0.0",
       "target_week": "2026-W38"
+    },
+    {
+      "candidates": [],
+      "coverage_complete": false,
+      "input_digest": "f05887b914adf86e8ccc90209d4b8dd8715719340a5979788b40676c438c6f1b",
+      "new_pairs": 0,
+      "scanner_version": "1.0.0",
+      "target_week": "2026-W39"
     }
   ],
   "schema_version": 2
