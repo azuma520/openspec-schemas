@@ -167,3 +167,64 @@
 1. 開始 Verification Strategy 研究：先把 Identity、retro-skill-inventory、issue #2 三個案例與既有研究（9/1 TDD Evidence、Plan Structure、9/10 contract drift）逐項對照。
 2. 2026-10-05（一）22:00 後看 fork 每週排程：issue #2 應只多一則 drift 留言、不應新開 issue。
 3. 視研究進度再接 #6 `executing-plans` 拒用理由與 #7 `task-brief` 缺口（已登記，非 blocker）。
+
+
+## Session 17:46
+
+### 一、本 session 主題
+
+Verification Strategy 研究第一步：Identity、retro-skill-inventory、issue #2 三案例 × 三份既有研究對照，經使用者多輪裁定與 Codex 雙審（標準審查 Gate＋研究評論 Challenge）後收尾並 commit；今天後半段浮現的上層問題整理成第二步起點備忘，不回灌第一步。
+
+### 二、完成事項
+
+- **第一步對照文件** `docs/superpowers/research/2026-10-02-verification-strategy-case-crosswalk.md`＋research README 索引一列 → commit `57ea8eb`（使用者授權單次 commit；未 push）。
+  - 內容：三案每個驗證動作拆成 Claim／Method／Depth；8 個 pattern（P4 後降為單案例延伸）；§5 使用者裁定（P2 拆成 applicability／RED validity／routing 三層；外部研究兩條線；P6 改為待驗證假說＋4 反例）；§5e 優先序重評（P3 Claim↔Oracle 對齊為最底層，P2 降為方法選擇層一部分）；§5f OPA 改為有限度讀。
+  - 審查經過：備援 contract-neutral-reviewer 3 輪（r1 🔴：拿非規範的 TE 當標準，REQ-2 其實已涵蓋以閱讀執行的規則；r2 🟡：修正時把衝突兩端寫錯，改為 §4.3 vs 2026-09-07 裁定）→ 使用者裁定補 Codex：標準審查 ✅（thread `01a0fbeb-…`）＋研究評論抓到正文 7 處措辭／出處錯誤（備援 3 輪都沒抓到）→ 修 → 同 thread 複審 ✅。`[NIT_DEFERRED]` 1 筆：索引與 §2 總述仍稱「八個跨案例 pattern」（使用者裁定不修）。
+  - 派 Codex 改回非 sticky fallback，已記 `[DEVIATION]`（依使用者「補 Codex 獨立審查」裁定）。
+- **第二步起點備忘** `docs/superpowers/research/2026-10-02-verification-strategy-step2-starting-memo.md`（使用者裁定放研究目錄；**未審、未 commit、未進索引**）：§0 最上層準則（以合理成本提升 AI agent 交付可靠度；裁定）、§1 政策定下限＋agent 範圍內調整可加嚴＋紀錄不能追認禁止事項（方向裁定）、§2–§5 假說（觀察方式 vs TDD 紀律、候選 Assurance 分層、Harness 自身 agent 執行驗證地基、三條件分開取證／RED 等價物）、§6 內部證據盤點表（研究程序裁定）、§7a OPA／Anthropic eval 的指定範圍、§8 治理待辦。
+- **work-map**：`task-20260929-verification-strategy-research` NEXT→DOING；新增 `task-20261002-vs-step2-evidence-inventory`（掛研究）、`task-20261002-product-promise-ssot-check`（掛下一代改造）。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **第二步第一件事＝內部證據盤點表**（`task-20261002-vs-step2-evidence-inventory`）：先審並 commit step2 備忘（連同 README 索引），再依備忘 §6 的欄位與記錄規則做表；不算 ROI、不做審查者排行。
+- [#不重議] 研究分層：P3 Claim↔Oracle 為最底層；P2 拆三層、最終回到 §4.3 vs 2026-09-07 裁定 owner；verify-sync 仍不是研究下一步（收工規則本會把它自動標 NEXT，依使用者既有裁定未標）。
+- [#不重議] 外部研究範圍：OPA 只讀 policy testing／coverage／negative cases；Anthropic eval 資料列為停止條件指定來源；其餘「先有問題、再找來源」。
+- [#接力] `.gitignore` 那一行（忽略 `2026-08-27-brainstorm-產品承諾.md`）**仍未 commit、刻意保留**，等 `task-20261002-product-promise-ssot-check` 比對語意後決定。
+- [#接力] 本機 main 領先 origin 2 commit（`7268814` backlog 紀錄、`57ea8eb` 研究文件），未 push。
+- [#接力] 照舊：`version-check.yml` 10-05（一）22:00 排程看 issue #2 只多一則留言；`v3.0.0` tag 未打；`backlog-crosscheck-shadow.json` 未 commit；scratchpad 剩 `run-codex.sh`、`t.txt`（`t.txt` 非本 session 產生、未動）。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **修正時自己又寫錯是今天最常見的失誤**：修 P2 時把衝突兩端寫錯（§4.3 vs REQ-2），修 P4 時讓「八個跨案例 pattern」摘要與正文不一致；與上一段 handoff「修記錄時會引入新錯誤」同類。修完後用同一組關鍵字掃摘要、索引、標題，並把修正後的句子回去對照原始出處，不只看改的那一處。
+- **衡量證據強弱前先分「規範」與「分析參考」**：第一輪 🔴 是拿自標「不是規範」的 TE 當標準，沒看 spec REQ-2。引用前先確認來源的定位。
+
+**【當日洞見】**
+
+- **我舉的例子就是我在批評的毛病**：拿 RS-5 的送達驗證支撐行為驗證，正是 P3「量到的≠要證明的」；被使用者追問自己的看法才看到。
+- **研究評論與標準審查抓到的東西不同**：備援 3 輪＋Codex 標準審查 1 輪都沒抓到的 7 處正文錯誤，研究評論抓到——可直接當第二步盤點表的一筆資料。
+- **停止條件在自己身上示範**：第一步因不斷冒出更上層問題而一直加厚；最後以「問題層級已換、移交第二步；剩餘 nit 低於阻擋門檻」收住。
+- 封裝候選檢查：backlog 無 open `[SOP 候選]`；今天的痛點已有載體（review-fix-propagation skill），屬「載體執行不夠力」，只記於此、不新開條目。
+
+**【學習候選】**
+
+- **Case**：修審查意見時又引入新錯誤，今天 2 次（P2 衝突兩端、P4 摘要不一致），上一段 handoff 1 次。
+- **Candidate Pattern**：修完後用修正後的措辭掃過摘要／索引等二次表面。
+- **Evidence**：與既有 review-fix-propagation skill 涵蓋範圍重疊。
+- **Minimum Sufficient Intervention**：不新增規則；下次修完審查意見時跑 review-fix-propagation。
+- **Promotion**：History only。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（7268814、開工於 2026-10-02T15:43:28）——列 7268814..HEAD
+
+- `57ea8eb`：`docs/superpowers/research/2026-10-02-verification-strategy-case-crosswalk.md`（新）、`docs/superpowers/research/README.md`
+- 本次收工：`文檔/handoff/session-handoff-20261002.md`（本區塊）、`workflow-harness/work-map.jsonl`（研究 DOING＋兩筆新 record）
+- 未 commit：`docs/superpowers/research/2026-10-02-verification-strategy-step2-starting-memo.md`（待審）、`.gitignore`（刻意保留）
+
+### 六、下一步建議
+
+1. 開工先審 step2 備忘（Codex 文件審查），連同 research README 索引一列一起 commit。
+2. 做內部證據盤點表（備忘 §6）：資料來源先確認 contract drift §2、Identity／retro-skill-inventory retrospective、本 session 的審查紀錄是否齊全。
+3. 有空檔時做產品承諾 SSOT 比對，決定 `.gitignore` 那一行；10-05 22:00 後看 issue #2。
