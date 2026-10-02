@@ -1511,11 +1511,21 @@ artifacts:
 
          §3) **Plan deviations** — tasks whose scope changed, and why
 
-         §4) **Skill / workflow compliance** — list each skill in
-             this schema's apply phase; mark whether it was
-             actually used. For any ✗, fill the
-             `### Deliberately Skipped Skills` subsection per the
-             rules below.
+         §4) **Skill / workflow compliance** — inventory exactly
+             two classes of items, and mark whether each was
+             actually used: (1) Superpowers skills this schema
+             explicitly requires invoking — identifiable by where
+             the schema requires them (the `brainstorm` artifact,
+             and apply pre-flight); and (2) Superpowers
+             disciplines this schema requires to be carried out
+             and whose execution the retrospective must record,
+             even though the schema does not invoke them
+             directly — the TDD and code-review disciplines. A
+             skill named only as an optional aid and carrying
+             neither discipline (e.g. `writing-plans`) is not
+             listed merely because it may be useful. For any
+             ✗, fill the `### Deliberately Skipped Skills`
+             subsection per the rules below.
 
          §5) **Surprises** — assumptions that turned out wrong
 

@@ -53,12 +53,20 @@ Commit chain (時序):
 | Skill                                            | Used |
 |--------------------------------------------------|------|
 | superpowers:brainstorming                        |      |
-| superpowers:writing-plans                        |      |
 | superpowers:using-git-worktrees                  |      |
 | superpowers:subagent-driven-development          |      |
 | superpowers:test-driven-development (✓ only if the skill was explicitly invoked; write `N/A — annotation-driven` when TDD discipline came from the `TDD:` annotations in `tasks.md` and their RED/GREEN evidence instead) |      |
 | (structural via SDD) superpowers:requesting-code-review |      |
 | superpowers:finishing-a-development-branch       |      |
+
+> 本表只列兩類項目:(1) schema 明確要求呼叫的 Superpowers skill——
+> `brainstorming`(由 `brainstorm` artifact 要求)與 apply pre-flight 要求的
+> `using-git-worktrees`、`subagent-driven-development`、`finishing-a-development-branch`;
+> (2) schema 要求落實、retrospective 必須記錄其執行情況,但 schema 本身不直接呼叫的
+> Superpowers 紀律——`test-driven-development`(由 `tasks.md` 的 `TDD:` 標註與
+> RED/GREEN 證據承載)與 `requesting-code-review`(透過 subagent-driven-development
+> 結構性達成)。僅被列為「可能有用」的輔助性 skill(例如 `superpowers:writing-plans`)
+> 不屬於這兩類,不列入本表。
 
 > 如實勾選。TDD 與 code-review 兩列依上方標註本就是條件性/結構性的——
 > `tasks.md` 裡標為 `TDD: n/a` 的 task 不算跳過:那個註記就是宣告本身,
