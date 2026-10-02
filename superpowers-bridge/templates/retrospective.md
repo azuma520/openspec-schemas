@@ -65,8 +65,8 @@ Commit chain (時序):
 > (2) schema 要求落實、retrospective 必須記錄其執行情況,但 schema 本身不直接呼叫的
 > Superpowers 紀律——`test-driven-development`(由 `tasks.md` 的 `TDD:` 標註與
 > RED/GREEN 證據承載)與 `requesting-code-review`(透過 subagent-driven-development
-> 結構性達成)。僅被列為「可能有用」的輔助性 skill(例如 `superpowers:writing-plans`)
-> 不屬於這兩類,不列入本表。
+> 結構性達成)。僅被列為「可能有用」、且不承載上述第二類紀律的輔助性 skill
+> (例如 `superpowers:writing-plans`)不屬於這兩類,不列入本表。
 
 > 如實勾選。TDD 與 code-review 兩列依上方標註本就是條件性/結構性的——
 > `tasks.md` 裡標為 `TDD: n/a` 的 task 不算跳過:那個註記就是宣告本身,

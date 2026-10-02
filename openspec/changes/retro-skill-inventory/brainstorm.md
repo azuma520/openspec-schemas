@@ -14,8 +14,8 @@
 | 查什麼 | 結果 |
 |---|---|
 | 模板 §4 表格 | 7 列：brainstorming、writing-plans、using-git-worktrees、subagent-driven-development、test-driven-development（條件性標示）、requesting-code-review（structural via SDD）、finishing-a-development-branch |
-| `schema.yaml` retrospective §4 instruction（第 1514 行） | 「list each skill in this schema's **apply phase**」 |
-| apply 階段實際要求的 skill（`schema.yaml` 第 1618–1630 行 PRECHECK） | using-git-worktrees、subagent-driven-development、finishing-a-development-branch；TDD「not separately invoked by this schema」 |
+| `schema.yaml` retrospective §4 instruction（`a8e67b6` 第 1514 行） | 「list each skill in this schema's **apply phase**」 |
+| apply 階段實際要求的 skill（`schema.yaml` apply「0. Pre-flight」段；`a8e67b6` 第 1618–1630 行） | using-git-worktrees、subagent-driven-development、finishing-a-development-branch；TDD「not separately invoked by this schema」 |
 | `brainstorming` | 由 `brainstorm` artifact 要求呼叫並 PRECHECK（第 34–40 行），不屬 apply 階段 |
 | README 第 310 行 | schema 真正要求並 PRECHECK 的是四個（brainstorming + apply 三個）；`writing-plans` 只是可選私下輔助；`test-driven-development`／`requesting-code-review` 從不由 schema 本身 invoke |
 | 主 spec `tdd-claim-accuracy` REQ-4 | 已管 retrospective 模板的 skill-compliance 表——但管的是「不誘導全 ✓ 的假宣稱」，不管表裡該列哪些項目 |
@@ -36,7 +36,7 @@
 
 ### Q2 TDD 與 code-review 兩列留不留？（2026-10-01 使用者裁定：甲，保留）
 
-使用者初版 claim 為「只列 schema 實際要求呼叫的 skill，不列僅可私下輔助者」。照字面套用，`test-driven-development` 與 `requesting-code-review` 也非 schema 直接 invoke，會一併被刪；但它們記錄的是 TDD／code review 紀律有無落實，schema 第 1540 行起的「§4 跳過規則」也直接點名這兩列，TDD 更是本 repo 的硬約束。
+使用者初版 claim 為「只列 schema 實際要求呼叫的 skill，不列僅可私下輔助者」。照字面套用，`test-driven-development` 與 `requesting-code-review` 也非 schema 直接 invoke，會一併被刪；但它們記錄的是 TDD／code review 紀律有無落實，schema 的「Skipped-skill rules for §4」段（`a8e67b6` 第 1540 行起）也直接點名這兩列，TDD 更是本 repo 的硬約束。
 
 - **甲：保留兩列，定義改兩層。** ← 選定
 - 乙：照字面刪除——需連帶改 schema 跳過規則，且 retrospective 失去記錄 TDD 落實的位置。
@@ -77,7 +77,7 @@
 **要改的地方**
 
 1. `superpowers-bridge/templates/retrospective.md` §4：刪 `superpowers:writing-plans` 列；表格下方說明補一句兩類定義。TDD、code-review 兩列的標示與 `### Deliberately Skipped Skills` 規則原樣不動。
-2. `superpowers-bridge/schema.yaml` retrospective §4 instruction（第 1514 行）：「list each skill in this schema's apply phase」改為兩類定義。第 1540 行起的「§4 跳過規則」不動。
+2. `superpowers-bridge/schema.yaml` retrospective §4 instruction（`a8e67b6` 第 1514 行）：「list each skill in this schema's apply phase」改為兩類定義。「Skipped-skill rules for §4」段（`a8e67b6` 第 1540 行起）不動。
 3. bridge README（en／zh-TW）：只做一致性核對、不預設修改。預先核對（en 版，以 `rg -n "writing-plans|compliance"` 全檔掃），預期都不用改——第 301–310 行是「schema 點名哪些 skill」表，與 §4 定義是兩回事且已標 writing-plans 不呼叫；第 413 行只泛稱「Skill compliance」；第 497、531、563、570–574、594 行是 v2 移除 writing-plans 依賴的遷移說明與上游漂移紀錄，皆與「不呼叫」一致。（更正：對話中曾誤寫「第 571 行談 v2 遷移」，實際行號如上。）
 4. 主 spec `tdd-claim-accuracy`：新增 REQ-5，規範 §4 inventory 的兩類定義。
 

@@ -11,7 +11,7 @@ retrospective 模板 §4 的 skill 表列了 `superpowers:writing-plans`，但 s
 - Impact: 非破壞性——沒有任何原本合法的 artifact 變不合法；不改 artifact、`requires:` 或 PRECHECK，schema major 維持 3
 
 **不變的部分**
-- TDD、code-review 兩列的條件性／結構性標示與「Deliberately Skipped Skills」規則（schema 第 1540 行起）原樣保留
+- TDD、code-review 兩列的條件性／結構性標示與「Deliberately Skipped Skills」規則（schema 的「Skipped-skill rules for §4」段；`a8e67b6` 第 1540 行起）原樣保留
 - bridge README 只做一致性核對；brainstorm 預先核對結果為不需修改
 
 ## Capabilities
@@ -22,7 +22,7 @@ retrospective 模板 §4 的 skill 表列了 `superpowers:writing-plans`，但 s
 
 ### Modified Capabilities
 
-- `tdd-claim-accuracy`: 新增 REQ-5，規範 retrospective §4 inventory 包含哪兩類項目、排除僅可私下輔助的 skill。與既有 REQ-4（§4 不誘導假宣稱）同管這張表，保持單一 owner
+- `tdd-claim-accuracy`: 新增 REQ-5，規範 retrospective §4 inventory 包含哪兩類項目、排除僅可私下輔助、且不承載第二類紀律的 skill。與既有 REQ-4（§4 不誘導假宣稱）同管這張表，保持單一 owner
 
 ## Impact
 

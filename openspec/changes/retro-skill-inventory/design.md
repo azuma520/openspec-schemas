@@ -1,9 +1,9 @@
 ## Context
 
-retrospective artifact 的 §4「Skill / workflow compliance」由兩個 owner 共同決定：`superpowers-bridge/schema.yaml` 的 retrospective instruction（第 1514 行，告訴 agent 這張表該列什麼）與 `superpowers-bridge/templates/retrospective.md`（實際的表格）。兩者目前不一致：
+retrospective artifact 的 §4「Skill / workflow compliance」由兩個 owner 共同決定：`superpowers-bridge/schema.yaml` 的 retrospective instruction 的 §4 項（改動前 `a8e67b6` 第 1514 行，告訴 agent 這張表該列什麼）與 `superpowers-bridge/templates/retrospective.md`（實際的表格）。兩者目前不一致：
 
-- schema 寫「list each skill in this schema's **apply phase**」——apply 階段要求的 skill 只有 using-git-worktrees、subagent-driven-development、finishing-a-development-branch（apply step 0 PRECHECK，第 1618–1630 行）。
-- 模板列 7 列，多了屬於 brainstorm 階段的 `brainstorming`（`brainstorm` artifact 要求呼叫並 PRECHECK，第 34–40 行），以及 schema 根本不要求呼叫的 `writing-plans`（plan instruction 第 357–361 行：「No skill invocation is required」，只容許私下當拆解輔助）。另兩列 TDD、code-review 有條件性／結構性標示，schema 第 1540 行起的「§4 跳過規則」直接點名這兩列。
+- schema 寫「list each skill in this schema's **apply phase**」——apply 階段要求的 skill 只有 using-git-worktrees、subagent-driven-development、finishing-a-development-branch（apply instruction「0. Pre-flight」段；`a8e67b6` 第 1618–1630 行）。
+- 模板列 7 列，多了屬於 brainstorm 階段的 `brainstorming`（`brainstorm` artifact 要求呼叫並 PRECHECK，`a8e67b6` 第 34–40 行），以及 schema 根本不要求呼叫的 `writing-plans`（plan instruction，`a8e67b6` 第 357–361 行：「No skill invocation is required」，只容許私下當拆解輔助）。另兩列 TDD、code-review 有條件性／結構性標示，schema 的「Skipped-skill rules for §4」段（`a8e67b6` 第 1540 行起）直接點名這兩列。
 
 主 spec `tdd-claim-accuracy` REQ-4 已管這張表的「不誘導全 ✓ 假宣稱」，但沒有規範表裡該有哪些項目。
 
@@ -36,7 +36,7 @@ retrospective artifact 的 §4「Skill / workflow compliance」由兩個 owner �
 
 ### D2：inventory 採兩類定義
 
-- **選擇**：§4 記錄 ① workflow 明確要求呼叫的 Superpowers skill，與 ② schema 要求落實、需在 retrospective 留下執行情況的 Superpowers 紀律（即使非 schema 直接 invoke）。僅被 schema 點名為可選私下輔助的 skill 不列。
+- **選擇**：§4 記錄 ① workflow 明確要求呼叫的 Superpowers skill，與 ② schema 要求落實、需在 retrospective 留下執行情況的 Superpowers 紀律（即使非 schema 直接 invoke）。僅被 schema 點名為可選私下輔助、且不承載第二類紀律的 skill 不列。
   - ①：brainstorming、using-git-worktrees、subagent-driven-development、finishing-a-development-branch
   - ②：test-driven-development（annotation-driven）、requesting-code-review（structural via SDD）
   - 排除：writing-plans
@@ -47,8 +47,8 @@ retrospective artifact 的 §4「Skill / workflow compliance」由兩個 owner �
 
 - **選擇**（三層分工，brainstorm Q5）：
   - spec（REQ-5）是 normative owner：寫判準、明列目前符合判準的 6 項、以 `writing-plans` 為反例。inventory 日後變動時先改 spec，再連動 schema 與模板。
-  - schema instruction 寫**判準**：兩類的定義，第一類以「schema 在哪裡要求呼叫」指認（`brainstorm` artifact 與 apply pre-flight），第二類明列 TDD 與 code review 兩項紀律，並明說僅作可選輔助的 skill（例：`writing-plans`）不列入。
-  - 模板寫**清單**：6 列表格；表格下方既有說明補一句兩類定義，不另寫一套定義。
+  - schema instruction 寫**判準**：兩類的定義，第一類以「schema 在哪裡要求呼叫」指認（`brainstorm` artifact 與 apply pre-flight），第二類明列 TDD 與 code review 兩項紀律，並明說僅作可選輔助、且不承載第二類紀律的 skill（例：`writing-plans`）不列入。
+  - 模板寫**清單**：6 列表格；表格下方既有說明補一句兩類定義，不另寫一套定義。（實作結果：兩類定義改為在表格下方**另起一段**、既有說明一字未動，因 plan 1.1 要求既有 note 不得變動；偏離記錄見 `retrospective.md` §3 第一列與 `verify.md` check 4 D3 列。）
 - **理由**：契約 → 實作 → 產物模板三層，不是互相競爭的多份真相；spec 明列 6 項才能直接判斷模板是否合約。schema 是把判準交給 agent 的實作層，模板是判準套用後的結果。第二類是本次裁定的封閉集，明列比抽象描述更不易被誤讀；點名 `writing-plans` 為排除例，防止日後被當成「漏列」加回去。
 - **已考慮 alternative**：schema 也逐一列出 6 個 skill 名（與 PRECHECK 清單重複，多一處要同步）；模板不加說明（讀模板的人看不出為何沒有 writing-plans）。
 
