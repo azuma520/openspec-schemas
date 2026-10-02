@@ -19,8 +19,8 @@ is such a skill.
 This requirement is the normative owner of the criterion and of the six-item inventory above.
 The retrospective instruction in `superpowers-bridge/schema.yaml` SHALL state the two-class
 criterion to the agent, and `superpowers-bridge/templates/retrospective.md` SHALL present
-exactly the six rows above; neither MUST state a second, different definition of what §4
-lists. When the inventory changes, this requirement changes first and the schema and template
+exactly the six rows above. Both the schema instruction and the template MUST NOT state a
+second, different definition of what §4 lists. When the inventory changes, this requirement changes first and the schema and template
 follow it.
 
 This requirement governs which rows the inventory contains. It does not change how a row is
