@@ -13,7 +13,7 @@
 >
 > 【未查證】＝沒查到。
 >
-> **路徑縮寫**：`CH/`＝workflow-harness 的 `openspec/changes/archive/2026-09-30-fix-deferred-verification-resurface/`（進版控）。以下三者都在 **repo 外、沒有保存保證**（見 §0）：`TR`＝該 change 主 session 的 Claude Code 逐字紀錄 `~/.claude/projects/D--workflow-harness/581c70bd-4aa6-4f59-a220-dec9fbfc4c63.jsonl`（數字＝該檔第幾行）；`SP/`＝該 session 的 scratchpad `%TEMP%/claude/D--workflow-harness/581c70bd-4aa6-4f59-a220-dec9fbfc4c63/scratchpad/`；`RO1`＝Codex 對話 `~/.codex/sessions/2026/09/30/rollout-2026-09-30T09-45-13-01a0effc-….jsonl`（R1–R3 同一 thread）、`RO2`＝同目錄 `rollout-2026-09-30T15-27-18-01a0f135-….jsonl`（整分支補審）。「帳本」＝`CH/review-findings.md`。
+> **路徑縮寫**：`CH/`＝workflow-harness 的 `openspec/changes/archive/2026-09-30-fix-deferred-verification-resurface/`（進版控）。以下三者都在 **repo 外、沒有保存保證**（見 §0）：`TR`＝該 change 主 session 的 Claude Code 逐字紀錄 `~/.claude/projects/D--workflow-harness/581c70bd-4aa6-4f59-a220-dec9fbfc4c63.jsonl`（數字＝該檔第幾行）；`SP/`＝該 session 的 scratchpad `%TEMP%/claude/D--workflow-harness/581c70bd-4aa6-4f59-a220-dec9fbfc4c63/scratchpad/`；`RO1`＝Codex 對話 `~/.codex/sessions/2026/09/30/rollout-2026-09-30T09-45-13-01a0effc-….jsonl`（R1–R3 同一 thread）、`RO2`＝同目錄 `rollout-2026-09-30T15-27-18-01a0f135-….jsonl`（整分支補審）。「帳本」＝`CH/review-findings.md`。`SP/` 裡的變異 runner 輸出與反向對照腳本（`mutants.py`、`mut-vp*.json`、`mut-vp*.err`）已於 2026-10-05 逐 byte 複製到 `./evidence/2026-10-05-resurface-verifier-pack/`（含來源說明 `PROVENANCE.md`）。
 
 ---
 

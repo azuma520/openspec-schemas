@@ -1,0 +1,62 @@
+{
+  "schema": "mutation-runner/v1",
+  "target": "D:\\workflow-harness\\.claude\\worktrees\\fix-deferred-verification-resurface\\hooks\\lib\\verification_parser.py",
+  "tests": [
+    "D:\\workflow-harness\\.claude\\worktrees\\fix-deferred-verification-resurface\\hooks\\lib\\test_verification_parser.py",
+    "D:\\workflow-harness\\.claude\\worktrees\\fix-deferred-verification-resurface\\hooks\\lib\\test_backlog_triage.py",
+    "D:\\workflow-harness\\.claude\\worktrees\\fix-deferred-verification-resurface\\hooks\\test_session_start_surface.py",
+    "D:\\workflow-harness\\.claude\\worktrees\\fix-deferred-verification-resurface\\hooks\\test_backlog_triage_artifacts.py",
+    "D:\\workflow-harness\\.claude\\worktrees\\fix-deferred-verification-resurface\\hooks\\test_backlog_triage_command.py",
+    "D:\\workflow-harness\\.claude\\worktrees\\fix-deferred-verification-resurface\\hooks\\test_backlog_triage_mutation_gaps.py",
+    "D:\\workflow-harness\\.claude\\worktrees\\fix-deferred-verification-resurface\\hooks\\lib\\test_backlog_mark.py"
+  ],
+  "cwd": "D:\\workflow-harness\\.claude\\worktrees\\fix-deferred-verification-resurface\\hooks",
+  "mode": "patch",
+  "patch_from": "f6816b8",
+  "mutmut_version": "2.5.1",
+  "expected_mutmut_version": "2.5.1",
+  "target_sha256": "a98028e02a132d940591dddd659a88f8905e8f51dbf1ec5d43e6412b785dc0ce",
+  "trustworthy": true,
+  "reason": null,
+  "checks": {
+    "version_pinned": "pass",
+    "v1_self_run_judgment": "pass",
+    "v2_baseline_green": "pass",
+    "v3_mutation_applied": "pass",
+    "v6_all_mutants_adjudicated": "pass",
+    "v4_restore_verified": "pass",
+    "v5_ids_regenerated_this_batch": "pass",
+    "v7_kills_confirmed": "pass"
+  },
+  "baseline": {
+    "exit_code": 0,
+    "seconds": 5.641
+  },
+  "annotated_lines": [],
+  "pragma_marker_review_lines": [],
+  "pragma_marker_review_degraded": null,
+  "counts": {
+    "total": 24,
+    "killed": 23,
+    "survived": 1,
+    "apply_failed": 0,
+    "unresolved": 0,
+    "unstable": 0,
+    "pragma_marker_review_lines": 0,
+    "pragma_marker_review_unclassified": 0,
+    "survivors_unannotated_N": 1
+  },
+  "survivors": [
+    {
+      "id": 8,
+      "line_number": 150,
+      "function": "VerificationNode.deferral_date",
+      "original": "        found: _dt.date | None = None",
+      "mutated": "        found: _dt.date & None = None",
+      "diff": "- found: _dt.date | None = None\n+ found: _dt.date & None = None"
+    }
+  ],
+  "apply_failed": [],
+  "unstable": [],
+  "unresolved": []
+}
