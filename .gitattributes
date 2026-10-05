@@ -46,3 +46,8 @@ superpowers-bridge/VERSION text eol=lf
 # `-text` 兩個方向都不轉換,各自照原樣存取。
 docs/superpowers/retrospectives/2026-09-03-loosen-plan-sdd-reports/*.md -text
 docs/superpowers/retrospectives/2026-09-08-fix-v2-review-reports/*.md -text
+
+# Research evidence packs are byte-exact copies whose PROVENANCE.md lists SHA-256 of the
+# original bytes (LF, CRLF or mixed). Any EOL conversion, on add or on checkout, breaks those
+# hashes, so store and check out these files exactly as they are.
+docs/superpowers/research/evidence/** -text
