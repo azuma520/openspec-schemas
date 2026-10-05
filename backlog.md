@@ -77,12 +77,8 @@ effort（多難）/ impact（多重要）metadata MUST NOT 以 tag 形式存在�
 
 ## 待辦
 
-- [構想] [P3] 加日級總覽
-- [bug] [P2] `fallback.py` reconfigure stdout
-- [優化建議] [case-count: 4] fast-track 閾值案例
-- [SOP 候選] [done: 2026-05-19] 2026-05-19 backlog tag 系統設計
 - [構想] [P3] 審查路由自動判斷版:依改動性質選 sd0x 的哪一種審查
-- [構想] [P3] 裝 smart-commit 的兩支執行腳本(`/install-scripts --skill smart-commit`)——本 repo 的 .claude/scripts/ 缺 smart-commit-execute.sh 與 smart-commit-inspect.sh,所以 `/smart-commit --execute` 跑不了、只能走 manual 模式由使用者貼指令
+- [構想] [P3] [done: 2026-10-05] 裝 smart-commit 的兩支執行腳本(`/install-scripts --skill smart-commit`)——本 repo 的 .claude/scripts/ 缺 smart-commit-execute.sh 與 smart-commit-inspect.sh,所以 `/smart-commit --execute` 跑不了、只能走 manual 模式由使用者貼指令
   → handoff 20260907 三-F（.claude/scripts/ 是進版控的,裝了會多三個檔進 repo;loosen-plan branch 正要開 PR、當時判定摻工具腳本會讓 PR 變雜,故延後）
 - [優化建議] [case-count: 1] doc gate 的文件分類只看副檔名,分不出正式文件與紀錄類附件
   → 2026-09-11 實測:tree-digest.js 的 doc plane 判準是 /\.(md|mdx)$/、且 git status 走 --untracked-files=all,所以 7 份 session handoff 與 9 份 handoff attachment 全部進 doc plane 的 dirty 清單,與 research 正式文件同級。現況是 gate 一直開著、沒人對 handoff 跑過 codex-review-doc——不是默契例外,是判準本來就沒有這個維度。使用者 09-11 裁定:維持 attachment 定位、現在不改規則,只累積樣本。
