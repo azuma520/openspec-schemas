@@ -1,0 +1,6 @@
+### case=h-dsp settings=hook perm=--dangerously-skip-permissions
+before_hooklog=2
+exit=0
+probe-x=present archive_entries=0 
+hooklog_lines=3
+new_hooklog_lines=1

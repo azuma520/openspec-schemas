@@ -1,0 +1,6 @@
+### case=h-envvar-bypass settings=hook perm=--permission-mode bypassPermissions
+before_hooklog=5
+exit=0
+probe-x=MISSING archive_entries=1 2026-10-05-probe-x 
+hooklog_lines=6
+new_hooklog_lines=1

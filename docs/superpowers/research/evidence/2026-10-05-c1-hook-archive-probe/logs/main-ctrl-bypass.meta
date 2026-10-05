@@ -1,0 +1,6 @@
+### case=main-ctrl-bypass settings=nohook perm=--permission-mode bypassPermissions
+before_hooklog=9
+exit=0
+probe-x=MISSING archive_entries=1 2026-10-05-probe-x 
+hooklog_lines=9
+new_hooklog_lines=0

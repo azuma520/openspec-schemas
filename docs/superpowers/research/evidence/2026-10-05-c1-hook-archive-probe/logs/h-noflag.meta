@@ -1,0 +1,6 @@
+### case=h-noflag settings=hook perm=
+before_hooklog=3
+exit=0
+probe-x=present archive_entries=0 
+hooklog_lines=4
+new_hooklog_lines=1

@@ -1,0 +1,6 @@
+### case=main-h-bypass settings=hook perm=--permission-mode bypassPermissions
+before_hooklog=9
+exit=0
+probe-x=present archive_entries=0 
+hooklog_lines=10
+new_hooklog_lines=1

@@ -1,0 +1,6 @@
+### case=h-retry-push settings=hook perm=--permission-mode bypassPermissions
+before_hooklog=7
+exit=0
+probe-x=present archive_entries=0 
+hooklog_lines=9
+new_hooklog_lines=2

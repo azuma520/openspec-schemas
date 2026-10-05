@@ -1,6 +1,6 @@
 # Verification Strategy C1 第一輪：Enforcement surface 與 execution evidence 現況盤點（2026-10-05）
 
-> **定位**：現況盤點，不是設計、不是提案、不是研究結論。work-map `task-20261005-vs-c1-execution-enforcement` 第一輪的產出。本文只回答「現在知道什麼」，不回答「要怎麼改」。
+> **定位**：現況盤點，不是設計、不是提案、不是研究結論。work-map `task-20261005-vs-c1-execution-enforcement` 第一輪的產出；第二輪（work-map `task-20261005-vs-c1-hook-archive-probe`，同日）只補一個實測點，見 §3.4。本文只回答「現在知道什麼」，不回答「要怎麼改」。
 >
 > **研究問題**（2026-10-05 使用者裁定）：C 原題「Completion Gate 的信任鏈」拆成 C1（required verification 是否真的執行、由誰觸發、漏跑在哪個 state transition 被攔，先做）與 C2（跑過之後的 PASS 值不值得信，延後、不取消，work-map `task-20261005-vs-c2-verifier-correctness`）。本輪只做 C1，不設計 Gate、不讀 OPA。
 >
@@ -113,7 +113,7 @@ verification 本身的執行全部是文字要求，由 agent 照做：
 
 | 載體 | 現況（事實） | 能不能在 archive 前擋（E1） | 能不能證明驗證真的跑過（E2） | 限制 |
 |---|---|---|---|---|
-| Claude Code PreToolUse hook | 本機已有 hook 用 `permissionDecision: deny` 或 exit 2 擋下工具呼叫，例如（非完整盤點）：`~/.claude/hooks/guard-silent-traps.py`（Bash）、workflow-harness `backlog_write_guard.py`（Edit/Write）、sd0x 5.0.0 `pre-bash-codex-launch-guard.sh`（Bash） | 【未實測】有可攔截工具呼叫的既有機制；**尚未實測拿來攔 `openspec archive`** | 單靠攔 archive 指令不能證明 E2；hook 本身可讀工具輸入、cwd 與檔案（`backlog_write_guard.py` 會讀 backlog 並模擬修改後內容再判定），但這些既有 guard 都沒有建立 verification 執行證據 | 只在裝了 hook 的 Claude Code session 生效；使用者在自己終端機跑會繞過；字串比對可能被繞過或誤擋（sd0x 該 guard 的註解記錄過 regex 的誤擋與漏擋） |
+| Claude Code PreToolUse hook | 本機已有 hook 用 `permissionDecision: deny` 或 exit 2 擋下工具呼叫，例如（非完整盤點）：`~/.claude/hooks/guard-silent-traps.py`（Bash）、workflow-harness `backlog_write_guard.py`（Edit/Write）、sd0x 5.0.0 `pre-bash-codex-launch-guard.sh`（Bash） | **第二輪已實測（§3.4）**：可攔直接的 archive 呼叫，四種啟動設定（對應 default、auto、bypassPermissions 三種 runtime 權限模式）都攔住；受測形式可被間接執行繞過，且有誤擋 | 單靠攔 archive 指令不能證明 E2；hook 本身可讀工具輸入、cwd 與檔案（`backlog_write_guard.py` 會讀 backlog 並模擬修改後內容再判定），但這些既有 guard 都沒有建立 verification 執行證據 | 只在裝了 hook 的 Claude Code session 生效；使用者在自己終端機跑會繞過；字串比對可能被繞過或誤擋（sd0x 該 guard 的註解記錄過 regex 的誤擋與漏擋；§3.4 實測兩者都出現） |
 | sd0x review-state／tree digest | 提醒層，設計上 nothing blocks（`.claude/rules/auto-loop.md` § Enforcement） | 不能 | 部分：precommit runner 會自己記錄結論（由執行器記帳）；review 結論由 agent 以 `note` 記下 | 正式設計 §7 已指定借它的 durable state／digest |
 | Orca orchestration | `orca --help` 列出 decision gate（`gate-create`／`gate-resolve`）、supervised worker（`worker-read`；`worker-release` 會先封存輸出）、dispatch | 只擋 orchestration task，不擋 archive | 【未實測】supervised worker 的輸出由 runtime 擷取，是否可當證據未查；S6 已實測 review／implementation 兩類 dispatch 的身分可區分 | decision gate 的 `--from` 是自報（正式設計 §2.3）；Orca 不是 hard dependency（G3） |
 | git hooks | 本 repo `.git/hooks/` 只有 sample，沒有安裝任何 hook；sd0x `pre-push-gate.sh` 在 `.claude/scripts/`，需另外選擇安裝 | 可以擋 commit／push（archive 結果要 commit 才進版控）【未實測】 | 不能 | 可用 `--no-verify` 跳過；只在本機 |
@@ -121,12 +121,41 @@ verification 本身的執行全部是文字要求，由 agent 照做：
 
 ### 3.3 E1／E2：「required verification 確實執行」是兩個 claim
 
-- **E1：Gate 是否在關鍵 transition 前真的跑過並 PASS。** §3.2 有可掛的載體（PreToolUse、git hook、CI），但每一種都只罩得住一部分範圍，也都可能被人在流程外繞過。問題在範圍與繞過，【推論】不在「有沒有地方可掛」。
+- **E1：Gate 是否在關鍵 transition 前真的跑過並 PASS。** §3.2 有可掛的載體（PreToolUse、git hook、CI），但每一種都只罩得住一部分範圍，也都可能被人在流程外繞過。問題在範圍與繞過，【推論】不在「有沒有地方可掛」。其中 PreToolUse 已在第二輪實測（§3.4）：攔得住直接呼叫，也測到流程內的間接執行繞過。
 - **E2：Gate 依賴的 verification 本身是否真的執行過。** 可達到的強度與驗證類別（正式設計 §4.2 的 method 封閉集）有關，至少取決於能不能由程式獨立重算：
   - `automated-test`：可由程式在獨立環境自動重跑（CI），或由執行器自己記錄輸出（sd0x precommit runner 的做法），不必依賴 agent 自陳。
   - `inspection`、`analysis`、`manual-demonstration`：未必能以程式自動重算（正式設計 §4.2 所稱「能重算」限程式重算）。可以由獨立執行者重新檢視、分析或操作，但那是一次新的執行；能否取得可信的執行紀錄，要依具體 procedure 與 runtime 判定（例如 Orca 的 runtime 擷取，部分實測）。沒有這類紀錄時，紀錄仍是執行者自陳。
   - 要分清楚三件事：程式重算、重新執行一次驗證、證明某次歷史執行確實發生。
 - **E2 按驗證類別分層目前只是觀察，不是產品決策。** 它和 §2「設計內部張力」裡的承諾拆層方向有關，但要不要往那裡走，由使用者決定。
+
+### 3.4 第二輪實測：PreToolUse hook 攔 `openspec archive -y`（E1 可行性）
+
+**要證明的 claim**：在專案自己的 `.claude/settings.json` 掛一個 PreToolUse hook，真實的 Claude Code session 透過 Bash 工具執行 `openspec archive … -y` 時，hook 會攔下來，change 不會被收檔。只證明「攔得到」；攔下來之後有沒有東西判 PASS 不在範圍內（正式 Gate 不存在）。
+
+**做法**（證據包：`./evidence/2026-10-05-c1-hook-archive-probe/`，`PROVENANCE.md` 記來源、雜湊、重現方式）：
+
+- 在 session scratchpad 建暫存測試專案，hook 只放在該專案的 `.claude/settings.json`；全域 `~/.claude` 與本 repo 都沒動。
+- 受測 hook：matcher `Bash`，用 regex 比對指令字面裡 `openspec … archive`，命中就回 `permissionDecision: deny`。這是刻意簡單的偵測器，目的是量出會漏什麼，不是做到完美。
+- 每一案三個判準：(a) 檔案系統——change 目錄還在、`archive/` 沒有新項目；(b) hook 紀錄多一行；(c) 工具結果顯示被拒、`permission_denials` 有該呼叫。
+- 先跑**對照組**（拿掉 hook）：archive 必須成功、判準 (a) 必須讀到「已收檔」。對照組沒成功就代表判準分不出「攔住」和「fixture 壞掉」。
+- Layer 1 把 18 個指令直接餵給 hook 腳本，只測偵測器；Layer 2 在測試專案裡跑巢狀 `claude -p`，測真實 runtime。
+- 環境：Claude Code 2.1.289、OpenSpec 1.3.1、Python 3.13.5、Windows 11。
+
+**證據分三級**：
+
+| 級別 | 結果 |
+|---|---|
+| **主 session 親自重跑確認** | ① 對照組（無 hook、bypass 模式）：archive 成功，change 被搬進 `archive/2026-10-05-probe-x`（`logs/main-ctrl-bypass.*`）。② 掛 hook、bypass 模式：change 沒被收檔，hook 紀錄一行 `deny`，工具結果為 `PreToolUse:Bash hook error: C1-PROBE…`、`permission_denials` 含該呼叫（`logs/main-h-bypass.*`）。③ 把 `C=archive; openspec $C probe-x -y` 與 `bash a.sh` 直接餵給 hook：判為放行；`echo "openspec archive"`：判為拒絕（`hook.log` 最後三行） |
+| **subagent 單次回報，主 session 未端到端重跑**（每案 1 次） | ① 對照組在 bypass／default／未指定（全域預設 auto）三種模式都收檔成功。② 掛 hook 後在四種啟動設定都沒收檔，各有一行 `deny`：`--permission-mode default`、未指定（全域預設 auto）、`--permission-mode bypassPermissions`、`--dangerously-skip-permissions`。後兩者 runtime 回報的權限模式都是 `bypassPermissions`，所以實際涵蓋三種權限模式。③ hook 的 deny 蓋過全域 `permissions.allow` 的 `Bash(*)`。④ 實際收檔成功的繞過：agent 先用 Write 工具把 archive 指令寫進 `a.sh` 再 `bash a.sh`（hook 只看到 `bash a.sh`，Write 那一步不經 `Bash` matcher）；以及 `C=archive; openspec $C probe-x -y`。⑤ Layer 1：14 個應擋的寫法漏 4 個（腳本檔、變數藏子指令、變數藏執行檔、`arch''ive`），4 個無害指令誤擋 1 個（`echo "openspec archive"`）；`mv …/archive/…` 與 `node …/openspec.js archive` 被擋只是路徑字面剛好含 `openspec` 與 `archive`。⑥ 被拒後，巢狀 agent 兩次都沒有自己改走別的路（其中一次 prompt 明說「被擋就試別的方法」，agent 讀了 `.claude/settings.json` 後拒絕繞過） |
+| **未測** | hook 當掉或逾時、改用 exit 2 擋、互動 session、會真的跳權限詢問的情境（全域允許 `Bash(*)`，default 模式實際沒有詢問）、Agent SDK 與 subagent、`settings.local.json` 與 managed settings、`/opsx:archive` 完整流程、agent 改 settings 把 hook 拿掉、PowerShell 與 MCP 工具、重複執行；也沒讀 Claude Code 官方文件對 hook 與權限模式關係的說明 |
+
+**判讀**：
+
+- **E1 的 feasibility 從推測變成有實驗支持**：PreToolUse hook 可以當 archive 前的攔截點，而且在本機測到的三種 runtime 權限模式（default、auto、bypassPermissions）下都會觸發（bypassPermissions 經主 session 重跑；default、auto 與 `--dangerously-skip-permissions` 啟動的那一案為單次回報）。
+- **強度有限**：本次受測的形式（`Bash` matcher＋指令字面比對）提供的是 **direct-path enforcement**——擋得住照流程或不小心直接跑的 archive；它**不構成不可繞過的 archive boundary**：間接執行（腳本檔、變數）實際繞過，另有誤擋，再加上 §3.2 已列的「使用者在自己終端機跑」這條 session 外的路。
+- 【推論】要補上漏洞，得換別的層，例如檢查 Write／Edit 寫進檔案的內容、包住 `openspec` 執行檔、或事後檢查 `openspec/changes/archive/` 的異動；這些都沒測。
+- 【推論】「被拒後 agent 沒繞路」反映的是載入使用者全域設定與 plugin 的這個環境、每案 1 次，不能當成模型的穩定行為，也不能拿來支撐 enforcement 強度。
+- 觀察限制：stream-json 在 PreToolUse hook 執行時不送事件（只有 SessionStart 有），所以 hook 有沒有跑，直接證據只有 hook 自己寫的紀錄檔。
 
 ---
 
@@ -137,7 +166,7 @@ verification 本身的執行全部是文字要求，由 agent 照做：
 | 1 必要結果齊不齊、PASS 與否（Requirement 層） | 無機械檢查；verify checks 為文字 | 證過 | §7、I6 | 只有設計＋PoC，未實作 | 無假 PASS 穿透實例 |
 | 2 Scenario 層 coverage | 無 | 未證（PoC 以 Requirement 為單位） | I3、§4.2 | 只有設計 | — |
 | 3 結果 freshness | 文字要求，無 digest | 未證 | §6、§7 | 只有設計 | 無實例 |
-| 4 archive 須有 FRESH Gate PASS | CLI 不檢查 verify／retrospective 完成狀態、Verification Result 或 Gate PASS；bridge 用 `-y` | 未證 | §7 invariant；宿主屬實作 | **真缺口：宿主未定** | — |
+| 4 archive 須有 FRESH Gate PASS | CLI 不檢查 verify／retrospective 完成狀態、Verification Result 或 Gate PASS；bridge 用 `-y` | 未證；候選宿主 PreToolUse 已實測攔截點（§3.4），強度只到 direct-path | §7 invariant；宿主屬實作 | **真缺口：宿主未定** | — |
 | 5 Gate 由誰觸發 | verify 由 apply 步驟 3 文字觸發 | 人工呼叫 | 綁定點已定，宿主屬實作 | **真缺口**（與 4 同源） | — |
 | 6 驗證真的執行過的證明（E2） | 無 | 未證（宣稱邊界明示） | §8#5 明說 v1 不保證；machine-captured output 只說「較強 provenance」，沒有載體設計 | **真缺口**（設計自認），可達強度依 method 分層 | A8 一筆 |
 | 7 verify 執行者獨立性的 provenance | 無 | — | §2.2 列 degradable；verify 階段載體未實測（§9.2） | 設計內已知的前置確認項 | — |
@@ -153,7 +182,7 @@ verification 本身的執行全部是文字要求，由 agent 照做：
 
 **未查證**（本輪不補，避免無限延伸）：
 
-1. 沒實測 PreToolUse hook 攔 `openspec archive -y`。
+1. ~~沒實測 PreToolUse hook 攔 `openspec archive -y`。~~ 第二輪已實測，見 §3.4；該節「未測」一列是它自己的剩餘邊界。
 2. 沒讀 Orca 對 supervised worker 輸出封存的文件，也沒實測它能不能當證據。
 3. 沒查 GitHub branch protection。
 4. 沒讀 Claude Code hook 文件裡對繞過情形的說明。
@@ -161,7 +190,7 @@ verification 本身的執行全部是文字要求，由 agent 照做：
 6. spike S1–S4 的細節、handoff、workflow-harness 那邊都沒讀；`gate_check.py` 沒重跑。
 7. C 證據整理的 subagent 自述未讀：`blind-kit/v2/FROZEN.md`、Identity verify 腳本、workflow-harness 的 `CH/verify.md` 等。
 
-**下一輪候選**（使用者 2026-10-05 傾向；未拍板）：只挑一個最能增加決策資訊的點，**實測 PreToolUse hook 能不能在真實流程裡可靠攔下 `openspec archive -y`**，直接回答 E1 的可行性。兩個前提：
+**下一輪候選**（使用者 2026-10-05 傾向；後於同日拍板，第二輪已完成，結果見 §3.4）：只挑一個最能增加決策資訊的點，**實測 PreToolUse hook 能不能在真實流程裡可靠攔下 `openspec archive -y`**，直接回答 E1 的可行性。兩個前提：
 
 - 在暫存的測試專案裡做，不裝進日常環境。
 - 這只能證明「攔得到」，不能證明「攔下來之後有東西可以判 PASS」，因為正式的 Gate 程式還不存在。

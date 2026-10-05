@@ -1,0 +1,6 @@
+### case=h-default settings=hook perm=--permission-mode default
+before_hooklog=0
+exit=0
+probe-x=present archive_entries=0 
+hooklog_lines=1
+new_hooklog_lines=1

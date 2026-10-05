@@ -1,0 +1,12 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "python \"C:/Users/user/AppData/Local/Temp/claude/C--Users-user-orca-openspec-schemas/88aae4de-4371-4663-80b8-dfe9fac6fb11/scratchpad/c1-hook-probe/hook.py\"" }
+        ]
+      }
+    ]
+  }
+}

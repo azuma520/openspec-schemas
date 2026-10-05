@@ -1,0 +1,18 @@
+plain -y | "openspec archive probe-x -y" | block | deny | OK
+--yes | "openspec archive probe-x --yes" | block | deny | OK
+flags before name | "openspec archive -y --skip-specs probe-x" | block | deny | OK
+npx | "npx @fission-ai/openspec archive probe-x -y" | block | deny | OK
+cd && | "cd /some/dir && openspec archive -y probe-x" | block | deny | OK
+bash -c | "bash -c \"openspec archive probe-x -y\"" | block | deny | OK
+script file | "./a.sh" | block | allow | MISS(slip)
+env var indirection | "C=archive; openspec $C probe-x -y" | block | allow | MISS(slip)
+variable for binary | "O=openspec; $O archive probe-x -y" | block | allow | MISS(slip)
+quoted subcommand | "openspec 'archive' probe-x -y" | block | deny | OK
+char split | "openspec arch''ive probe-x -y" | block | allow | MISS(slip)
+node direct | "node \"$(npm root -g)/@fission-ai/openspec/bin/openspec.js\" archive probe-x -y" | block | deny | OK
+manual mv | "mv openspec/changes/probe-x openspec/changes/archive/2026-10-05-probe-x" | block | deny | OK
+newline separated | "true\nopenspec archive probe-x -y" | block | deny | OK
+benign: openspec list | "openspec list" | allow | allow | OK
+benign: echo string | "echo \"openspec archive\"" | allow | deny | FALSE-POSITIVE
+benign: git log grep | "git log --grep archive" | allow | allow | OK
+benign: openspec --help archive mention | "openspec list --json | grep archive" | allow | allow | OK
