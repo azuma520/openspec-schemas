@@ -253,3 +253,64 @@
 1. 若已過 10-05 22:00：先查 fork 每週排程，完成即收。
 2. C1 下一輪：先請使用者拍板要不要做「PreToolUse 攔 `openspec archive -y`」實測（在暫存測試專案）；拍板後只做這一個點，起點讀 `docs/superpowers/research/2026-10-05-verification-c1-enforcement-surface.md` §3.2、§5。
 3. 不急：C2 維持延後；做法 4 的兩個未決題等 C1 下一輪結果出來再定。
+
+## Session 17:30
+
+### 一、本 session 主題
+
+照開工流程走完（work-status、最新交接、接力棒 3 條；backlog 週檢 15:40 已跑，不重跑）。上個 session 沒收工的尾巴只有工作地圖一行（C1 下一輪登記），先補 commit。接著做 C1 第二輪：派一次性 subagent 在暫存專案實測 PreToolUse hook 攔 `openspec archive -y`，主 session 重跑關鍵案例；結果寫進 C1 研究文件 §3.4，加最小證據包，Codex 文件審兩輪後 commit。收尾時查出證據包雜湊在 repo 裡本來就對不上（autocrlf），另開 maintenance commit 修好。
+
+### 二、完成事項
+
+- **補 commit 上個 session 留下的登記**（`d77e429`）：`task-20261005-vs-c1-hook-archive-probe`。
+- **C1 第二輪實測**：subagent 跑設定、Layer 1（18 個指令直接餵 hook）、Layer 2（巢狀 `claude -p` 11 案）；主 session 親自重跑「無 hook 對照（bypass）→ 收檔成功」「掛 hook（bypass）→ 沒收檔、1 行 deny、permission_denials」，並抽查 Layer 1 三個指令。結論：三種 runtime 權限模式（default／auto／bypassPermissions，四種啟動設定）都攔得住直接呼叫；腳本檔、變數間接執行會實際繞過；`echo "openspec archive"` 誤擋。
+- **研究文件與證據包**（`9a222c1`）：C1 文件新增 §3.4（證據分「主 session 重跑／subagent 單次／未測」三級；正式結論「受測形式提供 direct-path enforcement，不構成不可繞過的 archive boundary」），§3.2、§3.3、§4、§5 與研究索引同步；證據包 `docs/superpowers/research/evidence/2026-10-05-c1-hook-archive-probe/`（含 PROVENANCE，不收完整 `.jsonl`）。Codex 文件審（thread `01a10b2a…`）：r1 ⛔ 2 🔴（「四種權限模式」實為三種；PROVENANCE 的 Layer 1 log 說明與 `hook.py` 不符）→ 修 → r2 ✅ Mergeable，review-state 已記 pass。code plane 以 `[DEVIATION]` 不跑（證據包內 .py/.sh/.json 是實測紀錄、不是本 repo 程式）。🟡「保存每案 prompt 原文」記 NIT_DEFERRED、未處理。
+- **工作地圖**（`16d9d31`）：PreToolUse 實測子任務 → DONE（使用者確認）。
+- **證據包 EOL 修正**（`7791871`）：`core.autocrlf=true` 在 add 時把 CRLF／混合換行的證據檔轉成 LF，repo 裡存的 blob 和 PROVENANCE 雜湊對不上（resurface 包 7 檔、C1 包 16 個 log／摘要檔）。`.gitattributes` 加 `docs/superpowers/research/evidence/** -text` 並 renormalize；驗證：47 檔在 HEAD blob、工作檔、autocrlf checkout 三處一致，兩份 PROVENANCE 的 18 個雜湊都對上 HEAD blob。（使用者原本說「固定 LF」，改用 `-text` 是因為 resurface 包有混合換行、固定 LF 會讓它永遠對不上——已向使用者說明。）
+- 封裝候選檢查：backlog 無 open `[SOP 候選]`，無命中。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **今晚 10-05 22:00 台北 fork 每週排程**：本 session 結束時（17:30）尚未到，下個 session 若已過 22:00 先查。
+- [#接力] **C1 維持 DOING、下一步未定**（使用者選甲）：C1 描述的第三件「這些 surface 能否支撐 required verification 確實執行」只回答了 E1 的 PreToolUse 一角；E2 與其他載體（git hook、CI、Orca runtime 擷取）沒實測。下一個子題等使用者決定題目再開。
+- [#不重議] C2 延後、不取消；做法 4 的兩個未決題等 C1 再往下才定。
+- [#接力] 照舊：`v3.0.0` tag 未打；本機空目錄 `.claude/worktrees/requirement-scenario-identity` 待重開機後刪。
+- 本 session 暫存檔待手動刪：scratchpad 下 `c1-hook-probe/`、`c1r2-review/`、`eol-before/`（後者是 clone 失敗的殘留，路徑過長）。
+- 巢狀測試 session 的逐字紀錄留在 `~/.claude/projects/` 下以測試專案路徑命名的目錄（未清）。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **沒有來源的 commit hash**：向使用者報研究文件 commit 是 `32ac6f2`，但那次指令輸出只有 stat、沒有 hash，數字是編的（正確為 `9a222c1`，收工時從 git log 查出才更正）。做法：報 commit／hash／數字時，要指得出它出現在哪一次工具輸出；指不出就再查一次。
+- **驗證比對錯了對象，今天出現兩次**：① Codex r1/r2「雜湊都對」比對的是工作檔，而 PROVENANCE 宣稱的對象是 repo 存的內容；② 我第一次只驗了 `hook.py` 一個 LF 檔就推論整包沒事。都是「代理指標不對準 claim」。做法：宣稱「可驗證」時，用 claim 指的那個對象驗（這次是 `git cat-file -p HEAD:`），不用手邊方便的那份。
+
+**【當日洞見】**
+
+- **PreToolUse 實測：E1 有實驗支持，強度只到 direct-path**。三種權限模式都會觸發；腳本檔、變數間接執行實際繞過，另有誤擋——不構成不可繞過的 archive boundary。
+- **`core.autocrlf=true` 會在 commit 時改掉證據檔的 CRLF**：「逐 byte 複製」在工作檔上成立、進 repo 後不成立，而且完全沒有提示。已用 `-text` 修，兩份證據包都驗過。
+- **被拒後巢狀 agent 沒有自己繞路**，但這只在使用者全域環境下跑過一次，不能拿來支撐 enforcement 強度。
+
+**【學習候選】**
+
+- **Case**：證據包雜湊在工作檔、repo blob、Windows 重新 clone 三處答案不同；審查與自查都只看了工作檔。
+- **Candidate Pattern**：宣稱「可用雜湊／位元組驗證」的保存動作，用之後讀者實際拿到的那份驗（從 git 物件讀、或模擬 clone），不用寫入端的檔。不適用於不需要逐位元組一致的文件。
+- **Evidence**：Hypothesis——本 session 1 例（兩份證據包），與 10/01 memory「代理指標不對準 claim」同族。
+- **Minimum Sufficient Intervention**：不新增規則。研究證據包目前只有 2 份；若出現第 3 份，在 PROVENANCE 寫法加一行「驗證方式：`git cat-file -p HEAD:<path> | sha256sum`」，那是掛得住的位置。
+- **Promotion**：History only。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（cfaace6、開工於 2026-10-05T15:45:47）——列 cfaace6..HEAD
+
+- `d77e429`：`workflow-harness/work-map.jsonl`
+- `9a222c1`：`docs/superpowers/research/2026-10-05-verification-c1-enforcement-surface.md`、`docs/superpowers/research/README.md`、`docs/superpowers/research/evidence/2026-10-05-c1-hook-archive-probe/`（新，39 檔）
+- `16d9d31`：`workflow-harness/work-map.jsonl`（實測子任務 → DONE）
+- `7791871`：`.gitattributes`、兩份證據包內 23 個檔（renormalize）
+- 本次收工：本 handoff
+
+### 六、下一步建議
+
+1. 若已過 10-05 22:00：先查 fork 每週排程（`gh run list --workflow version-check.yml`），完成即收。
+2. C1 下一個子題：請使用者定題（候選方向：E2 的載體、其他 E1 載體實測、或直接進「補機制 vs 收窄承諾」的產品決策），定了再登記、再做。
+3. 不急：證據包「保存每案 prompt 原文」的 NIT；C2 維持延後。
