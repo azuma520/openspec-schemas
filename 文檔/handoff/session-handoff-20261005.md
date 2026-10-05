@@ -133,3 +133,62 @@
 1. 開工先讀本 handoff（今天很多刻意 deferred 的項目），不靠記憶續做。
 2. 開工時已過今晚 22:00 → 先查 fork 排程（issue #2 只多一則留言、無新 issue），完成即收；未到不阻塞主線。
 3. 做 VS 第二步 A（`task-20261005-vs-step2-a-verifier-reliability`）：先做兩組證據的 failure-mode inventory、守停止條件（跨組重複 < 3 類即停並回報），結尾只回答「A 的結果是否足以讓 C 升成下一題」；不做 C。
+
+
+## Session 14:09
+
+### 一、本 session 主題
+
+照接力棒只開一條研究線：Verification Strategy 第二步 A（驗證工具本身會怎麼失效）。兩組內部證據做 failure-mode inventory → 使用者三項裁定 → 寫研究文件 → Codex 文件審三輪（中途額度用完、排程後接續同一對話）→ commit → A 結案、C 改題登記。
+
+### 二、完成事項
+
+- **A 的 failure-mode inventory**（`4a45721`）：`docs/superpowers/research/2026-10-05-verification-step2-a-verifier-failure-modes.md`＋索引一列。第一組＝盤點表 O2 5 筆（回 ledger、Identity／RS retrospective、Identity `verify.md` 核對原文）；第二組＝對照文件 A1–A11（證據包 `mut-vp*.json` 確認 id 12 活口）。按**壞法**分 7 類；跨組 3 類：① 只驗比 claim 更窄的代替品（2 對 3，相對穩）、② 執行環境偏差（1 對 1，弱）、③ 輸出格式表達不出需要的區分（1 對 1，弱）；④ 自我檢查不完整為 conditional。F-ID6 換成按後果分類仍是 3 類。**未觸發停止條件**，只代表 A 不必中止、不是一般化結論。
+- **使用者裁定（2026-10-05）**：分類定位為 working taxonomy；本輪不讀 OPA（留給 C 的 targeted source）；A 足以讓 C 升題，但 C 改為「Completion Gate 的信任鏈」，分 (a) 執行／強制、(b) 判定可靠兩子問題；改題理由只引用跨組的 ①②③，⑥ 反向對照假紅、coverage 缺口標單組／附條件。核心句：programmatic enforcement 是提升可靠性的手段，但不是 verifier correctness 的充分條件。
+- **Codex 文件審**（thread `01a10a30…`，三次回覆）：r1 第一次跑到一半額度用完（exit 1、無報告）→ 使用者選乙等恢復、改為**接續同一對話**而非開新對話 → 13:17 排程接續 → ⛔ 1 🔴（selftest 15／16 兩版混寫，`blind-kit/v2/FROZEN.md` Fix round 1／Fix round 2）→ 修 → r2 ✅ → 同類實例也在**盤點表 L-ID5** 修（使用者選甲）→ r3 ✅。review-state 已記 pass。
+- **工作地圖**：`task-20261005-vs-step2-a-verifier-reliability` → DONE；新登記 `task-20261005-vs-completion-gate-trust-chain`（NEXT，掛 VS 研究下，描述含 (a)(b) 與立題依據邊界）。
+- 封裝候選檢查：backlog 無 open `[SOP 候選]`，無命中。
+
+### 三、未完事項 / 接力棒
+
+- 研究 commit 原為 `b01918b`，訊息漏了主旨後空行；使用者授權後 amend 為 `4a45721`（只改訊息、內容不變、未 push）。
+- [#接力] 本 session 的 scratchpad 審查暫存（`a-review/`：prompt／log／report／exit 檔與腳本）**未清**——AI 的 `rm` 被擋，需使用者手動刪。
+- [#接力] 下一題 C（`task-20261005-vs-completion-gate-trust-chain`）**開新 session 再做**；起點證據：A 文件 §3（自我檢查的觸發方式皆非程式強制）、§6（(a)(b) 子問題）、起點備忘 §4。OPA 只讀 policy testing／coverage／negative cases 三項。
+- [#接力] 今晚 10-05 22:00 台北 fork 每週排程：本 session 結束時未到，下個 session 若已過 22:00 先查（issue #2 上次只多一則留言）。
+- [#不重議] A 的分類**不回寫盤點表 taxonomy**（只修了 L-ID5 一格事實錯誤）；④ 與 coverage 缺口屬「條件代表性」題，不算 verifier failure mode。
+- [#接力] 照舊：`v3.0.0` tag 未打；本機空目錄 `.claude/worktrees/requirement-scenario-identity` 待重開機後刪；早上 handoff 列的乙案兩條過時描述、盤點表 §0／O6 說法維持不碰。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **「轉述出處」又錯，今天 +1，而且是轉述數字**：selftest「16 項」是修正後的數，我把它和修正前「沒涵蓋重複案例」寫在同一句，被 Codex 擋下；盤點表 L-ID5 早就是同一種混寫，我照抄了一次。做法擴充：**轉述計數時，連同「這個數是哪一版的」一起比對**，不只比字面。
+- **沒有來源的理由不要拿來支撐建議**：今天兩次——「接續舊對話不划算」（使用者追問後收回，實際算不出哪邊省）、「有效的自我檢查幾乎都是作者自己選擇去跑的」（寫文件前回查才發現觸發方式有四種）。兩者都是用來推一個選項的理由句，比事實句更容易漏檢。
+
+**【當日洞見】**
+
+- **A 最重要的產出是「程式化不是充分條件」**：出錯的驗證工具很多本身就是程式（`grade.py`、verify 腳本、測試套），所以 C 不能只問「怎麼把 Gate 改成程式」。
+- **兩個案例都是「第一道自我檢查不完整，由另一種產生方式不同的檢查補上」**（selftest 漏重複案例 → Codex 審；手工反向對照漏 id 12 → 變異測試）。單案例層級，未升格。
+- **Codex 額度中斷可接續同一對話**：`codex exec … resume <id>` 在額度恢復後可用，接續後的報告 session id 與原對話一致（本次三輪皆核對）。
+- **`git commit -F -` 的訊息若主旨後沒空行，整段變主旨**：今天實際發生。
+
+**【學習候選】**
+
+- **Case**：本 session 兩次把「沒查過的理由」講成事實來推選項（接續成本、自我檢查觸發方式），一次被使用者追問收回、一次自己回查更正。
+- **Candidate Pattern**：給選項附「為什麼」時，理由句和事實句一樣要有來源；算不出來就說算不出來。適用：任何「建議 X，因為 Y」的 Y；不適用：明確標成推論的句子。
+- **Evidence**：Hypothesis——本 session 2 例；與全域「證據先於斷言」同族，差別是落在理由而非結論。
+- **Minimum Sufficient Intervention**：不新增規則；全域「證據先於斷言」已涵蓋，只是在「端選項」時執行不到位。先記在紀律接力觀察。
+- **Promotion**：History only。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（0cd728e、開工於 2026-10-05T11:18:46）——列 0cd728e..HEAD
+
+- `4a45721`：`docs/superpowers/research/2026-10-05-verification-step2-a-verifier-failure-modes.md`（新）、`docs/superpowers/research/README.md`、`docs/superpowers/research/2026-10-02-verification-evidence-inventory.md`（L-ID5 一格）、`workflow-harness/work-map.jsonl`
+- 本次收工：本 handoff
+
+### 六、下一步建議
+
+1. 確認 scratchpad 的 `a-review/` 已手動清掉。
+2. 若已過 10-05 22:00：先查 fork 每週排程，完成即收。
+3. 開 C（`task-20261005-vs-completion-gate-trust-chain`）：先用 A 文件 §3、§6 與起點備忘 §4 定 (a)(b) 兩子問題的內部證據，再決定 OPA 三項要不要讀；不把 A 的單組／附條件發現當結論。
