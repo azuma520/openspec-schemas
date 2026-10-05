@@ -192,3 +192,64 @@
 1. 確認 scratchpad 的 `a-review/` 已手動清掉。
 2. 若已過 10-05 22:00：先查 fork 每週排程，完成即收。
 3. 開 C（`task-20261005-vs-completion-gate-trust-chain`）：先用 A 文件 §3、§6 與起點備忘 §4 定 (a)(b) 兩子問題的內部證據，再決定 OPA 三項要不要讀；不把 A 的單組／附條件發現當結論。
+
+## Session 15:40
+
+### 一、本 session 主題
+
+照接力棒開新 session 做 C；週一另跑 backlog 盤點（與 C 的證據整理並行，後者派唯讀 subagent）。C 一路收窄：讀既有設計材料 → 回答三題 → 使用者裁定拆成 C1（execution／enforcement，先做）與 C2（verifier correctness，延後不取消）→ C1 第一輪查證 → 寫研究文件 → Codex 文件審兩輪 → commit。
+
+### 二、完成事項
+
+- **Backlog 週檢**：重跑 `shadow-plan`，0 候選；coverage 不完整（2 條 open 待辦沒有 `#編號`），四輪觀察仍 0/4。我把「回報 workflow-harness」當新選項提出，使用者選丙後才查到早上已登記成 workflow-harness backlog `#154` case 2（當時裁定只記錄、不在這邊修）→ 無新動作。shadow 帳只改了一行輸入指紋。
+- **C 的證據整理**：派一次性唯讀 subagent 整理 (a)(b) 內部證據，主 session 抽查 5 處引文，皆與原文相符。
+- **C 三題（現況三層：正式流程／PoC／正式設計）**：正式流程對「必要 verification 是否執行」在 change 層級無機械檢查；`gate_check.py` 只證 feasibility；archive 攔截的宿主未定；§8#4 的「被執行」在 v1 撐不住字面意思。
+- **使用者裁定（2026-10-05）**：做法 2＋4、OpenSpec 先不讀；C 拆成 C1／C2；設計內部張力寫成「產品承諾（G2）要求已實際執行，但 v1 result/evidence 可由 Agent 自陳、正式流程無機械確認」，當作 C1 的決策背景、不另立工作；後續方向不預設二選一。
+- **工作地圖**：舊 C（`task-20261005-vs-completion-gate-trust-chain`）→ CANCELLED；新增 C1（`task-20261005-vs-c1-execution-enforcement`，NEXT）、C2（`task-20261005-vs-c2-verifier-correctness`，TODO），兩筆描述都寫「拆分取代舊 C」。描述在建立後唯讀，所以採「取消＋重登」，不是改寫。
+- **C1 第一輪查證**：OpenSpec 1.14.0（本機 npx 快取原始碼）仍無 archive hook；未完成 task 在非互動且沒加 `--yes` 時會擋，但 bridge 用 `archive -y`。OpenSpec 以外的載體（PreToolUse hook、sd0x、Orca、git hook、CI）已盤點。「確實執行」拆成 E1／E2。
+- **研究文件** `docs/superpowers/research/2026-10-05-verification-c1-enforcement-surface.md` ＋ 索引一列（`c06fff0`）。Codex 文件審（thread `01a10afa…`）：r1 ⛔ 3 🔴（皆為把能力邊界寫窄）→ 修並掃同類 → r2 ✅ Mergeable，review-state 已記 pass。code plane 未跑，`[DEVIATION]`：被判成 code 的只有兩個 runner 寫出的 `.json` 資料檔。
+- 封裝候選檢查：backlog 無 open `[SOP 候選]`，無命中。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **C1 下一輪（未拍板）**：使用者傾向只挑一個點，實測 PreToolUse hook 能否在真實流程裡可靠攔下 `openspec archive -y`，直接回答 E1 的可行性。前提有二：在暫存測試專案做、不裝進日常環境；只能證明「攔得到」，不能證明「攔下來之後有東西判 PASS」。開工先請使用者拍板。
+- [#接力] 做法 4（prospective validation）的兩個未決題（選哪個真實 change、四欄紀錄放哪）等之後再定；Identity 否決「半套 `gate_check.py`」的理由要一起帶上。
+- [#接力] 今晚 10-05 22:00 台北 fork 每週排程：本 session 結束時（15:40）尚未到，下個 session 若已過 22:00 先查。
+- [#不重議] C2 延後、不取消；OPA 不讀，等問題拉資料（① 對齊 → coverage；③ 表達力 → policy testing）。
+- [#接力] 照舊：`v3.0.0` tag 未打；本機空目錄 `.claude/worktrees/requirement-scenario-identity` 待重開機後刪。
+- 本 session 暫存檔（`c1-review/`、`c-evidence/`）已由使用者手動刪除；上一 session 的 `a-review/` 查無，視為已清。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **把能力邊界寫得比事實窄，今天一次出現 3 例**：C1 文件 r1 的 3 個 🔴——「hook 只看得到指令字串」（其實讀得到檔案）、「archive 不檢查任何 artifact」（其實會查 proposal.md、delta spec、task 進度）、「人工檢視、分析、操作示範無法重跑」（把程式重算、重新執行、證明歷史執行混在一起）。三句都是拿查到的那部分去推「它只能這樣」。做法：寫「X 只能／不能／不檢查任何」之前，先列出 X 實際讀了哪些輸入，再寫邊界。這條和「絕對句先找反例」同一族，差別在這次是**否定句**，平常比較少被當成絕對句檢查。
+- **提案前先查已決，今天 +1**：把「回報 workflow-harness」當新選項提出，其實早上已登記成 `#154` case 2。原因是只讀了本 repo 的交接，沒看 workflow-harness 當天的 commit。做法：選項如果要動另一個 repo，先看那個 repo 當天的 git log。
+
+**【當日洞見】**
+
+- **「required verification 確實執行」是兩個 claim**：E1 是 Gate 在 transition 前跑過；E2 是驗證本身執行過。E2 能做到多強，取決於能不能由程式獨立重算，所以會自然按驗證類別分層。
+- **設計張力往上延伸到 G2**，不只出現在 §8 的措辭：「已實際執行」對上「v1 結果可由 agent 自陳」。收窄承諾會動到整條推導。
+- **OpenSpec 1.14.0 的 archive 加了 task 檢查，但 bridge 的 `-y` 會把它跳過**：上游變嚴了，我們的指令寫法剛好繞過去。
+- **四輪試用觀察卡在 0/4**：全有全無的 coverage 規則碰上沒有編號的條目（已記在 `#154`）。
+
+**【學習候選】**
+
+- **Case**：C1 文件 r1 的 3 個 🔴 都是否定句把邊界寫窄，而這份文件本身就在講「不要把現況講成保證」。
+- **Candidate Pattern**：寫否定性能力描述（「只能」「不能」「不檢查任何」）之前，先列出對象實際讀了哪些輸入、做了哪些檢查，再下邊界。適用於任何描述工具、機制能力上限的句子；不適用於引用原文的否定句（例如 schema 自己寫的「nothing intercepts」）。
+- **Evidence**：Hypothesis——本 session 3 例，都出在同一份文件、同一個下午、同一個作者。
+- **Minimum Sufficient Intervention**：不新增規則；全域「寫絕對斷言前先找一個反例」已涵蓋，只是執行時漏了否定句。先記在紀律接力觀察。
+- **Promotion**：History only。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（93eac9c、開工於 2026-10-05T14:22:05）——列 93eac9c..HEAD
+
+- `c06fff0`：`docs/superpowers/research/2026-10-05-verification-c1-enforcement-surface.md`（新）、`docs/superpowers/research/README.md`、`workflow-harness/work-map.jsonl`、`backlog-crosscheck-shadow.json`
+- 本次收工：本 handoff、`workflow-harness/work-map.jsonl`（C1 → DOING）
+
+### 六、下一步建議
+
+1. 若已過 10-05 22:00：先查 fork 每週排程，完成即收。
+2. C1 下一輪：先請使用者拍板要不要做「PreToolUse 攔 `openspec archive -y`」實測（在暫存測試專案）；拍板後只做這一個點，起點讀 `docs/superpowers/research/2026-10-05-verification-c1-enforcement-surface.md` §3.2、§5。
+3. 不急：C2 維持延後；做法 4 的兩個未決題等 C1 下一輪結果出來再定。
