@@ -103,7 +103,7 @@ CD §2 的 66 個分類單位依「日期／席位」欄歸到 9 個席位（腳
 | L-VS2b 語意比對 agent | brainstorm 的承諾已被正式文件完整承接／逐要素對照正式文件原句 | general-purpose subagent；使用者指示 | 1 次派工 | 方向文件、正式設計、brainstorm | F-VS8 | agent 自列沒讀的 handoff、spike、spec |
 | L-VS2c 主 session 複核 agent 出處 | agent 引用的章節與行號為真／開檔 grep | 主 session；全域規則「證據先於斷言」 | 2 次指令 | 同上 | 無（都對得上） | — |
 | L-VS2d Codex 程式碼審＋precommit 替代 | `.gitignore` 只忽略目標檔／Codex 讀 repo；`git check-ignore`；schema validate | Codex＋主 session；precommit runner 回 `⚠️ NO CHECKS RUN`（repo 沒有 lint／測試） | 1 輪＋2 個指令 | `.gitignore` 一行 | 無 | — |
-| L-VS2e 本文件自己的文件審：fallback（fable）→ Codex | 本盤點表正確、引用與計數相符 | Codex 額度用完（exit 1）→ contract-neutral-reviewer（fable，使用者指定），額度恢復後依使用者裁定排程補跑 Codex 首次派發 | fallback 1 次；Codex 1 次 | fallback：初稿；Codex：依 fallback 意見修正後（修正沒有動到 Codex 抓到的三格） | F-VS9、F-VS10 | fallback 漏了 F-VS10 的三條 |
+| L-VS2e 本文件自己的文件審：fallback（fable）→ Codex | 本盤點表正確、引用與計數相符 | Codex 額度用完（exit 1）→ contract-neutral-reviewer（fable，使用者指定），額度恢復後依使用者裁定排程補跑 Codex 首次派發 | fallback 1 次；Codex 3 輪（同 thread） | fallback：初稿；Codex r1：依 fallback 意見修正後（修正沒有動到 Codex 抓到的三格）；r2：修 F-VS10 後；r3：修 F-VS11 後 | F-VS9、F-VS10、F-VS11 | fallback 漏了 F-VS10 的三條 |
 
 ---
 
@@ -153,6 +153,7 @@ CD §2 的 66 個分類單位依「日期／席位」欄歸到 9 個席位（腳
 | F-VS8 | L-VS2b | 正式設計沒有 G2；承諾措辭比正式設計 §8 的實際保證強；方向文件的「required Review = PASS」正式設計沒列 | 未分級（交使用者裁定） | 首次 | — | 以為正式設計是唯一來源而刪方向文件，G1–G3 的定義就斷掉 | 備忘 §8 |
 | F-VS9 | L-VS2e（fallback） | 評分器試跑寫成三條錯誤路徑（實為兩條＋全對對照）；盲測規則寫成四版（實為三版）；一格把作者推論標成「CD 原文」 | 🟡 ×3、⚪ ×2 | 首次 | — | 錯的數字與出處進入研究 | 本 session |
 | F-VS10 | L-VS2e（Codex） | F-ID10a 誤標首次（ledger 第 95 行已記）；F-VS7 誤標重新發現；把 version-check 寫成只比版本號（實際還跑最新 OpenSpec 的結構驗證） | 🔴 ×3 | 首次 | L-VS2e fallback（初稿上這三格就已存在） | 本表的「首次／重新」與「前一層已漏」欄算錯，**正好是本表要回答的增量問題** | 本 session |
+| F-VS11 | L-VS2e（Codex r2） | 修 F-VS10 第三條時把 drift issue 的觸發條件寫反：把②定義成「結構驗證通過」，接著寫「任一成立就開或更新 drift issue」，等於宣稱驗證通過也會觸發；實際條件是任一上游版本與釘住版本不同，或結構驗證失敗（`version-check.yml` 的 `Open or update drift issue` step 的 `if:`） | 🔴 | 首次（**修正引入**：r1 修正時寫入；2026-10-05 補記。對照組研究提議在「重新」底下細分「半修」、並把「修正引入」由註記改成獨立類別，見 `./2026-10-05-verification-comparison-case-resurface.md` §3，本表暫不改分類） | —（該句在 r2 的受測快照才出現，先前沒有任何一層審過它） | 讀者以為版本一致、驗證通過時也會更新 issue，對 CI 能力的描述與實作相反 | Codex 原始對話 `~/.codex/sessions/2026/10/02/rollout-2026-10-02T21-52-19-01a0fce3-….jsonl`（repo 外、無保存保證）；handoff 20261005 |
 
 **CD 的重新發現**（不逐條列入上表）：Codex 0910 的 9 個單位中，#53、#57、#58、#59 帶 G 標記（先前已 defer），屬重新發現；例如 #59 即 fallback r4 的 #38（D2）。
 
