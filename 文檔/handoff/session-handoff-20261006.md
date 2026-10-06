@@ -187,3 +187,63 @@
 1. 決定複盤 §6 三條長期規則候選要不要升級、升到哪裡。
 2. Verification Strategy 挑下一件：C2 或決策 B（沿用 12:06 接力）。
 3. 不急：push 21 筆 commit；`v3.0.0` tag；task-brief 上游回報草稿（已標 NEXT）。
+
+
+## Session 18:11
+
+### 一、本 session 主題
+
+開工後依上次接力棒第 1 條，白話討論 `fix-executing-plans-rationale` 複盤 §6 三條長期規則候選並逐條裁定；把 (c) 寫進 CLAUDE.md、(a) 併進紅旗改寫工作；收尾時檢討「要使用者反問才發現不需要」的模式並改進記憶。
+
+### 二、完成事項
+
+- **複盤 §6 三條候選裁定**（使用者 2026-10-06）：
+  - (a) 純措辭更正型 change 的執行路徑明文化 → **併入 `task-20260901-claudemd-governance-rewrite`**。工作地圖該條 name 已改寫：刪除已撤銷的「須隨 apply schema change、不可先行」；併入 (a)；另併入「bridge README 中英文談 executing-plans 的兩段（touchpoints 提示框、設計觸點 #4）理由與證據分開——設計說明只寫理由、上游哪版做到／沒做到寫在 Re-verification log」（本 session 討論「README 的功能是什麼」時得出）。
+  - (b) 修上游改版失效時一併搜維護說明 → **不存記憶**，留在複盤當案例（1 例 Hypothesis；本益比低、現有文件審已接得住）。
+  - (c) 引用上游原文時連結指向固定版本 → **寫進 `CLAUDE.md`「雙語策略」節**（翻譯同步原則之後一段）：適用範圍、理由、排除（指路用連結）、來源。
+- **文件審（CLAUDE.md）**：Codex r1 額度用完（`ERROR: You've hit your usage limit`，20:17 恢復，無報告）→ `[REVIEWER_FALLBACK] plane=doc_review from=codex to=contract-neutral-reviewer reason=quota | 2026-10-06T09:58:33Z`（`review-dispatch.js` 決定）→ ✅ Mergeable，原始報告整份存檔經 `validate-family-sentinel.js doc` → `[SENTINEL_VALID]`，已 note pass。暫存檔由使用者刪除、已查證資料夾為空。
+- **sub-threshold 三項**：🟡 位置放在雙語策略下不好找（不處理）；⚪「確認標籤內容」沒寫方法（使用者反問後判定不需要：實測本機 Superpowers 副本 6.4.1／6.4.2 的 executing-plans/SKILL.md 與 GitHub 同名標籤 sha256 相同，僅 1 檔 1 次樣本）；⚪ 複盤 §6 未勾選（歸檔複盤不改，以本 handoff 為處理紀錄）。
+- **記憶改進**：`feedback_subthreshold_red_risk_discuss.md` 加 Refinement＋MEMORY.md 索引行（端出前先用事實答「不做會怎樣、發生過嗎」，答不出標推測不升級；被反問先查再改口）。
+- 封裝候選檢查：backlog 無 open `[SOP 候選]`，無命中。
+- **結算**：`task-20261006-vs-execution-record-capability`（決策 B）標 NEXT（序 5、4 個可升子項，經使用者確認）。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **本 session 改動未 commit**（`CLAUDE.md`、`workflow-harness/work-map.jsonl`、本 handoff）——收工時待使用者確認。
+- [#接力] 審查提醒把 `work-map.jsonl` 算成 code（`code_review`／`precommit` 為 stale）；未跑，未查以前改工作地圖是否跑過，已告知使用者。
+- [#接力] Verification Strategy 下一步已選**決策 B**（使用者依建議裁定，`task-20261006-vs-execution-record-capability` 標 NEXT）。理由：接在今天決策 A 之後、同一條線；C2 登記為延後、G2 加註是事件觸發不可主動開工、Verify/Sync 無急迫性。⚠️ B 不能直接拍板：研究文件 §5 寫明須先重開 C1 §5 第 9 條（T2 信任邊界未實測）與第 10 條（第二個 runtime），兩項實測規模【未查】。備選：紅旗改寫可交付實際改動，若要先出成果可換它。
+- [#不重議] 複盤 §6：(a) 併入紅旗改寫、(b) 不存記憶、(c) 已寫 CLAUDE.md、第 2 點「確認方法」不補。
+- [#接力] 照舊：commit 未 push（main 比 origin 多 21 筆）；`v3.0.0` tag 未打。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **修正句說過頭（今天第 8 次）**：收回建議時寫「本機副本都放在帶版本號資料夾」，沒查就寫；下一輪才實查（剛好成立）。做法照舊：寫替代句前先答「證據是哪一行、射程是不是全部」。
+- **要使用者反問才發現「不需要」**：把審查的 ⚪ 套上「假合規」標籤升級端出，沒先問「不做會怎樣、發生過嗎」；使用者一問就收回，且收回也沒查證——兩個方向都是推理沒碰事實。全域 CLAUDE.md 已有對應條文（能碰就碰、六軸下游、三關必要性）仍復發，故改記憶索引行而非加 CLAUDE.md。做法：端出任何「建議要做」前，先用事實答「不做會怎樣、發生過嗎／做的代價」；被反問先查再決定維持或收回。
+
+**【當日洞見】**
+
+- **bridge README 一份裝三種東西**：使用手冊（採用者）、設計說明（為什麼長這樣）、查證紀錄（某天對某版查到什麼）。有日期的上游行為寫進「設計說明」，上游一改說明就過期；寫進「查證紀錄」再連過去，改版時只動紀錄。固定版本連結只是讓過期可辨識，分開放才減少過期。
+- **使用者的反問是在測必要性**：「有需要寫這麼詳細嗎」「為什麼要指向固定版本」兩問都讓結論變得更扎實或被收回——代表我端出前少做了一步必要性自問。
+
+**【學習候選】**
+
+- **Case**：CLAUDE.md 文件審的 ⚪「確認標籤內容沒寫方法」，我升級為高風險端給使用者；使用者反問後收回，收回句又未查證。使用者問「為什麼有些事情要我反問你之後，你才能夠發現不需要」。
+- **Candidate Pattern**：把審查小項或自己的建議端給使用者前，先用事實回答「不做會怎樣、發生過嗎」與「做的代價」；答不出事實就標推測、不升級。被反問時先查再改口。不適用：使用者明確要求列出所有可能項時。
+- **Evidence**：本 session 1 例（同 session 稍早 (c) 也是使用者問「README 的功能是什麼」才引出更根本的分法，性質相近但不完全同型）。Hypothesis。
+- **Minimum Sufficient Intervention**：已改既有記憶 `feedback_subthreshold_red_risk_discuss` 與 MEMORY.md 索引行（常駐載入）；不新增 CLAUDE.md 規則（已有對應條文仍復發，且說不出 enforcement 掛點）。觀察：下次再因使用者反問才發現「不需要」即記第 2 例。
+- **Promotion**：Refine Existing Strategy（已做）；是否進一步升級由使用者決定。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（f877960、開工於 2026-10-06T17:39:11）——列 f877960..HEAD（區間內無新 commit）
+
+- 未 commit：`CLAUDE.md`（雙語策略節新增「引用上游原文當查證依據」一段）、`workflow-harness/work-map.jsonl`（`task-20260901-claudemd-governance-rewrite` name 改寫）、本 handoff
+- repo 外：`~/.claude/projects/C--Users-user-orca-openspec-schemas/memory/feedback_subthreshold_red_risk_discuss.md`、`MEMORY.md`
+
+### 六、下一步建議
+
+1. 決策 B：先查 C1 §5 第 9、10 條要補的實測有多大，再開工。
+2. 紅旗改寫（`task-20260901-claudemd-governance-rewrite`）範圍已擴大、依賴已撤，可排進主線考慮。
+3. 不急：push 未推送的 commit；`v3.0.0` tag；task-brief 上游回報草稿（已標 NEXT）。

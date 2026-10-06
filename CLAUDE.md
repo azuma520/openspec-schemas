@@ -63,6 +63,8 @@ openspec-schemas/                     ← 本 repo
 
 **翻譯同步原則**:英文 canonical,翻譯版可能滯後。修改英文版時若 schema / 工作流發生實質變動,要同步更新繁中版。小改動允許先英文後繁中。
 
+**引用上游原文當查證依據**(2026-10-06 起):在 README、spec、報告寫「依上游 X 版原文」並附連結時,連結指向該版本的固定標籤(例 `.../blob/v6.4.1/...`),不指向 `main` 這類會移動的分支;並先確認標籤裡的檔案就是你實際讀過的那份(本機快取的副本可能是別的版本)。理由:說法是對某一刻的上游下的判斷,連結若會移動,上游改版後讀者點開看到的內容會與說法對不上,分不出是當初查錯還是上游變了。只用來指路、不當查證依據的連結(clone URL、參考專案首頁)不在此限。來源:`openspec/changes/archive/2026-10-06-fix-executing-plans-rationale/retrospective.md` §6 第 3 條。
+
 ## 沒有 build / test / lint
 
 這個 repo **沒有原始碼、沒有 package.json、沒有測試框架**。它是一包 YAML + Markdown。
