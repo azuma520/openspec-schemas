@@ -1,0 +1,14 @@
+pos {"verdict": "READ_ALL", "session": "S1", "events": 3, "read_events": [{"file": "a.md", "success": true}, {"file": "b.md", "success": true}, {"file": "c.md", "success": true}], "missing": []}
+pos_input {"verdict": "READ_ALL", "session": "S1", "events": 3, "read_events": [{"file": "a.md", "success": true}, {"file": "b.md", "success": true}, {"file": "c.md", "success": true}], "missing": []}
+neg_none {"verdict": "NOT_READ", "session": "S1", "events": 2, "read_events": [], "missing": ["a.md", "b.md", "c.md"]}
+neg_decoy {"verdict": "NOT_READ", "session": "S1", "events": 2, "read_events": [{"file": "decoy.md", "success": true}, {"file": "a.md", "success": true}], "missing": ["b.md", "c.md"]}
+neg_failed {"verdict": "NOT_READ", "session": "S1", "events": 3, "read_events": [{"file": "a.md", "success": true}, {"file": "b.md", "success": true}, {"file": "c.md", "success": false}], "missing": ["c.md"]}
+neg_otherreader {"verdict": "NOT_READ", "session": "S1", "events": 1, "read_events": [], "missing": ["a.md", "b.md", "c.md"]}
+neg_lookalike {"verdict": "NOT_READ", "session": "S1", "events": 3, "read_events": [{"file": "data.md", "success": true}, {"file": "b.md", "success": true}, {"file": "c.md.bak", "success": true}], "missing": ["a.md", "c.md"]}
+no_events {"verdict": "NO_EVENTS", "session": "S1"}
+# v1 grader (before tool_input fix) on real positive:
+{"verdict": "NOT_READ", "session": "5051b61a-9ef8-442d-8208-bce56ea0a8bf", "events": 87, "read_events": [{"params": "", "success": true}, {"params": "", "success": true}, {"params": "", "success": true}], "missing": ["a.md", "b.md", "c.md"]}
+# real sessions:
+{"verdict": "READ_ALL", "session": "5051b61a-9ef8-442d-8208-bce56ea0a8bf", "events": 87, "read_events": [{"file": "a.md", "success": true}, {"file": "b.md", "success": true}, {"file": "c.md", "success": true}], "missing": []}
+{"verdict": "NOT_READ", "session": "0e170631-c98a-49a0-8dc4-e3367b06bb78", "events": 68, "read_events": [], "missing": ["a.md", "b.md", "c.md"]}
+{"verdict": "NOT_READ", "session": "36a647eb-bdb9-4056-bb2a-e809ff7ee712", "events": 68, "read_events": [], "missing": ["a.md", "b.md", "c.md"]}
