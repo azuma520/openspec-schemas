@@ -309,7 +309,7 @@ Plus one OpenSpec built-in: `openspec-verify-change` (apply step 3, produces `ve
 
 > **Naming is not requiring.** This table lists the seven skills the schema **names** in its artifact and apply instructions; `superpowers:executing-plans` is named as well — in the paragraph below, and only in order to rule it out. The schema actually requires and PRECHECKs **four**: `brainstorming` (in the `brainstorm` artifact) and the three in [apply step 0](#0-pre-flight--verify-required-superpowers-skills). Of the rest, `writing-plans` is named only as an optional private aid, and `test-driven-development` / `requesting-code-review` are never invoked by the schema itself.
 
-> **No `executing-plans` fallback.** This schema is opinionated: it requires a subagent-capable platform (Claude Code, Codex, etc.). The alternative executor `superpowers:executing-plans` dispatches no independent reviewer — a single agent executes the plan and self-checks (verified against its [SKILL.md](https://github.com/obra/superpowers/blob/main/skills/executing-plans/SKILL.md)) — and upstream itself directs users to `subagent-driven-development` whenever subagents are available. TDD is not the differentiator: applicability and the RED/GREEN evidence are carried by the `tasks.md` annotations and the evidence contract, whichever executor runs the tasks. If your platform lacks subagent support, use the built-in `spec-driven` schema instead.
+> **No `executing-plans` fallback.** This schema is opinionated: it requires a subagent-capable platform (Claude Code, Codex, etc.). The alternative executor `superpowers:executing-plans` runs with no reviewer per task and reviews the whole branch once at the end; without a subagent tool — exactly where a fallback would run — that final review is performed by the author (verified against its [SKILL.md](https://github.com/obra/superpowers/blob/main/skills/executing-plans/SKILL.md), Superpowers v6.4.1–v6.4.2). This schema relies on independent review during execution. TDD is not the differentiator: applicability and the RED/GREEN evidence are carried by the `tasks.md` annotations and the evidence contract, whichever executor runs the tasks. If your platform lacks subagent support, use the built-in `spec-driven` schema instead.
 
 ### Output redirection
 
@@ -451,7 +451,7 @@ Each artifact / apply step that invokes a Superpowers skill runs a PRECHECK at t
 
 ### 2. Schema-level vs prompt-level integration
 
-Integration lives entirely in `instruction:` fields (pure prompts). If Superpowers upgrades a skill's behavior, the schema doesn't change. We only touch `schema.yaml` if a skill is renamed or removed.
+Integration lives entirely in `instruction:` fields (pure prompts), so an upstream behavior change does not break the schema structurally — `openspec schema validate` reads no prompt text and keeps passing. But several instructions describe what a Superpowers skill does (how code review and TDD reach the executor, why `executing-plans` is excluded); when that behavior changes, those descriptions must be re-checked against the new release and corrected in `schema.yaml`. A renamed or removed *required* skill is also caught by its PRECHECK; a skill the schema only names (for example `test-driven-development`) is not.
 
 ### 3. How TDD and code review actually arrive — made explicit
 
@@ -459,7 +459,7 @@ TDD and code-review used to be described here as hidden transitive activations o
 
 ### 4. Opinionated: subagent platforms only, no manual fallback
 
-This schema requires a subagent-capable platform (Claude Code, Codex, etc.). The alternative executor `superpowers:executing-plans` dispatches no independent reviewer: a single agent executes the plan and self-checks (verified against its [SKILL.md](https://github.com/obra/superpowers/blob/main/skills/executing-plans/SKILL.md) — its body mentions neither `test-driven-development` nor `requesting-code-review`, and it contains no reviewer dispatch). Upstream itself tells users to prefer `subagent-driven-development` whenever subagents are available. TDD is not what separates the two paths — applicability and the RED/GREEN evidence are carried by the `tasks.md` annotations and the evidence contract, whichever executor runs the tasks. Falling back would silently lose the review structure Superpowers brings to this integration, so we prefer to fail loud at Step 0 and direct users to the built-in `spec-driven` schema instead.
+This schema requires a subagent-capable platform (Claude Code, Codex, etc.). The alternative executor `superpowers:executing-plans` runs with no reviewer per task: it executes every task in one context and reviews the whole branch once at the end — with a fresh reviewer when a subagent tool exists, and by the author when none does (verified against its [SKILL.md](https://github.com/obra/superpowers/blob/main/skills/executing-plans/SKILL.md), Superpowers v6.4.1–v6.4.2). A fallback for non-subagent platforms would therefore run with no independent review at all, while this schema relies on independent review during execution — after each task, or each batch of small same-shape tasks. TDD is not what separates the two paths — applicability and the RED/GREEN evidence are carried by the `tasks.md` annotations and the evidence contract, whichever executor runs the tasks. Falling back would silently lose the review structure Superpowers brings to this integration, so we prefer to fail loud at Step 0 and direct users to the built-in `spec-driven` schema instead.
 
 ### 5. Evidence-based PRECHECK for verify and retrospective (Layer 2 capability detection)
 
@@ -657,7 +657,7 @@ If a Superpowers skill is unavailable:
 
 - **`brainstorm` artifact** — the user may explicitly opt in to writing the artifact manually (PRECHECK STOPs and informs the user; manual override requires deliberate user action, not silent degradation)
 - **`plan` artifact** — not affected. As of v2 it invokes no skill and has no skill PRECHECK: the agent writes it directly from `tasks.md`, `design.md` and `specs/`, so there is nothing to fall back from
-- **`apply` phase** — no manual fallback within this schema. PRECHECK STOPs at Step 0 if any required skill is missing. The recommended path is to switch to the built-in `spec-driven` schema for that change. Rationale: see Design touch #4 above — `executing-plans` dispatches no independent reviewer, and a degraded apply phase would defeat the schema's purpose.
+- **`apply` phase** — no manual fallback within this schema. PRECHECK STOPs at Step 0 if any required skill is missing. The recommended path is to switch to the built-in `spec-driven` schema for that change. Rationale: see Design touch #4 above — on a platform without subagents, `executing-plans` has no independent review at any point, and a degraded apply phase would defeat the schema's purpose.
 
 ---
 

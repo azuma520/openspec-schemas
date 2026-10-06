@@ -249,7 +249,7 @@ PR #970 review 提出三個顧慮,本 schema 在 v1 已具體應對。Claude 在
 - ❌ 拿掉某個 PRECHECK 但沒換更強的替代品
 - ❌ 把 verify / retrospective 從 artifact 拉掉但沒在 README「設計觸點」段同步更新限制
 - ❌ 改 schema name 但沒同步改 bridge 內所有文件 + 頂層 README 的 bridge 索引
-- ❌ 在 apply instruction 加 `superpowers:executing-plans` 當 fallback(它不派任何獨立審查者——單 agent 自跑自查,上游在有 subagent 時也明示改用 subagent-driven-development;TDD 不是差異點——TDD 由 tasks.md 的 applicability 標註 + 證據契約承載(`loosen-plan` 起),與哪個執行器無關。本 schema 刻意只支援有 subagent 的平台,缺就叫使用者改用內建 `spec-driven`)
+- ❌ 在 apply instruction 加 `superpowers:executing-plans` 當 fallback(它沒有每個 task 的審查,只在最後審整條分支一次;沒有 subagent 工具時——正是 fallback 會發生的情境——那次由作者自審,整個過程沒有獨立審查。依據 Superpowers v6.4.1 原文;查過的舊版(v5.1.0、v6.3.0)連最後那次都沒有,所以 8/31 寫的「不派任何獨立審查者」當時成立、v6.4.1 起不成立。**不要**再拿「上游建議用哪個」當理由,上游建議會變。TDD 不是差異點——TDD 由 tasks.md 的 applicability 標註 + 證據契約承載(`loosen-plan` 起),與哪個執行器無關。本 schema 刻意只支援有 subagent 的平台,缺就叫使用者改用內建 `spec-driven`) ⚠️ 這條禁令依正式設計 §5 之後要改寫成「看能力、留證據、可降級」的寫法(沒有 subagent 時允許自審但留降級紀錄),由工作 `task-20260901-claudemd-governance-rewrite` 負責;改寫時不要拿這條紅旗當反對理由。
 - ❌ 把 PRECHECK 失敗改成「靜默降級」(整套設計就是 fail loud;缺 skill 一律 STOP)
 
 ## 相關連結
