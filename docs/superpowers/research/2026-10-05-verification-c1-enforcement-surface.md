@@ -1,6 +1,6 @@
 # Verification Strategy C1 第一輪：Enforcement surface 與 execution evidence 現況盤點（2026-10-05）
 
-> **定位**：現況盤點，不是設計、不是提案、不是研究結論。work-map `task-20261005-vs-c1-execution-enforcement` 第一輪的產出；第二輪（work-map `task-20261005-vs-c1-hook-archive-probe`，同日）只補一個實測點，見 §3.4；第三輪（work-map `task-20261006-vs-c1-runtime-execution-record`，2026-10-06）回答 E2 的一個子題，見 §3.5。本文只回答「現在知道什麼」，不回答「要怎麼改」。
+> **定位**：現況盤點，不是設計、不是提案、不是研究結論。work-map `task-20261005-vs-c1-execution-enforcement` 第一輪的產出；第二輪（work-map `task-20261005-vs-c1-hook-archive-probe`，同日）只補一個實測點，見 §3.4；第三輪（work-map `task-20261006-vs-c1-runtime-execution-record`，2026-10-06）回答 E2 的一個子題，見 §3.5。**C1 已於 2026-10-06 結案**（使用者裁定，不再追加實驗）；結案整理與後續方向見 `./2026-10-06-verification-strategy-after-c1.md`。本文只回答「現在知道什麼」，不回答「要怎麼改」。
 >
 > **研究問題**（2026-10-05 使用者裁定）：C 原題「Completion Gate 的信任鏈」拆成 C1（required verification 是否真的執行、由誰觸發、漏跑在哪個 state transition 被攔，先做）與 C2（跑過之後的 PASS 值不值得信，延後、不取消，work-map `task-20261005-vs-c2-verifier-correctness`）。本輪只做 C1，不設計 Gate、不讀 OPA。
 >
