@@ -122,3 +122,68 @@
 1. Verification Strategy 挑下一件：決策 B（§2.2 執行紀錄能力，需先重開 C1 §5 第 9、10 條）或 C2（判讀正確性），由使用者定。
 2. 重寫 executing-plans 拒用理由（走 opsx change）——仍是最接近「一下午做完」的一件。
 3. 不急：`v3.0.0` tag；task-brief 上游回報草稿（已標 NEXT）。
+
+## Session 17:13
+
+### 一、本 session 主題
+
+開工核實「上次沒收工」為誤報（12:06 收工後 session 未關、13:15 自動壓縮與 /clear 更新了對話檔時間，機轉同 9/10 外掛自查）；討論審查路由（每任務審 vs 最後審）與 SDD 過程紀錄保存的取捨；完成 `fix-executing-plans-rationale` 從開案到歸檔整個流程。
+
+### 二、完成事項
+
+- **`fix-executing-plans-rationale`**（`9ef62c2` 實作、`0749aa2` 歸檔）：
+  - 依 Superpowers v6.4.1 原文更正 bridge 拒用 executing-plans 的理由（結論不變）：沒有每個 task 的審查、只在最後審一次；無 subagent 時那次由作者自審。不再引用「上游建議用哪個」。
+  - 源頭是正式規格 `tdd-claim-accuracy` REQ-3（用 SHALL 規定了舊理由），一併修改並新增 REQ-3-S3。
+  - 表面：`schema.yaml` 兩處、README 中英文（touchpoints 段、設計觸點 #4、§ 2 維護說明、降級策略 apply 列、10/02 紀錄後補「後續狀態」一行、四個連結固定指向 `v6.4.1` 標籤）、`CLAUDE.md` 紅旗（含「依正式設計 §5 之後改寫」預告句）。
+  - 審查：程式碼 Codex r1 ✅＋歸檔後備援 strict-reviewer ✅；文件 Codex r1 ⛔（README § 2 宣稱「上游行為改了 schema 不用改」與本 change 矛盾）→ r2 ✅；Codex 額度用完（20:17 恢復）後改由 contract-neutral-reviewer，[REVIEWER_FALLBACK] 已記，三輪皆 ✅、每份原始報告經 `validate-family-sentinel.js` 驗過；precommit 以 repo 唯一測試（schema validate）代替並留 [DEVIATION]；verify 由獨立執行者完成（⚠️ PASS WITH WARNINGS）。
+  - 執行：主 session inline、不開 worktree／SDD（沿用 8/31 先例，複盤 §4 記錄）。
+- **否決登記**：「SDD 過程紀錄不隨歸檔保存」使用者裁定不登記（對一般採用者不需要；研究需要時當次保存）。10/02 retro-skill-inventory 複盤第 123 行那個未勾的「升到證據生命週期子題」以此結論視為已處理（不改已歸檔複盤）。
+- **結算**：`task-20261002-executing-plans-rationale` 標 DONE。
+- 封裝候選檢查：backlog 無 open `[SOP 候選]`，無命中。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **複盤 §6 三條長期規則候選待使用者決定是否升級**（`openspec/changes/archive/2026-10-06-fix-executing-plans-rationale/retrospective.md` §6）：①純措辭更正的執行路徑明文化（第二次跳過 worktree/SDD），建議併入 `task-20260901-claudemd-governance-rewrite` ②修「上游改版讓說法失效」時一併搜「怎麼處理上游改版」的維護說明（memory，Hypothesis）③引用上游原文時連結指向固定版本標籤。
+- [#接力] 最後一輪審查留下的 sub-threshold 小項（只記錄、使用者裁定不再開循環）：retrospective §0 README diff 寫 +4/−2、實際 +5/−3；retrospective 引用 10/05 handoff 第 93–95 行、B-i 實在第 96 行；README 第 610 行「依目前的上游行為」未寫版本、也未說 S4/S5 仍擋 baseline。
+- [#不重議] executing-plans：只修理由、不重評 fallback（10/05 裁定，本 session 結論一致）；要不要放寬交給 `task-20260901-claudemd-governance-rewrite`，該件「不可先行」依賴已於 10/05 撤銷（工作地圖文字仍是舊的、等重登記時改）。
+- [#不重議] SDD 過程紀錄不登記。
+- [#接力] 照舊：commit 未 push（main 比 origin 多 21 筆）；`v3.0.0` tag 未打。
+- 審查暫存檔已由使用者清除（scratchpad 整個資料夾，已查證不存在）。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **修正句說過頭（今天又 4 次，連同 08:40／12:06 區塊累計 7 次）**：「每個任務都審」（SDD 會合批）、「6.4.1 以前都沒有最後審查」（只查過 5.1.0、6.3.0）、「改名就會被 PRECHECK 擋下」（只對必要 skill）、「design.md 也寫了不可先行」（查證沒有）。全是**寫替代句時**發生。做法：每寫一句替代句，先答「這句的證據是哪一行、射程是不是全部」再往下寫。全域規則已寫仍復發＝規則擋不住。
+- **開工只讀最新 handoff、沒回查前一天的 [#不重議]**：10/05 已裁定「只修理由、不重評」、紅旗改寫依賴已撤，我重問了使用者並把工作地圖舊文字當事實。做法：動某件工作前，先搜近幾天 handoff 裡提到它的 `[#不重議]`，不只信工作地圖 description。
+- **驗證工具一律餵原始報告**：今天差點拿刪減版報告去跑 `validate-family-sentinel.js`（等於偽造驗證）；工具在等 stdin 卡住才沒產生結果。做法：報告整份原文照存，不摘要。
+
+**【當日洞見】**
+
+- **上游改版造成的失效 ≠ 當初查錯**：8/31 的說法在 6.3.0 成立；修正紀錄要分清楚，免得後人以為當時查證有問題。
+- **錯誤說法的源頭可能是正式規格**：只改文件不改規格，下次照規格驗收會把正確文字判成不合規。
+- **新規格也可能比實作嚴**：REQ-3-S3 寫「每一段」，README 降級策略那列沒跟上，是歸檔後文件審查才抓到。
+- **SDD 過程紀錄不隨歸檔保存是上游刻意設計**（`sdd-workspace` 第 81 行自動 gitignore、SKILL.md 第 482–483 行總審後刪除），前提是每個任務都 commit；本 repo 禁止 AI commit，前提不成立。使用者裁定不登記。
+- **審查路由的判準**：要不要每個任務都審，重點不在風險高低，而在「後面的任務會不會建立在測試驗不出來的理解上」；建議寫計畫時就在 tasks.md 標審查切點。實測依據：6 個已歸檔 change 已混用每任務審／合批審／不走 SDD 三種，皆當下判斷、事後寫進複盤。未登記。
+
+**【學習候選】**
+
+- **Case**：修正「上游改版讓說法失效」時，只搜了 `executing-plans` 這個詞，漏掉 README「上游行為改了 schema 不用改」的後設說法，被 Codex 文件審 r1 抓到。
+- **Candidate Pattern**：修正因外部改版而失效的宣稱時，除了搜被推翻的具體說法，也搜「怎麼處理外部改版」的維護說明——外部改版本身常是那些說明的反例。不適用：宣稱失效不是因外部改版。
+- **Evidence**：1 例。Hypothesis。
+- **Minimum Sufficient Intervention**：不新增規則；待使用者決定是否把複盤 §6 第 2 條升為 memory（觸發點：處理 drift issue 時）。
+- **Promotion**：Case Memory（待使用者決定）。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（a136720、開工於 2026-10-06T14:02:31）——列 a136720..HEAD
+
+- `9ef62c2`：`superpowers-bridge/schema.yaml`、`superpowers-bridge/README.md`、`superpowers-bridge/README.zh-TW.md`、`CLAUDE.md`、`openspec/changes/fix-executing-plans-rationale/`（新，7 檔）
+- `0749aa2`：change 搬到 `openspec/changes/archive/2026-10-06-fix-executing-plans-rationale/`（含新增 `verify.md`、`retrospective.md`）、`openspec/specs/tdd-claim-accuracy/spec.md`（REQ-3 修改）、兩份 README（後續狀態行、固定版本連結、降級策略 apply 列）
+- 本次收工：work-map（`task-20261002-executing-plans-rationale` 標 DONE）、本 handoff
+
+### 六、下一步建議
+
+1. 決定複盤 §6 三條長期規則候選要不要升級、升到哪裡。
+2. Verification Strategy 挑下一件：C2 或決策 B（沿用 12:06 接力）。
+3. 不急：push 21 筆 commit；`v3.0.0` tag；task-brief 上游回報草稿（已標 NEXT）。
