@@ -81,8 +81,8 @@
 - [#不重議] 決策 A 已決：維持 10/02 裁定；G2 加註只是執行舊裁定，不重開 G2 決策。
 - [#不重議] C1 結案、不再追加實驗；C1 §5 未查證項（第 3、4、9、10 條）凍結，決策 B 推進前先重開第 9、10 條。
 - [#不重議] Superpowers 本機維持 6.4.1（08:40 區塊）。
-- [#接力] 審查暫存檔待手動刪（AI 的 rm 被擋）：scratchpad 下 `rv/`、`rv2/`、`c1r3/`；本機另有三個巢狀測試 session 的逐字紀錄在 `~/.claude/projects/` 以測試專案路徑命名的目錄。
-- [#接力] 照舊：`v3.0.0` tag 未打；`.claude/worktrees/requirement-scenario-identity` 空目錄待刪。
+- ~~審查暫存檔待手動刪~~ 已於收工後由使用者清除（scratchpad `rv/`、`rv2/`、`c1r3/`、`orca-orch.md`；`~/.claude/projects/` 下 c1r3 與 10/05 c1-hook-probe 兩個巢狀測試 session 目錄；9/29 遺留的兩個空 `smart-commit-msg.*`），已逐項查證不存在。
+- [#接力] 照舊：`v3.0.0` tag 未打。（`.claude/worktrees/requirement-scenario-identity` 空目錄已於收工後由使用者刪除，查證 `.claude/worktrees/` 為空。）
 - [#待確認] 08:40 區塊提到的「開工 hook 週二講成週一」仍未處理。
 
 ### 四、洞見 / 反省
@@ -121,4 +121,4 @@
 
 1. Verification Strategy 挑下一件：決策 B（§2.2 執行紀錄能力，需先重開 C1 §5 第 9、10 條）或 C2（判讀正確性），由使用者定。
 2. 重寫 executing-plans 拒用理由（走 opsx change）——仍是最接近「一下午做完」的一件。
-3. 不急：`v3.0.0` tag；task-brief 上游回報草稿（已標 NEXT）；手動刪 scratchpad 審查暫存。
+3. 不急：`v3.0.0` tag；task-brief 上游回報草稿（已標 NEXT）。
