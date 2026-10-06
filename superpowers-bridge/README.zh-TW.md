@@ -309,7 +309,7 @@ APPLY ━━━━━━━━━━━━━━━━━━━━━━━━�
 
 > **點名不等於要求。** 這張表列的是 schema 在 artifact 與 apply instruction 裡**點名**的七個 skill;`superpowers:executing-plans` 也有被點名 —— 在下面那段裡,而且**只為了把它排除掉**。schema 真正**要求並做 PRECHECK** 的是**四個**:`brainstorming`(在 `brainstorm` artifact 裡)加上 [apply step 0](#0-pre-flight--驗證必要的-superpowers-skill) 的那三個。其餘的當中,`writing-plans` 只是被列為可選的私下輔助,而 `test-driven-development` / `requesting-code-review` 從來不由 schema 本身 invoke。
 
-> **不支援 `executing-plans` fallback**。本 schema 是 opinionated 的:要求 subagent-capable 平台(Claude Code、Codex 等)。替代 executor `superpowers:executing-plans` **沒有每個 task 的審查**,只在最後審整條分支一次;沒有 subagent 工具時——正是 fallback 會發生的情境——那次審查由作者自己做(已對 [SKILL.md](https://github.com/obra/superpowers/blob/main/skills/executing-plans/SKILL.md) 做事實查核,Superpowers v6.4.1–v6.4.2)。本 schema 依賴的是執行過程中就有獨立審查。TDD 不是兩條路的差異點:適用性與 RED/GREEN 證據都由 `tasks.md` 的註記與證據契約承載,不論是哪個 executor 在跑這些 task。若你的平台沒有 subagent 支援,改用 OpenSpec 內建的 `spec-driven` schema。
+> **不支援 `executing-plans` fallback**。本 schema 是 opinionated 的:要求 subagent-capable 平台(Claude Code、Codex 等)。替代 executor `superpowers:executing-plans` **沒有每個 task 的審查**,只在最後審整條分支一次;沒有 subagent 工具時——正是 fallback 會發生的情境——那次審查由作者自己做(已對 [SKILL.md](https://github.com/obra/superpowers/blob/v6.4.1/skills/executing-plans/SKILL.md) 做事實查核,Superpowers v6.4.1–v6.4.2)。本 schema 依賴的是執行過程中就有獨立審查。TDD 不是兩條路的差異點:適用性與 RED/GREEN 證據都由 `tasks.md` 的註記與證據契約承載,不論是哪個 executor 在跑這些 task。若你的平台沒有 subagent 支援,改用 OpenSpec 內建的 `spec-driven` schema。
 
 ### Output redirection(產出重導)
 
@@ -459,7 +459,7 @@ TDD 與 code-review 過去在這裡被描述成 `subagent-driven-development` �
 
 ### 4. Opinionated:只支援 subagent 平台,沒有手動 fallback
 
-本 schema 要求 subagent-capable 平台(Claude Code、Codex 等)。替代 executor `superpowers:executing-plans` **沒有每個 task 的審查**:它在同一個 context 裡做完所有 task,最後審整條分支一次——有 subagent 工具時派全新的審查者,沒有時由作者自己審(已對其 [SKILL.md](https://github.com/obra/superpowers/blob/main/skills/executing-plans/SKILL.md) 做事實查核,Superpowers v6.4.1–v6.4.2)。所以拿它當非 subagent 平台的 fallback,整個過程完全沒有獨立審查;而本 schema 依賴的是執行過程中就有獨立審查——每個 task、或每批同類小 task 做完就審。TDD 不是兩條路的分野——適用性與 RED/GREEN 證據都由 `tasks.md` 的註記與證據契約承載,不論是哪個 executor 在跑這些 task。退過去等於靜默丟掉 Superpowers 帶給整合的審查結構,所以我們選擇在 Step 0 fail loud,並指引使用者改用內建的 `spec-driven` schema。
+本 schema 要求 subagent-capable 平台(Claude Code、Codex 等)。替代 executor `superpowers:executing-plans` **沒有每個 task 的審查**:它在同一個 context 裡做完所有 task,最後審整條分支一次——有 subagent 工具時派全新的審查者,沒有時由作者自己審(已對其 [SKILL.md](https://github.com/obra/superpowers/blob/v6.4.1/skills/executing-plans/SKILL.md) 做事實查核,Superpowers v6.4.1–v6.4.2)。所以拿它當非 subagent 平台的 fallback,整個過程完全沒有獨立審查;而本 schema 依賴的是執行過程中就有獨立審查——每個 task、或每批同類小 task 做完就審。TDD 不是兩條路的分野——適用性與 RED/GREEN 證據都由 `tasks.md` 的註記與證據契約承載,不論是哪個 executor 在跑這些 task。退過去等於靜默丟掉 Superpowers 帶給整合的審查結構,所以我們選擇在 Step 0 fail loud,並指引使用者改用內建的 `spec-driven` schema。
 
 ### 5. Evidence-based PRECHECK for verify and retrospective(Layer 2 capability detection)
 
@@ -607,6 +607,8 @@ bridge 對 OpenSpec 的 24 項依賴(逐項列在 [issue #2 相容性 spike 報�
 
 **為什麼基準維持 `v5.1.0`:** S4、S5、S13、S14 都是本 schema 自己的 instruction 文字或它寫明的理由,推進基準等於重新宣告它們成立;修正它們要動 `schema.yaml`,得走自己的 change。已登記兩條後續工作:重寫拒用 `executing-plans` 當 fallback 的理由,以及處理 `task-brief` 的標題格式相容缺口。
 
+**後續狀態(2026-10-06):** 第一條已完成——`executing-plans` 的拒用理由已由 change `fix-executing-plans-rationale` 依目前的上游行為修正。`task-brief` 標題格式相容缺口仍未處理。
+
 完整方法、逐項證據與沒查的範圍:[issue #2 相容性 spike 報告](https://github.com/azuma520/openspec-schemas/blob/main/docs/superpowers/poc/2026-10-02-issue2-compat-spike/report.md)(在 openspec-schemas repository 裡;**不**隨本 bundle 內含)。
 
 ### 驗證機制
@@ -657,7 +659,7 @@ apply 要求 `plan` 而非 `tasks`,因為 executor 需要的是每個 task 的�
 
 - **`brainstorm` artifact**:使用者可明確 opt-in 改成手動撰寫(PRECHECK 會 STOP 並通知;手動模式需要使用者明確選擇,不會靜默降級)
 - **`plan` artifact**:不受影響。從 v2 起它不 invoke 任何 skill,也沒有 skill PRECHECK —— agent 直接依 `tasks.md`、`design.md` 與 `specs/` 寫出它,所以沒有東西需要降級
-- **`apply` phase**:本 schema 沒有 manual fallback。Step 0 PRECHECK 缺任何必要 skill 就 STOP,建議改用 OpenSpec 內建的 `spec-driven` schema 跑那個 change。理由見上面「設計觸點 #4」——在沒有 subagent 的平台上,`executing-plans` 從頭到尾沒有獨立審查,降級的 apply 等於違背 schema 的目的
+- **`apply` phase**:本 schema 沒有 manual fallback。Step 0 PRECHECK 缺任何必要 skill 就 STOP,建議改用 OpenSpec 內建的 `spec-driven` schema 跑那個 change。理由見上面「設計觸點 #4」——`executing-plans` 沒有每個 task 的審查,在沒有 subagent 工具的平台上,最後那一次審查也由作者自己做,所以從頭到尾沒有獨立審查,降級的 apply 等於違背 schema 的目的
 
 ---
 
