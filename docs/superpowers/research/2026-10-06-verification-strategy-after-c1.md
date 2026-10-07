@@ -4,7 +4,7 @@
 >
 > **定位**：上層研究題 work-map `task-20260929-verification-strategy-research`。C1（`task-20261005-vs-c1-execution-enforcement`）三輪已於 2026-10-06 結案（使用者裁定，不再追加實驗），研究紀錄見 `./2026-10-05-verification-c1-enforcement-surface.md`。起點備忘 `./2026-10-02-verification-strategy-step2-starting-memo.md` 聲明「不再補新理論」，所以本文另立一份，不回寫備忘。
 >
-> **寫法**：每一條註明它與起點備忘既有條目的關係——「**支持**」＝備忘已有的假說或裁定，C1 提供了證據；「**新**」＝備忘沒有的。裁定都是使用者 2026-10-06 在對話中拍板的；未拍板的標【待決】。
+> **寫法**：每一條註明它與起點備忘既有條目的關係——「**支持**」＝備忘已有的假說或裁定，C1 提供了證據；「**新**」＝備忘沒有的。裁定都是使用者在對話中拍板的，原始裁定為 2026-10-06，之後的裁定逐處標日期；未拍板的標【待決】。
 
 ---
 
@@ -78,16 +78,63 @@ Bridge 不宣稱 reviewer／agent 會判斷正確——正式設計 §8 第 4 �
   - 改為承諾變更：把 G2 改成和實際能力一致（概念上如「要求必要 verification 執行，並如實呈現可取得的 evidence／assurance／degradation」），或選擇補機制讓原本的強承諾站得住。
 - 要使用者決定：C1 的結果有沒有改變 10/02 那次判斷的前提。
 
-### B. 「由系統保存的執行紀錄」要不要進正式設計 §2.2 Assurance Requirements 預設表【待決，已登記 work-map `task-20261006-vs-execution-record-capability`】
+### B. 「由系統保存的執行紀錄」要不要進正式設計 §2.2 Assurance Requirements 預設表【已決 2026-10-07：v1 選乙（可降級，Gate 只檢查有沒有留下紀錄）；正式設計變更尚未開始】
 
-若納入，要一起決定：
+> **裁定（2026-10-07，使用者）**：
+>
+> v1 將 system/runtime-captured execution record 納入 §2.2，作為可降級 capability。有能力時，保存 execution record；沒有能力時，留下 degradation record。v1 的 Gate 只要求／檢查這類 record 是否依 procedure 留存，不宣稱其不可竄改、來源獨立或比 Agent 自述更可信。丙／丁所需的 strong provenance 暫不納入 v1，待 trust boundary、來源驗證與 independent checking 有足夠證據後再評估。
+>
+> 這是研究層裁定，**還不是正式設計**：§2.2 的實際條文走正式設計 §9 治理流程，屆時仍要衡量實作成本（見下方「乙相對甲的收益」）。work-map `task-20261006-vs-execution-record-capability`。以下保留裁定前的題目與估價。
 
-- required 還是 degradable；
-- 適用哪些驗證方法；
-- v1 就納入，還是留到後續；
-- 沒有這項能力時，產品如何明確降級，而不是讓使用者以為裝了 Bridge 就有強的執行保證。
+裁定前的題目：若納入，要一起決定 required 還是 degradable、適用哪些驗證方法、v1 就納入還是留到後續、沒有這項能力時產品如何明確降級（不讓使用者以為裝了 Bridge 就有強的執行保證）。現實面：外送遙測需要使用者自己架收集端；若使用者沒有架【推論：多數使用者不會架，未查證】，**預設體驗仍是弱 assurance**。
 
-現實面：外送遙測需要使用者自己架收集端；若使用者沒有架【推論：多數使用者不會架，未查證】，**預設體驗仍是弱 assurance**。
+#### B-1 估價：四種強度各需要什麼最低證據（2026-10-07）
+
+本節先回答「研究缺口哪一項真的會改變決策」，再決定要不要補；不是看到缺口就全部補。第 8、9、10 條指 C1 文件 §5 的編號。
+
+| 強度 | §2.2 會怎麼寫 | 最低證據 | 第 9 條（T2 trust boundary） | 第 10 條（第二個 runtime） |
+|---|---|---|---|---|
+| **甲** 不進表 | 維持現狀，§8 第 5 條照舊不保證 | 不需補 | 不影響 | 不影響 |
+| **乙** degradable，Gate 只檢查有沒有留下紀錄 | 有能力就留紀錄，沒有就留 degradation record；明寫紀錄是否防竄改未實測 | T1 內容可判別性（第三輪已實測成立，限制見下） | **不影響** | 只影響措辭不得綁定某一產品；文件層對照即可 |
+| **丙** degradable，但宣稱紀錄比 Agent 自述可信 | 有能力時 Gate 承認它是較強證據 | 加上 T2 實測（agent 改不到外送紀錄、managed settings 蓋掉開發者設定）與收集端能辨認事件來源 | **會左右決策** | 文件層對照 |
+| **丁** required | 沒有能力就 BLOCK | 丙的全部，加上「誰核對紀錄」（第 8 條）有答案 | **會左右決策** | 需要；否則等於只支援單一 runtime |
+
+- **乙有前例**：§2.2「Verification executor independence」一列就是在 provenance 載體未實測時列入，條件是寫明「v1 Gate 對本列只判得動留痕，不宣稱判得動獨立性本身」（正式設計 §2.2 表第二列，2026-09-23 拍板）。乙沿用同一模式，不是新開先例。
+- **丙、丁另外卡在第 8 條**：紀錄放對地方，最後仍由被檢查的同一 actor 核對，assurance 沒有增加。第 8 條隨 C1 凍結，也不在本備忘 §6 列的「推進 B 前要重開」清單上；所以只補第 9 條，丙、丁仍不能拍板。
+- **成本估計**【估計，未實測】：第 9 條最低要把收集端放在 agent 碰不到的位置（另一個 OS 帳號或遠端）、以 managed settings 蓋掉開發者設定（Windows 上可能需管理員權限【未查證】）、確認收集端能拒收 agent 自送的假事件，估半天以上且要動系統層設定。第 10 條文件層對照估 30–60 分鐘：本機 Codex CLI 0.159.3 執行檔內可搜到 `codex.tool_result`、`codex.tool_decision`、`codex.user_prompt` 等事件名稱字串與 otel 設定字樣（2026-10-07 以 `grep -a` 搜執行檔；不是文件，事件是否帶檔案路徑、如何開啟【未查證】）。
+
+**乙所依賴的證據的限制**（C1 文件 §3.5.2）：每案只跑 1 次、單一 runtime（Claude Code 2.1.290、Windows）、巢狀 `claude -p`；「讀過」只認 `Read` 工具成功，Agent 用 Bash `cat` 讀檔會被判 `NOT_READ`（假陰性，未驗證）；T2 未實測。
+
+#### B-2 v1 的 Gate 範圍：只檢查紀錄存在與格式（裁定，2026-10-07）
+
+- v1 Gate 檢查是否有留下所要求類型的 execution record，以及基本格式／必要欄位是否存在；**不解析 record 內容**去判斷 procedure 規定的 actions 是否真的發生。
+- procedure **可以描述**什麼 execution evidence 對 reviewer 有意義；但 v1 Gate **不負責理解或比對**這些內容。理由：比對內容就要定義 observable action、runtime adapter、事件格式與判讀規則，等於往丙的方向走，並把第三輪單一 runtime、每案 1 次的實驗直接升格成產品規則。
+- **內容比對不屬本次 Decision B 的 v1 裁定；若未來要加入 Gate，另立設計決策。**（不因為進入正式設計階段就順帶納入。）
+
+#### B-3 乙相對甲的收益（待正式設計衡量成本）
+
+- 審查者多一份**由執行環境產生、與 Agent 的 verification 結論分離**的對照材料。它的價值是多一個不同來源的觀察面，**不是**已證明不可偽造——C1 已確認本機紀錄 agent 改得到（C1 文件 §3.5.1），v1 也不宣稱 trust boundary 成立。第三輪「沒讀卻宣稱 PASS」的對照案例說明這種材料可能揭露自述與實際動作不一致（C1 文件 §3.5.2）。
+- 能力缺失會**顯式降級**（留 degradation record），而不是讓使用者誤以為 execution evidence 存在。
+- 這兩項收益值不值得付實作成本，由正式設計變更衡量；本備忘不先認定一定值得。
+
+#### B-4 下一步順序（使用者 2026-10-07）
+
+本節補完 → 文件審 → 第 10 條 Codex 文件層對照（不實測；目的是確認正式設計可以安全使用 `runtime/system-captured execution record` 這類抽象語言，而不是把 Claude Code OTel 當規格）→ 才開正式設計變更處理 §2.2。第 9 條維持凍結：等有人主張把 execution record 升格為比 Agent 自述更可信的證據時再打開，因為那時它才會改變產品 claim。
+
+#### B-5 第 10 條文件層對照：Codex（2026-10-07）
+
+只讀文件與原始碼、不實測。版本基準：本機 Codex CLI 0.159.3；原始碼讀 openai/codex 標籤 `rust-v0.159.3`（commit `8e46774`）；官網文件沒有版本號，讀取日 2026-10-07。
+
+| C1 判準 | Codex | 出處 |
+|---|---|---|
+| ① runtime 寫入 | 有：OpenTelemetry log 匯出，預設關閉，`[otel]` 設 `exporter` 為 otlp-http／otlp-grpc 才外送；每次工具執行一筆 `codex.tool_result` | 官網 [Advanced Config](https://developers.openai.com/codex/config-advanced)「Observability and telemetry」段；[`codex-rs/otel/src/tool_result.rs`](https://github.com/openai/codex/blob/rust-v0.159.3/codex-rs/otel/src/tool_result.rs) |
+| ② 對應哪次執行 | 事件帶 `call_id`、`tool_result_seq`；文件稱事件 metadata 含 conversation id | 同上 |
+| ③ 看得出沒做 | 【未實測】。log 事件帶工具名稱、完整 `arguments`、`success` 與輸出片段，形式上足以比對 | `tool_result.rs` 的 `log:` 欄位段 |
+| ④ agent 改不到 | 屬第 9 條，維持凍結、未查；只記下文件提到 `requirements.toml`（managed 設定層）存在 | [`docs/config.md`](https://github.com/openai/codex/blob/rust-v0.159.3/docs/config.md)「Lifecycle hooks」段 |
+
+- **判讀**：抽象說法 `runtime/system-captured execution record` 對 Claude Code 與 Codex 都有對應的載體，正式設計可以用抽象語言，不必綁定某一產品。
+- **與 C1 第三輪的差異**：同一標籤的內建工具目錄 [`codex-rs/core/src/tools/handlers/`](https://github.com/openai/codex/tree/rust-v0.159.3/codex-rs/core/src/tools/handlers) 沒有讀檔專用工具，Codex 讀檔多半經 shell 指令【推論，未實測】。C1 第三輪的判讀規則「只認 `Read` 工具成功，shell 指令字串出現檔名不算」因此搬不到 Codex：內容比對要按 runtime 各寫判讀規則。這支持 B-2「v1 Gate 不比對內容」，但屬由工具形狀推得的推論，不是實測。
+- **沒查的**：Codex 事件實際送出的欄位形狀（未實測）；`arguments` 有無長度上限；互動與非互動模式的事件差異。
 
 ### 下游（不登記工作）
 
@@ -98,4 +145,4 @@ README／教學將來要誠實說明預設強度與「要較強保證，環境�
 - 沒有重讀起點備忘 §2、§4、§6、§7a 與盤點表全文；與它們的關係只在本文明確引用處成立。
 - §2「用 §2.3 表達階段」只是方向，還沒有實際拿一個案例套套看。
 - 備忘 §7 的其他研究題（RED 等價物、條件代表性、驗到哪停、證據保存）不受本文影響，順序未定。
-- C1 文件 §5 結案時仍未查證的項目（例如第 3、4 條 branch protection 與 hook 繞過說明、第 9 條 T2、第 10 條第二個 runtime）隨 C1 結案**凍結**，不另追蹤；決策 B 若要推進，第 9 條（T2）與第 10 條要先重新打開。
+- C1 文件 §5 結案時仍未查證的項目（例如第 3、4 條 branch protection 與 hook 繞過說明、第 9 條 T2、第 10 條第二個 runtime）隨 C1 結案**凍結**，不另追蹤；決策 B 若要推進，第 9 條（T2）與第 10 條要先重新打開。（2026-10-07 更新：B-1 估價後，乙不需要第 9 條，第 9 條維持凍結；第 10 條只以文件層重開，見 §5 B-4。）
