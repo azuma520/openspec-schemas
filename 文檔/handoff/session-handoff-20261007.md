@@ -230,3 +230,70 @@
 
 1. 主線：開 C′ opsx change（`openspec new change <name> --schema superpowers-bridge`）。
 2. 不搶主線：push（領先 5 筆）、清 scratchpad、`v3.0.0` tag（打 4.0.0 前先決定 v3 要不要補打）、sd0x #19 繼續等。
+
+
+## Session 17:35
+
+### 一、本 session 主題
+
+開 C′ change `task-prefixed-plan-headings`（schema superpowers-bridge），以 brainstorming（architectural 路徑）完成 `brainstorm.md`：Q1–Q3a 四題 + 四段設計（Plan Contract v4 寫法／check 12／版本與遷移／驗證）。中途重議 Superpowers 基準：本 change 不改基準值，另登記 6.x 重新定錨工作。文件審：Codex 兩輪 ✅、Fable 一輪 ✅。
+
+### 二、完成事項
+
+- 開工三步：`/work-status` 無完整性問題；讀 15:30 交接，主線選 C′。
+- `openspec new change task-prefixed-plan-headings --schema superpowers-bridge`（開前比對 `openspec/schemas/` 副本與根目錄一致）。
+- **brainstorm 決策**（全文見 `openspec/changes/task-prefixed-plan-headings/brainstorm.md`）：
+  - Q1 A′：舊 `## <編號> —` 無期限保留為 legacy；v4 起 `## Task <編號> —` 為唯一 canonical；遷移說明「一般不需遷移，例外：以 `## Task <數字>` 開頭的非條目 H2」。
+  - Q2 A：本 change 自己的 plan 用 Task 寫法跑完整 SDD；非最後一項簡報與原文逐行相同才算證據，rc=0 不算。
+  - Q3 A：Task 前綴取上游可辨識語言的安全子集（只 `##`、`Task` 大小寫精確、編號沿用 `\d+(\.\d+)*`）；只保證 recognition、不保證 exact extraction（五種已知抽錯情況）。
+  - Q3a：check 12 跳過行首未縮排的 ``` 區塊（不認 `~~~`／縮排，對齊上游）；列為 v4 行為變更、不宣稱相容。
+  - 第三段：schema 3→4、VERSION 4.0.0、README／version-check.yml／CLAUDE.md 連動清單；v4 列基準仍填 `v5.1.0`（CI awk 讀反引號欄位），表格下方註明為未重驗的歷史宣告；rollback 指向「第一個 `version: 4` commit 的 parent」SHA，不引用不存在的 tag。
+  - 第四段：agent-mediated mutation tests（6 份 fixture、frozen oracle、回報中間 key set、測試 Agent 不看答案），不寫 parser 腳本。
+- 三條 guidance（不進 validation）：要走上游 SDD 整份用 Task 寫法；非條目 H2 不以 `Task <數字>` 開頭；非條目段落放第一條目前。
+- **登記** `task-20261007-superpowers-6x-rebaseline`（TODO，掛 next-gen 下）：對齊 S4/S5/S12/S14、完整驗證後改 v4 列基準；原則「先看能力契約再決定版本；向下相容是成本約束」。
+- **文件審**：Codex r1 ✅（2 🟡：混用抽錯範圍、模板註解漏列）、Fable 獨立審 ✅（實跑 task-brief 確認 `101` 撞 `1.1` 與 `## Task 1.1a` 當邊界；抓出 Q3a 與測試表矛盾、rollback 引文錯）、使用者審閱 3 點 → 一次改完 → Codex r2 ✅（thread `01a115a4…`），`review-state` noted pass。
+- 工作地圖：`task-20261002-task-brief-heading-compat` NEXT → DOING。
+- 封裝候選檢查：唯一 open `[SOP 候選]`（precommit 入口）本 session 未觸發，不 bump；無新開。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] C′ change 進度 1/8，下一個 artifact 是 `design`（再 `proposal`）。brainstorm 第五段列了留到後續階段的待確認項（roadmap 連動、fixtures README 是否洩漏預期判定、錯格式 fixture 是否拆三份、dogfood 實際載入版本留證、rollback SHA 填入並 checkout 驗證）。
+- [#接力] main 領先 origin 5 筆 + 本收工 commit，未 push。
+- [#接力] scratchpad 待清：15:30 session 的審查暫存，本 session `docreview-r1/`、`docreview-r2/`、`fable-review/`（Fable 自清被權限擋）。
+- [#接力] 工作地圖：`task-20261007-completion-gate-landing` 底下唯一子項（execution record）依 fe87d55 刻意延後，本次未標 NEXT；`研究題 VS` 底下 3 個 TODO 未挑下一步——留給使用者決定。
+- [#不重議] Q1–Q3a 與四段設計各項裁定、基準不在本 change 改（見 brainstorm）。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **修正句說過頭**（沿用，本 session 3 次）：①「程式碼區塊排除不影響相容性」②把「安全子集」說成保證抽得正確（實只保證辨識）③brainstorm 寫「v3 未定義 ``` 內標題」與同檔測試表矛盾（Fable 抓）。另「實際開發與驗證環境 6.4.1」被使用者收窄。做法照舊：修正後的替代句再過一次例外檢查。
+- **說要先做的查核，被授權後跳過**（沿用）：本 session 未發生。
+- **審查等級傳低了**（沿用）：本 session 主動把 profile 從 implementation-sync 提到 full-design，正確。
+
+**【當日洞見】**
+
+- **沿用的值 ≠ 驗證過**：Compatibility 表的 5.1.0 一路沿用，v2 起從未在 5.1.0 跑過；寫任何相容宣稱前先查它上次真被驗證是什麼時候。
+- **想寫得更誠實之前，先查誰會讀這一格**：v4 列想寫「未驗證」被 CI 的 awk 反引號欄位讀法擋住，說明只能放表格下方。
+- **雙審都 Mergeable，但 🟡 裡有會誤導讀者的**：Codex 抓混用抽錯範圍、Fable 實跑抓 `## Task 1.1a` 與 fence 矛盾；照字面做會拿到被污染的簡報，依既有規則端給使用者討論後才改。
+
+【學習候選】
+
+- **Case**：v4 差點直接沿用 v5.1.0 基準，查證才發現自 v2 起未驗證。
+- **Candidate Pattern**：bump schema major 時，把每個沿用的相容宣稱重問一次「上次驗證是什麼時候」。不適用純文字修訂。
+- **Evidence**：1 例，Hypothesis。
+- **Minimum Sufficient Intervention**：不新增規則，觀察。
+- **Promotion**：History only。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（97e87ae、開工於 2026-10-07T15:44:34）——列 97e87ae..HEAD（本 session 無中途 commit；以下為 working tree 改動）
+
+- `openspec/changes/task-prefixed-plan-headings/`（新）：`.openspec.yaml`、`brainstorm.md`
+- `workflow-harness/work-map.jsonl`：新增 `task-20261007-superpowers-6x-rebaseline`；`task-20261002-task-brief-heading-compat` → DOING
+- 本交接區塊
+
+### 六、下一步建議
+
+1. 主線：`/opsx:continue` 寫 C′ 的 `design`，再 `proposal`。
+2. 不搶主線：push、清 scratchpad、決定 `v3.0.0` tag 要不要補打（4.0.0 發版前）。
