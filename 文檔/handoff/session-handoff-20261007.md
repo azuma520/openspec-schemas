@@ -42,3 +42,66 @@
 
 1. 使用者選今日主線：決策 B 先估兩項實測規模（約半小時），或紅旗改寫（可交付實際改動）。
 2. 不急：push、`v3.0.0` tag、task-brief 上游回報草稿、查 sd0x 上游 issue #19。
+
+## Session 09:19
+
+### 一、本 session 主題
+
+開工後依接力棒做決策 B：先估「各強度需要什麼最低證據」，不先做實驗；使用者裁定 v1 選乙、讀法一；估價、裁定與 Codex 文件層對照寫進研究備忘並過文件審；工作地圖決策 B 結案、登記正式設計工作並標為下一步；commit 後 push 25 筆。
+
+### 二、完成事項
+
+- **決策 B 估價**：四種強度（甲不進表／乙 degradable 只檢查紀錄存在／丙宣稱比自述可信／丁 required）各自的最低證據。乙不需要 C1 §5 第 9 條；丙、丁需要第 9 條且另卡第 8 條（誰核對紀錄）。§2.2「Verification executor independence」一列是乙的前例。
+- **使用者裁定（2026-10-07）**：v1 選乙；Gate 只檢查紀錄存在與基本格式／必要欄位、不比對內容（內容比對另立設計決策）；不宣稱防竄改、來源獨立或比 Agent 自述更可信；第 9 條凍結；乙相對甲的收益留待正式設計衡量。
+- **第 10 條 Codex 文件層對照**（標籤 `rust-v0.159.3`）：有 `codex.tool_result` 事件，帶 `arguments`、`call_id`；內建工具沒有讀檔專用工具，C1 第三輪「只認 `Read` 工具」的判讀規則搬不過去，支持 v1 不比對內容。
+- **研究備忘** `docs/superpowers/research/2026-10-06-verification-strategy-after-c1.md` §5 B 新增 B-1～B-5，研究索引同步。Codex 文件審 r1、r2 皆 ✅ Mergeable（thread `01a113d2…`），已 note pass。r1 兩項 🟡：前言日期順手修；工作地圖舊前提由結案＋新登記解決。
+- **工作地圖**：`task-20261006-vs-execution-record-capability`（決策 B）→ DONE；新增 `task-20261007-formal-design-execution-record`（掛 bridge 下一代改造、描述帶裁定的七條邊界），收工時經使用者同意標 NEXT。
+- **commit／push**：`214bf87`、`682aed8`、`af4b570`（`/smart-commit`，不附 AI 共同作者行）；25 筆 fast-forward push 到 origin/main，兩邊同在 `af4b570`；schema 驗證 CI 成功；未打 `v3.0.0`。
+- sd0x 上游 issue #19：仍 OPEN、0 則留言。
+- 封裝候選檢查：backlog 無 open `[SOP 候選]`，無命中。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **主線：§2.2 正式設計盤點**（`task-20261007-formal-design-execution-record`，NEXT）。先不改 §2.2，回答三題：①放進 §2.2 代表什麼能力（只到「有留下 execution record，沒有就記 degradation」）②v1 Gate 判到哪（紀錄存在＋基本格式／必要欄位）③乙相對甲值不值得實作成本。三題站得住才依正式設計 §9 開 change；第三題允許得出「v1 暫不實作」。
+- [#接力] **算成本時必帶的前提**：正式 Completion Gate 尚未實作，只有 PoC `gate_check.py`，archive 前的宿主／攔截點未定（C1 文件 §4 第 4、5 列）。乙不是孤立的「表裡多一列」。Identity change 曾否決「先寫一支像 `gate_check.py` 的腳本」（會長成半套 traceability system，`openspec/changes/archive/2026-10-01-requirement-scenario-identity/design.md`），盤點時一併帶上。
+- [#接力] 不搶主線：紅旗改寫（`task-20260901-claudemd-governance-rewrite`）、`v3.0.0` tag、task-brief 上游回報草稿、sd0x #19。
+- [#接力] 審查提醒把 `work-map.jsonl` 算成 code（`code_review`／`precommit` stale）；未跑，以前改工作地圖是否跑過【未查】。
+- [#接力] Git Bash 暫存資料夾留有一個空檔 `smart-commit-msg.Hde6ap`（AI 無法刪，內容為空）。
+- [#不重議] 決策 B：v1 選乙、讀法一、內容比對另立決策、第 9 條凍結（2026-10-07 使用者裁定，研究備忘 §5 B）。
+- [#不重議] 「研究結束」只指決策 B；Verification Strategy 研究題維持 DOING，C2、Verify/Sync、G2 加註都不標 NEXT（2026-10-07 使用者同意）。
+- [#不重議] `v3.0.0` tag 另行決策，這次不打。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **修正句說過頭（又一次）**：寫「審查者多一份 agent 寫不出來的對照材料」，C1 已實證本機紀錄 agent 改得到，由使用者抓出。做法照舊：寫斷言前先答「證據是哪一行」。
+- **說要先做的查核，被授權後跳過**：說過「push 前逐筆核對 22 筆是否審過」，實際只抽查 handoff，使用者授權後直接推，事後才在回報中講。做法：自己提的前置查核要嘛做完、要嘛在請授權時就明說「這項沒做」，不要推完才講。
+
+**【當日洞見】**
+
+- **先問「哪個缺口會改變決策」再決定補不補**：決策 B 原寫「要先補兩項實測」，估價後只有選丙／丁時第 9 條才關鍵，省下半天以上的實驗。使用者將它定為 Verification Strategy「先看資訊價值與決策需要，再決定驗證成本」的實例。
+- **同一句話兩種讀法**：「Gate 檢查紀錄是否依 procedure 留存」可讀成只看存在，也可讀成比對內容，成本差很多；寫進裁定前先拆開，才沒有變成偷偷升強度。
+- **`/smart-commit` 在 Windows 的 alloc 回傳 Git Bash 暫存資料夾的路徑**，Write 工具碰不到同一個檔；alloc 前設 `TMPDIR` 指向 scratchpad 才通。這次是 hook 擋下暫存路徑字面才發現。
+
+【學習候選】
+
+- **Case**：`/smart-commit --execute` 的 alloc 回傳 Git Bash 暫存資料夾路徑，Write 工具在 Windows 寫不到同一個檔；hook 擋下後以 `TMPDIR=<scratchpad>` 重跑 alloc 解決。
+- **Candidate Pattern**：Windows 上跑 sd0x smart-commit 時，alloc 前一律設 `TMPDIR` 為 scratchpad 絕對路徑。只適用於 Windows＋Write 工具寫訊息檔的組合。
+- **Evidence**：本 session 1 例；與全域 CLAUDE.md「Git Bash 與 Windows Python 暫存資料夾不同」同根因。Hypothesis。
+- **Minimum Sufficient Intervention**：現有 hook 已會擋，不新增規則；可考慮在專案 CLAUDE.md 的 Windows 段補一句繞法。
+- **Promotion**：Case Memory 或補 CLAUDE.md，由使用者決定。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（56381dc、開工於 2026-10-06T18:18:37）——列 56381dc..HEAD（開工時間顯示前一日，推測 `/clear` 沿用同一 session 身分；開工 commit 即今天開工時的 HEAD，範圍正確）
+
+- `214bf87`：研究備忘、研究索引
+- `682aed8`：工作地圖（決策 B 結案、登記正式設計工作）
+- `af4b570`：本交接檔（開工區塊）
+- 本收工 commit：工作地圖（正式設計工作標 NEXT）、本收工區塊
+
+### 六、下一步建議
+
+1. §2.2 正式設計盤點：回答三題（能力定義／v1 Gate 判到哪／乙值不值得實作成本），成本須連同「Gate 本身未實作」與 Identity 的否決一起算；站得住才依 §9 開 change。
+2. 不搶主線：紅旗改寫、`v3.0.0` tag、task-brief 上游回報草稿、sd0x #19。
