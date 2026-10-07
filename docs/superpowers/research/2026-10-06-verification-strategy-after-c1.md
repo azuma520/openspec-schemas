@@ -78,13 +78,13 @@ Bridge 不宣稱 reviewer／agent 會判斷正確——正式設計 §8 第 4 �
   - 改為承諾變更：把 G2 改成和實際能力一致（概念上如「要求必要 verification 執行，並如實呈現可取得的 evidence／assurance／degradation」），或選擇補機制讓原本的強承諾站得住。
 - 要使用者決定：C1 的結果有沒有改變 10/02 那次判斷的前提。
 
-### B. 「由系統保存的執行紀錄」要不要進正式設計 §2.2 Assurance Requirements 預設表【已決 2026-10-07：v1 選乙（可降級，Gate 只檢查有沒有留下紀錄）；正式設計變更尚未開始】
+### B. 「由系統保存的執行紀錄」要不要進正式設計 §2.2 Assurance Requirements 預設表【已決 2026-10-07：v1 選乙（可降級，Gate 只檢查有沒有留下紀錄）；同日正式設計盤點後裁定暫不實作，與 Completion Gate 落地一起重新評估（B-6）】
 
 > **裁定（2026-10-07，使用者）**：
 >
 > v1 將 system/runtime-captured execution record 納入 §2.2，作為可降級 capability。有能力時，保存 execution record；沒有能力時，留下 degradation record。v1 的 Gate 只要求／檢查這類 record 是否依 procedure 留存，不宣稱其不可竄改、來源獨立或比 Agent 自述更可信。丙／丁所需的 strong provenance 暫不納入 v1，待 trust boundary、來源驗證與 independent checking 有足夠證據後再評估。
 >
-> 這是研究層裁定，**還不是正式設計**：§2.2 的實際條文走正式設計 §9 治理流程，屆時仍要衡量實作成本（見下方「乙相對甲的收益」）。work-map `task-20261006-vs-execution-record-capability`。以下保留裁定前的題目與估價。
+> 這是研究層裁定，**還不是正式設計**：§2.2 的實際條文走正式設計 §9 治理流程，屆時仍要衡量實作成本（見下方「乙相對甲的收益」）。同日盤點後裁定暫不進 §2.2、不進 schema，見 B-6。work-map `task-20261006-vs-execution-record-capability`。以下保留裁定前的題目與估價。
 
 裁定前的題目：若納入，要一起決定 required 還是 degradable、適用哪些驗證方法、v1 就納入還是留到後續、沒有這項能力時產品如何明確降級（不讓使用者以為裝了 Bridge 就有強的執行保證）。現實面：外送遙測需要使用者自己架收集端；若使用者沒有架【推論：多數使用者不會架，未查證】，**預設體驗仍是弱 assurance**。
 
@@ -111,15 +111,15 @@ Bridge 不宣稱 reviewer／agent 會判斷正確——正式設計 §8 第 4 �
 - procedure **可以描述**什麼 execution evidence 對 reviewer 有意義；但 v1 Gate **不負責理解或比對**這些內容。理由：比對內容就要定義 observable action、runtime adapter、事件格式與判讀規則，等於往丙的方向走，並把第三輪單一 runtime、每案 1 次的實驗直接升格成產品規則。
 - **內容比對不屬本次 Decision B 的 v1 裁定；若未來要加入 Gate，另立設計決策。**（不因為進入正式設計階段就順帶納入。）
 
-#### B-3 乙相對甲的收益（待正式設計衡量成本）
+#### B-3 乙相對甲的收益（成本衡量結果見 B-6）
 
 - 審查者多一份**由執行環境產生、與 Agent 的 verification 結論分離**的對照材料。它的價值是多一個不同來源的觀察面，**不是**已證明不可偽造——C1 已確認本機紀錄 agent 改得到（C1 文件 §3.5.1），v1 也不宣稱 trust boundary 成立。第三輪「沒讀卻宣稱 PASS」的對照案例說明這種材料可能揭露自述與實際動作不一致（C1 文件 §3.5.2）。
 - 能力缺失會**顯式降級**（留 degradation record），而不是讓使用者誤以為 execution evidence 存在。
-- 這兩項收益值不值得付實作成本，由正式設計變更衡量；本備忘不先認定一定值得。
+- 這兩項收益值不值得付實作成本，由正式設計變更衡量；本備忘不先認定一定值得。（2026-10-07 盤點：兩項收益在 Gate 出現前都兌現不了，見 B-6。）
 
 #### B-4 下一步順序（使用者 2026-10-07）
 
-本節補完 → 文件審 → 第 10 條 Codex 文件層對照（不實測；目的是確認正式設計可以安全使用 `runtime/system-captured execution record` 這類抽象語言，而不是把 Claude Code OTel 當規格）→ 才開正式設計變更處理 §2.2。第 9 條維持凍結：等有人主張把 execution record 升格為比 Agent 自述更可信的證據時再打開，因為那時它才會改變產品 claim。
+本節補完 → 文件審 → 第 10 條 Codex 文件層對照（不實測；目的是確認正式設計可以安全使用 `runtime/system-captured execution record` 這類抽象語言，而不是把 Claude Code OTel 當規格）→ 才開正式設計變更處理 §2.2。第 9 條維持凍結：等有人主張把 execution record 升格為比 Agent 自述更可信的證據時再打開，因為那時它才會改變產品 claim。（2026-10-07 更新：前三步已完成；開正式設計變更前先做的盤點裁定延後，見 B-6。）
 
 #### B-5 第 10 條文件層對照：Codex（2026-10-07）
 
@@ -135,6 +135,33 @@ Bridge 不宣稱 reviewer／agent 會判斷正確——正式設計 §8 第 4 �
 - **判讀**：抽象說法 `runtime/system-captured execution record` 對 Claude Code 與 Codex 都有對應的載體，正式設計可以用抽象語言，不必綁定某一產品。
 - **與 C1 第三輪的差異**：同一標籤的內建工具目錄 [`codex-rs/core/src/tools/handlers/`](https://github.com/openai/codex/tree/rust-v0.159.3/codex-rs/core/src/tools/handlers) 沒有讀檔專用工具，Codex 讀檔多半經 shell 指令【推論，未實測】。C1 第三輪的判讀規則「只認 `Read` 工具成功，shell 指令字串出現檔名不算」因此搬不到 Codex：內容比對要按 runtime 各寫判讀規則。這支持 B-2「v1 Gate 不比對內容」，但屬由工具形狀推得的推論，不是實測。
 - **沒查的**：Codex 事件實際送出的欄位形狀（未實測）；`arguments` 有無長度上限；互動與非互動模式的事件差異。
+
+#### B-6 正式設計盤點：現在不實作，與 Completion Gate 落地一起重新評估（使用者 2026-10-07）
+
+B-4 排定的正式設計變更，先盤點三題（能力定義／v1 Gate 判到哪／乙相對甲值不值得）再決定要不要開 change。盤點只讀既有文件，沒有新實測。
+
+**盤點發現**：
+
+1. **能力定義**：措辭可沿用 §2.2「Verification executor independence」一列的模式（B-1 已述）。但寫成條文前有三題 B-1～B-5 都沒回答：
+   - **證據落點和正式設計 §3.4 衝突**：§3.4 規定長證據須是 repo 內已 commit 的檔案，scratchpad、git-ignored、未追蹤檔一律不得作證據落點；系統寫的紀錄都在 repo 外（本機對話紀錄在使用者家目錄，遙測在外部收集端）。複製進 repo 就成了 agent 製作的副本（正式設計 §1 上位原則「結構化副本仍是副本」），只引用 repo 外位置則不符 §3.4。
+   - **隱私**：C1 實測的遙測事件每筆都帶帳號屬性（email、account id），證據包是刪除後才保存的（C1 文件 §3.5.2）；本 repo 公開，紀錄若要 commit 須先決定去識別化。
+   - **適用哪些驗證方法**：裁定前題目（本節開頭）列為必答，未決。
+2. **v1 Gate 判到哪**：裁定已定（B-2），但正式 Completion Gate 尚未實作——只有 PoC `gate_check.py`，未接進任何流程（C1 文件 §1.2）；archive 前的宿主／攔截點未定（C1 文件 §4 第 4、5 列）；工作地圖沒有任何 Gate 實作的工作（2026-10-07 查）。不等 Gate 的唯一做法是比照 Identity check 13 寫成 verify 階段由 agent 執行的規則，結果是 agent 檢查自己有沒有留紀錄，而降級紀錄本來就由 agent 寫。
+3. **乙相對甲的收益**：B-3 的兩項收益在 Gate 出現前都兌現不了——對照材料要有流程讓人去讀，v1 又不比對內容；顯式降級要有東西檢查降級紀錄存在。成本卻要現在付（落點、隱私、適用方法、schema 改動），並碰上 Identity 否決過的路（先寫一支像 `gate_check.py` 的腳本會長成半套 traceability system，`openspec/changes/archive/2026-10-01-requirement-scenario-identity/design.md` D6）。
+
+**裁定（2026-10-07，使用者）**：選「暫不實作、正式延後」。execution-record capability 暫不進 §2.2、不進 schema；B 的乙（B-1、B-2）保留為**未來若納入時**的 v1 assurance boundary。新增 Completion Gate 落地工作作為明確觸發點，execution-record capability 依賴它。也考慮過、未選：現在只改設計文件在 §2.2 加一列（寫這列就得先解落點與隱私）；現在就實作成 verify 階段由 agent 執行的檢查（增加 schema 複雜度，assurance 幾乎不增加）。
+
+- **「值得存在」與「現在值得實作」是兩個問題**：B（2026-10-07 研究層裁定）回答前者——若納入，v1 做到乙；本次盤點回答後者——目前沒有任何下游機制會消費這份 evidence，不值得單獨實作。這不推翻決策 B，而是完成 B-3 原本保留的成本效益判斷。是 §2「Verification 應該服務開發決策，而不是開發去服務 Verification」的具體案例。
+- **觸發條件**：Completion Gate 正式設計或實作的 change 開始時，重新開啟本項。
+- **到時必答**：
+  1. execution record 放在哪裡，如何與 §3.4 證據落點規則相容；
+  2. privacy／去識別化怎麼處理；
+  3. 哪些 verification method 適用；
+  4. 這項 capability 的收益是否仍值得實作成本；
+  5. Gate 如何只判「紀錄或降級紀錄是否存在＋格式」，不在實作中悄悄升級成內容判讀（B-2）。
+- **完成條件**（二擇一）：§2.2 正式吸收此 capability（若屆時仍判值得），且實際的 Gate 能依裁定檢查它；或正式設計得出「v1 不納入」的明確決策。
+- **延後的查證**：盤點時列為沒查的項目（spike 報告 S5 全文、方向文件、本機對話紀錄能否可靠對應單次執行、Codex 遙測是否帶帳號資料）現在不補，因為只有走「現在實作」的路線時才會改變決策；觸發時再針對性查。
+- **工作地圖的表示方式**：新增 `task-20261007-completion-gate-landing`（要做，不排下一步）；`task-20261007-formal-design-execution-record` 由「接下來要做」改回「要做」，原描述保留、不取消重登。本次工作地圖以「`task-20261007-formal-design-execution-record` 掛在 `task-20261007-completion-gate-landing` 底下」表達此項依賴；這是工具限制下的替代表示（登記工具不能事後補「在等哪一筆」，已登記的描述也不能改），不代表一般 parent/child 都等同 dependency。
 
 ### 下游（不登記工作）
 
