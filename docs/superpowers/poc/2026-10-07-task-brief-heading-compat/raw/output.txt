@@ -1,0 +1,21 @@
+### 1. sdd-workspace (upstream) on two changes whose plans share the basename plan.md
+demo  -> plan
+other -> plan-other
+### 2. upstream task-brief on the current bridge form (## 1.1 — ...)
+task 1.1 not found in openspec/changes/demo/plan.md (no heading matching 'Task 1.1')
+rc=3
+### 3. upstream task-brief on the Task form (## Task 1.1 — ...)
+-- n=1.1 rc=0 headings: 2 :: ## Task 1.1 — Alpha|## Task 2.1 — fenced|
+-- n=1.10 rc=0 headings: 1 :: ## Task 1.10 — Beta|
+-- n=1.2 rc=0 headings: 1 :: ## Task 1.2 — Gamma|
+-- n=2.1 rc=0 headings: 2 :: ## Task 2.1 — Last|## Self-review|
+-- n=1 rc=0 headings: 4 :: ## Task 1.1 — Alpha|## Task 2.1 — fenced|## Task 1.10 — Beta|## Task 1.2 — Gamma|
+-- n=2 rc=0 headings: 2 :: ## Task 2.1 — Last|## Self-review|
+### 4. prototype adapter (abandoned option B) on the bridge form
+-- n=1.1 rc=0 headings: ## 1.1 — First task|## 2.1 — fenced, not an entry|
+-- n=1.10 rc=0 headings: ## 1.10 — Tenth task|
+-- n=1.2 rc=0 headings: ## 1.2 — Second task|
+-- n=2.1 rc=0 headings: ## 2.1 — Last task|
+-- n=1 rc=3 headings: 
+-- n=1.1x rc=3 headings: 
+(work dir: <temp>)

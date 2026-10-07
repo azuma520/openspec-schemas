@@ -164,3 +164,69 @@
 
 1. 主線重新挑：task-brief 上游回報草稿（已是 NEXT、範圍小）、紅旗改寫，或研究題 C2／Verify-Sync／G2 加註擇一。
 2. 不搶主線：push（main 領先 origin）、查改工作地圖是否需跑程式碼審查與 precommit、`v3.0.0` tag、sd0x #19。
+
+## Session 15:30
+
+### 一、本 session 主題
+
+查 sd0x #19（上游無回應；5.1.1 的 `codex-exec.js` 與 5.0.0 相同，升級修不好，先不管）。task-brief 相容問題從「回報上游」→「轉接層 B」→ 經 Fable 反證、主 session 重跑確認後改判 **C′**（Plan Contract 建議改寫 `## Task <編號> —`、check 12 新舊並收、schema major 3 → 4）。決策紀錄存進 poc，文件審／程式碼審／precommit 三關皆過。
+
+### 二、完成事項
+
+- **#19 查核**：0 留言；sd0x 已出 5.1.0、5.1.1，`scripts/codex-exec.js` 在 v5.0.0／v5.1.1／main 的 blob 皆為 `be35d3e`。
+- **上游 Superpowers 查核**：`AGENTS.md` 寫明拒收率 94%、禁打包／重複／專案專用 PR；task-brief 前綴誤抓（#2405、#2175／PR #2176）與吞尾段（#2406／PR #2359）已有人回報且 PR 未合併，最近一次合併動到該檔是 8/13。
+- **轉接層 B 的 spike PASS**：skill 載入給出 base directory、`sdd-workspace` 能分開同名 `plan.md`、路徑跟著實際載入版本走（未模擬換版）；雛形踩到 awk 把 `1.1`／`1.10` 當數字比的陷阱。
+- **Fable 獨立審**：上游 `task-brief` 本來就讀得懂 `## Task 1.1 —`；主 session 重跑確認 → **放棄 B，改判 C′**。依 Plan Contract `schema.yaml` 第 396–398 行（非條目 `##` 為明文合法）定 major 3 → 4（使用者裁定）。
+- **決策紀錄** `docs/superpowers/poc/2026-10-07-task-brief-heading-compat/`（report、`raw/run.sh`、`output.txt`、兩份 fixture、雛形）：Codex 文件審 r1 ⛔（1 🔴：前綴問題不只 `1`）→ 修正並實測 `2` → r2 ✅ Mergeable（thread `01a1152d…`）。
+- **程式碼審查**（`work-map.jsonl` + 兩支 `.sh`）：r1 ⛔ `run.sh` 兩個 P1（`mktemp`／`cd` 失敗會寫進 repo；相對路徑失效）→ 修正並實測 4 情境 → r2 ✅ Ready（thread `01a11531…`）。**`work-map.jsonl` 本身無 finding**——改工作地圖跑程式碼審的效益仍無實證。
+- **precommit**：runner `⚠️ NO CHECKS RUN` → 改跑 schema validate ✓、`bash -n` ✓、work-status 引擎讀地圖 0 錯誤 → noted pass。
+- **工作地圖**：`task-20261005-superpowers-task-brief-upstream-report` → CANCELLED（上游已有重複 issue/PR，貢獻規範禁止重複提交）；`task-20261002-task-brief-heading-compat` → NEXT。
+- **backlog**：新開 `[SOP 候選] [case-count: 4]` precommit 找不到本 repo 有效檢查入口（9/14、10/01、10/05、10/07）；只記問題、不定解法，使用者要求「接到工具會自動找的入口、別寫會過時的固定清單」。
+- 封裝候選檢查：原 backlog 無 open `[SOP 候選]`；precommit 一項依 Tier 1-A（≥2 次）新開如上。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **下一主線：C′ opsx change**——建議標題改 `## Task <編號> —`、check 12 新舊並收、schema 3 → 4，並做完整 SDD 流程驗證（上游 `task-brief` 抽取 → 執行子代理 → 審查子代理用同一簡報）。連動清單見 poc 報告「正式 change 要連動的地方」，另加 `VERSION` → 4.0.0、CLAUDE.md 寫死 v3 的段落。
+- [#接力] main 領先 origin 5 筆（含本收工 commit），未 push。
+- [#接力] Orca 分頁沒有 `CODEX_HOME`、codex 讀 `~/.codex`；派工腳本的設定檔檢查寫成 `${CODEX_HOME:-$HOME/.codex}`。
+- [#接力] 本次 scratchpad 的審查提示／報告／log／結束碼／派工腳本與 spike 暫存待清（CLAUDE.md 規定必做；本 session 未清）。
+- [#接力] `backlog.md` 與本 handoff 為 `.md`、重開 doc gate；依 backlog 09-11 既有紀錄（handoff 類一直沒跑文件審、使用者裁定不改規則只累積樣本），本次未送審。
+- [#不重議] B（轉接層）、D（本機改上游／發上游 PR）不做；C′ 採 major 3 → 4（2026-10-07 使用者裁定，依據見 poc 報告「版本號」節）。
+- [#不重議] 尾段被吞、整數／三層編號多抓兩項不加會擋人的規則，只在 Plan 說明加一句建議。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **說要先做的查核，被授權後跳過**（沿用）：本 session 未發生，三關都在 commit 前跑完。
+- **修正句說過頭**（沿用，本 session 2 次）：①說「C 改完會踩兩個錯」，修一次後仍高估，最後被 Fable 實測推翻 ②報告寫「只在編號剛好是 1 時發生」被 Codex 抓到。做法照舊，加一條：講某方案的代價前先實跑，不以讀碼推論。
+- **審查等級傳低了**（沿用）：本 session 解析審查設定傳 `standard`，正確。
+
+**【當日洞見】**
+
+- **先驗「既有能力夠不夠」，再決定要不要建新機制**：B 的 spike 只問「轉接層做不做得出來」，沒問「需不需要轉接層」；上游本來就讀得懂 `Task` 形式，是另一個代理實測才發現。
+- **版本號描述契約相容性，不是工作量**：判 major 要回原文查「被重新解讀的寫法以前是不是規格明文保障」；歷史沒出現只支持遷移風險低。
+- **審查效益要分開記**：抓到的 P1 在新寫的 `.sh`，`work-map.jsonl` 無 finding。
+- **工具回「沒有」不等於真的沒有**：precommit 分不出「真的沒有檢查」與「有但找不到」；本 repo 屬後者（`openspec schema validate`）。
+
+【學習候選】
+
+- **Case**：選定 B 並 spike 通過後，被獨立代理一次實測推翻——上游早已支援另一種寫法。
+- **Candidate Pattern**：設計轉接／相容層前，先實測「把自己的格式改成上游已支援形式」這個反向選項的代價。適用：與上游工具不相容的問題；不適用：上游確實沒有對應能力。
+- **Evidence**：1 例（本次）。Hypothesis。
+- **Minimum Sufficient Intervention**：不新增規則，觀察。
+- **Promotion**：History only。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（502d1c1、開工於 2026-10-07T14:25:05）——列 502d1c1..HEAD（本 session 無中途 commit；以下為 working tree 改動）
+
+- `workflow-harness/work-map.jsonl`：兩筆狀態變更
+- `docs/superpowers/poc/2026-10-07-task-brief-heading-compat/`（新）：report.md、raw/run.sh、raw/output.txt、raw/fixture-bridge-form.md、raw/fixture-task-form.md、raw/prototype-bridge-task-brief.sh
+- `backlog.md`：新增一條 `[SOP 候選]`
+- 本交接區塊
+
+### 六、下一步建議
+
+1. 主線：開 C′ opsx change（`openspec new change <name> --schema superpowers-bridge`）。
+2. 不搶主線：push（領先 5 筆）、清 scratchpad、`v3.0.0` tag（打 4.0.0 前先決定 v3 要不要補打）、sd0x #19 繼續等。

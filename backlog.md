@@ -77,6 +77,8 @@ effort（多難）/ impact（多重要）metadata MUST NOT 以 tag 形式存在�
 
 ## 待辦
 
+- [SOP 候選] [case-count: 4] precommit 找不到本 repo 的有效檢查入口,每次由 AI 臨場挑替代檢查、標準不一致
+  → handoff 20260914 / 20261001 / 20261005 / 20261007 二（runner 皆 `⚠️ NO CHECKS RUN`,四次改跑的替代檢查各不相同;本 repo 實際有效的檢查是 `openspec schema validate` 等,工具不知道去哪找）。待決:怎麼把現有檢查接到 precommit 會自動找的入口,讓以後新增的 lint／測試也走同一條路——不要寫一份會過時的固定清單（使用者 2026-10-07）。加 `package.json` 會改變「本 repo 沒有 package.json」的現況;sd0x 有無其他登記方式【未查】。
 - [構想] [P3] 審查路由自動判斷版:依改動性質選 sd0x 的哪一種審查
 - [構想] [P3] [done: 2026-10-05] 裝 smart-commit 的兩支執行腳本(`/install-scripts --skill smart-commit`)——本 repo 的 .claude/scripts/ 缺 smart-commit-execute.sh 與 smart-commit-inspect.sh,所以 `/smart-commit --execute` 跑不了、只能走 manual 模式由使用者貼指令
   → handoff 20260907 三-F（.claude/scripts/ 是進版控的,裝了會多三個檔進 repo;loosen-plan branch 正要開 PR、當時判定摻工具腳本會讓 PR 變雜,故延後）
