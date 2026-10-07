@@ -105,3 +105,62 @@
 
 1. §2.2 正式設計盤點：回答三題（能力定義／v1 Gate 判到哪／乙值不值得實作成本），成本須連同「Gate 本身未實作」與 Identity 的否決一起算；站得住才依 §9 開 change。
 2. 不搶主線：紅旗改寫、`v3.0.0` tag、task-brief 上游回報草稿、sd0x #19。
+
+## Session 14:23
+
+### 一、本 session 主題
+
+依接力棒做 §2.2 正式設計盤點（能力定義／v1 Gate 判到哪／乙相對甲值不值得），盤點發現收益要等 Completion Gate 才兌現；使用者裁定丙：execution-record capability 暫不進 §2.2、不進 schema，登記 Gate 落地工作作為觸發點；寫入研究備忘 B-6、過文件審、commit 兩筆（未 push）。
+
+### 二、完成事項
+
+- **§2.2 盤點**（只讀文件、無新實測）：讀正式設計全文、研究備忘 §5 B、C1 文件 §1／§3.5／§4／§5、Identity design.md D6，掃工作地圖。發現：①證據落點與正式設計 §3.4 衝突（系統紀錄都在 repo 外）②遙測事件帶帳號屬性，公開 repo 需去識別化 ③適用哪些驗證方法未決 ④正式 Gate 不存在、工作地圖無 Gate 實作工作 ⑤ B-3 兩項收益在 Gate 出現前都兌現不了。
+- **使用者裁定（2026-10-07）**：選丙——不進 §2.2、不進 schema；決策 B 的乙保留為未來若納入時的 v1 強度邊界；Gate change 開始時重開，屆時答五題（落點、隱私、適用方法、成本效益、Gate 不偷升內容判讀），完成條件為吸收進 §2.2 或明確「v1 不納入」；盤點時未查的項目延後到觸發時再針對性查。
+- **研究備忘** `docs/superpowers/research/2026-10-06-verification-strategy-after-c1.md` 新增 §5 B-6，B 標題、B 引言、B-3、B-4 狀態句同步；研究索引同步。Codex 文件審 r1 ✅ Mergeable、無任何建議（thread `01a114f9…`），已 note pass。
+- **工作地圖**：新增 `task-20261007-completion-gate-landing`（TODO，不排下一步）；`task-20261007-formal-design-execution-record` NEXT → TODO、改掛到 Gate 落地底下、原描述保留。B-6 明寫：此處「掛在底下」是工具限制下表示依賴的替代做法，不代表一般 parent/child 等於 dependency。
+- **commit**：`fe87d55`（研究備忘＋索引）、`3ba1e4e`（工作地圖），經 `/smart-commit --execute`，不附 AI 共同作者行；未 push。
+- 封裝候選檢查：backlog 無 open `[SOP 候選]`，無命中。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **主線要重新挑**：§2.2 已延後。候選：task-brief 上游回報草稿（目前唯一 NEXT）、紅旗改寫（`task-20260901-claudemd-governance-rewrite`）、研究題底下 C2／Verify-Sync／G2 加註擇一。
+- [#接力] main 領先 origin 2 筆（`fe87d55`、`3ba1e4e`），加上本收工 commit，未 push。
+- [#接力] 改工作地圖後審查提醒仍顯示 `code_review`／`precommit` stale；本次未跑，以前改工作地圖是否跑過【未查】。
+- [#接力] 不搶主線：`v3.0.0` tag、sd0x 上游 #19。
+- [#不重議] 丙裁定：execution-record capability 暫不進 §2.2／schema，依賴 `task-20261007-completion-gate-landing`，Gate change 開始時重開（2026-10-07 使用者裁定，研究備忘 §5 B-6）。
+- [#不重議] 收工結算沒有照序 5 規則把 execution-record 自動標 NEXT（Gate 落地底下恰一個 TODO 子項），因為依賴關係不是一般上下層，自動標會違反上一條裁定。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **說要先做的查核，被授權後跳過**（沿用）：本 session commit 前就先講「工作地圖的程式碼審查沒跑」，沒有推完才講。做法照舊。
+- **修正句說過頭**（沿用）：本 session 未再發生；做法照舊，寫斷言前先答「證據是哪一行」。
+- **審查等級傳低了**：解析審查設定時先傳 `--tier fast`，低於專案預設 `standard`（auto-loop 規定不得低於基線）；結果的審查設定相同，但等級傳錯。做法：指令帶等級參數時，先確認專案預設等級。
+
+**【當日洞見】**
+
+- **「值得存在」與「現在值得實作」是兩個問題**：上午決策 B 回答前者；下午盤點發現目前沒有任何下游機制會消費這份紀錄，收益要等 Gate 才兌現。使用者定為「驗證服務開發，不是開發服務驗證」的實例。
+- **工具表達不了依賴時，替代表示要寫明範圍**：登記工具不能補「在等哪一筆」、描述也不能改，改用「掛在底下」並在 B-6 寫明只適用這一筆，免得後人把所有「掛在底下」讀成依賴。
+- **結算規則的自動標 NEXT 會撞上依賴關係**：序 5「恰一個可升子項就自動標 NEXT」假設父子是一般上下層；Gate 落地與 execution-record 是依賴，自動標會違反裁定，本次手動擋下。
+
+【學習候選】
+
+- **Case**：§2.2 盤點時發現，研究層已裁定強度的能力目前沒有任何下游機制消費，改為帶觸發條件的正式延後。
+- **Candidate Pattern**：研究裁定一項能力的強度後、進正式設計前，先問「現在誰會消費這份證據」；答不出就延後並綁在那個消費者的工作上。適用證據／紀錄類能力；不適用本身就是檢查器的能力。
+- **Evidence**：1 例（B-6）；與上午「先問哪個缺口會改變決策」同族（先看資訊價值再付成本）。Hypothesis。
+- **Minimum Sufficient Intervention**：研究備忘 §2 已有「Verification 應該服務開發決策」guardrail，不新增規則，觀察。
+- **Promotion**：History only。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（eb36262、開工於 2026-10-07T10:33:49）——列 eb36262..HEAD
+
+- `fe87d55`：研究備忘（§5 B-6 與狀態句）、研究索引
+- `3ba1e4e`：工作地圖（新增 Gate 落地工作、execution-record 改狀態與歸屬）
+- 本收工 commit：本交接區塊
+
+### 六、下一步建議
+
+1. 主線重新挑：task-brief 上游回報草稿（已是 NEXT、範圍小）、紅旗改寫，或研究題 C2／Verify-Sync／G2 加註擇一。
+2. 不搶主線：push（main 領先 origin）、查改工作地圖是否需跑程式碼審查與 precommit、`v3.0.0` tag、sd0x #19。
