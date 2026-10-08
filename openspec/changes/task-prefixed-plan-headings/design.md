@@ -55,6 +55,7 @@
 
   其他 `##` 一律是非條目段落。鍵值是**編號**，`Task` 只用來辨認、不進鍵值，所以 `## Task 1.1` 與 `## 1.1` 的鍵值相同。
 - **理由**：凡 Bridge 合法的 `Task` 條目，上游都辨識得到（子集方向對）；Bridge 既有的編號文法不變；不反向照抄上游較寬的 parser。Plan Contract 現有理由「key must LEAD so the keys are readable without interpretation」改寫為「編號要擺在最前面，或只接在固定字 `Task` 後面，讓鍵值不需語意解讀即可辨識」，否則規則與理由自相矛盾。
+- **相容性（第三項 breaking，2026-10-08 使用者裁定 A）**：v3 check 12 條文說鍵值「從 `##` 之後第一個非空白字元開始」，沒要求 `##` 後有空白、也沒限定 `##` 在行首，照字面讀會收 `##1.1` 與縮排的 ` ## 1.1`。第 2 點的「行首剛好 `##` 接空白」對兩種寫法一體適用，所以 v4 不再收這兩種，列為行為變更。不替 legacy 寫法保留 v3 的寬鬆讀法：那會讓 canonical 用結構規則、legacy 用歷史掃描規則，同一份 plan 兩套辨識。本 repo 以兩條路徑（git 追蹤清單逐檔 grep、rg 全庫）掃全部 45 個 `plan.md`，兩種寫法皆 0 筆——只支持「本 repo 遷移風險為零」，不推及外部。
 - **已考慮 alternative**：B `task` 不分大小寫——會重現本 change 要消滅的缺口（Bridge PASS、上游找不到）；C 強制完整 `## Task <編號> — 標題`——把「建議怎麼寫」與「最低合法語法」混在一起；把「非條目」維持為反面表述（「不以數字開頭」）——加了 Task 後反面表述講不清楚哪些是條目。
 
 ### D3：「安全子集」只保證辨識，不保證抽取範圍正確
@@ -102,7 +103,7 @@
   - rollback 指向**第一個把 `schema.yaml` 改成 `version: 4` 的 commit 的 parent**，以完整 SHA 寫入，不引用不存在的 `3.x.y` tag。定稿時填入並實際 checkout 一次確認；歷史若被改寫要重填（本 repo 直推 fork main、不 squash，風險低，但要寫明）。
 - **理由**：Compatibility 表以 schema major 為列鍵，10/02 OpenSpec 1.3.1 → 1.14.0 是直接改 v3 列、未升 major——之後轉到 6.x 改 v4 列即可，不需要再破壞一次相容。v4 列若直接填 6.4.x，等於重新宣稱 S4、S5、S12、S14 已成立，而它們未修或未查。repo 沒有任何 tag，舊兩份遷移說明的「pin bundle」照做會失敗，不能再寫第三份。
 - **release tag（2026-10-07 使用者裁定）**：
-  - **這是落實既有規則，不是新政策**：repo `CLAUDE.md`「兩個版本號別搞混」表早已寫「bundle release = `VERSION` + git tag（`v3.x.y`，發版時打）」，README 也寫「git tag `v3.0.0` created at release」；但 repo 至今沒有任何 tag（2026-10-07 本機 `git tag -l` 與遠端 `git ls-remote --tags origin` 皆為空），v1–v3 都沒有對應 tag——規則寫著卻沒被執行（規則最早從哪一版開始存在未查），缺的是執行時點與掛點，不是條文。
+  - **這是落實既有規則，不是新政策**：repo `CLAUDE.md`「兩個版本號別搞混」表早已寫「bundle release = `VERSION` + git tag（`v3.x.y`，發版時打）」，README 也寫「git tag `v3.0.0` created at release」；但 repo 至今沒有任何 tag（2026-10-07 本機 `git tag -l` 與遠端 `git ls-remote --tags origin` 皆為空），規則最晚在第一次宣告 bundle 1.0.0 時就已存在（2026-05-14 commit `f7624d6` 在 bridge README 寫入「`1.0.0` (tagged `v1.0.0`)」；`VERSION` 檔 2026-05-18 才開始追蹤），之後的 1.0.0、1.0.1、2.0.0、3.0.0 四個 bundle release（跨 schema major v1–v3）都沒有對應 tag——規則寫著卻沒被執行（2026-10-08 以 `git log` 查證；原作者 repo 的遠端 tag 也為空），缺的是執行時點與掛點，不是條文。
   - **release commit 的定義**：C′ 完成 archive、最終驗證與所有 release 連動文件更新後，準備發布到 `main` 的最終 commit。不等同 archive commit——archive 之後仍可能有 review 修正或收尾 commit；要標記的是最後完整代表 4.0.0 發布內容的 tree。
   - **release 動作**：最終 commit 就緒 → 建立 annotated tag `v4.0.0` 指向它（repo 無既有 tag 慣例；annotated 帶建立者、日期與訊息，較適合當 release 標記）→ push `main` 與 tag → 以 `git ls-remote --exit-code --tags origin 'refs/tags/v4.0.0^{}'` 取得遠端 tag **剝開後**指向的 commit，與事先記下的 release commit SHA 比對一致（annotated tag 不加 `^{}` 查到的是 tag 物件本身的 SHA，與 commit SHA 必不相等；2026-10-07 以臨時 repo 實測） → 才算完成。push tag 屬受管制的 git 操作，執行當下須取得使用者對該次 push 的明確授權。
   - **掛點**：C′ 在工作地圖上的那筆（`task-20261002-task-brief-heading-compat`）的完成條件為「遠端 tag 已確認」，未確認前維持 DOING——`/work-status` 每次開工都會顯示、交接接力棒會帶著。不放進 tasks.md：該 tag 在 archive 之後才建立，verify（check 2）與 retrospective 都在 archive 之前，放進去只會以未勾選狀態被歸檔、retrospective 也確認不到。
@@ -122,11 +123,12 @@
      | 新寫法辨認 | `## Task 1.1`、`## Task 1.2`；tasks `{1.1, 1.2}` | BLOCK（收不到鍵） | PASS | RED→GREEN |
      | 新舊同鍵值 | `## Task 1.1` 與 `## 1.1` 並存；tasks `{1.1}` | PASS（錯） | BLOCK：`1.1` occurs more than once in plan.md | RED→GREEN |
      | 舊非條目被重新解讀 | tasks `{1.1}`；plan `## 1.1` + `## Task 3 備註` | PASS | BLOCK（多 `3`） | 非 TDD，把破壞相容具體化 |
+     | 非行首 H2 不再是條目 | tasks `{1.1}`；plan `##1.1`（或縮排的 ` ## 1.1`） | PASS | BLOCK（缺 `1.1`） | 非 TDD，把破壞相容具體化；不併入下一列——下一列的 v3 判定是 BLOCK，併入會讓這兩種的 v3 行為看不見 |
      | 寫錯格式不算條目 | `## task 1.1`、`### Task 1.1`、`## Task 1.1a`；tasks `{1.1}` | BLOCK | BLOCK（缺 `1.1`） | 回歸測試；v3 已判對，不是 RED、不冒充 TDD 證據 |
      | 綜合 | Task 寫法 + ``` 內 `## Task 9.9` | — | PASS，鍵值只有 `1.1, 1.2` | 只要求 v4 判定正確 |
 
      一份資料只測一個缺陷：若用一份「Task 寫法＋區塊」，v3 的失敗原因是「不認 Task」而非「沒排除區塊」，RED 紅的原因不對。
-  2. **oracle**＝凍結的 fixtures＋預先寫死的預期結果。既有 fixtures 目錄的 `README.md` 已有「應得判定」欄（f1–f13），新 fixture 的預期也記在那裡；所以測試 Agent **不可拿到 README，也不可拿到整個 fixtures 目錄**，只拿到單一 fixture 的 plan／tasks 檔（複製到 README 不在其中的位置再交付，具體做法由 plan 決定）；被測的是執行 check 12 的 Agent。Agent 要回報中間值（plan 收到的鍵、tasks 收到的鍵、重複、集合差），且**事先看不到預期答案**——先產生判定，再由另一層與凍結的預期比對。腳本只做機械輔助（驗 fixture 未被改、記 hash、批次餵入、比對 actual 與 expected），**不實作 check 12**。證據名稱照實寫：instruction 層的行為證據，不是程式自動測試。
+  2. **oracle**＝凍結的 fixtures＋預先寫死的預期結果。`docs/superpowers/poc/2026-09-03-tdd-evidence-mutation-fixtures/README.md`（在 `fixtures/` 的上一層）已有「應得判定」欄（f1–f13），新 fixture 的預期也記在那裡；所以測試 Agent **不可拿到 README，也不可拿到整個 fixtures 目錄**，只拿到單一 fixture 的 plan／tasks 檔（複製到 README 不在其中的位置再交付，具體做法由 plan 決定）；被測的是執行 check 12 的 Agent。Agent 要回報中間值（plan 收到的鍵、tasks 收到的鍵、重複、集合差），且**事先看不到預期答案**——先產生判定，再由另一層與凍結的預期比對。腳本只做機械輔助（驗 fixture 未被改、記 hash、批次餵入、比對 actual 與 expected），**不實作 check 12**。證據名稱照實寫：instruction 層的行為證據，不是程式自動測試。
   3. **完整 SDD 流程**：本 change 的 `plan.md` 一開始就用 `## Task` 寫法、至少兩個條目；apply 時照 SDD 原文跑**實際載入的那版**上游 `task-brief`，記下版本與路徑。至少一個非最後一項，抽出的簡報與 plan 中該條目原文**逐行相同**——`rc=0` 不算證據（上游抽錯也是 0）。最後一項若吞入其後的非條目段落，記為上游已知限制。執行與審查子代理拿同一份簡報做事，留紀錄。`sdd-workspace` 的目錄命名由計畫檔名決定、與標題寫法無關：留執行紀錄，但不宣稱為本次驗證到的性質。
   4. **同步後跑 verify**：schema 改完、同步 `openspec/schemas/` 副本後，以新版 check 12 驗本 change 自己的 plan（只有這時拿得到新版判定）。
   5. **結構驗證**：`openspec schema validate`、`openspec schemas`、CI；模板三個標題以 grep 確認已改。**必驗**：`version-check.yml` 改抓 `v4` 後，`Read pinned versions` step 讀得到 v4 列、且讀出正確的 OpenSpec 與 Superpowers 版本號。
@@ -145,13 +147,14 @@
 | `.github/workflows/version-check.yml` | `grep -E '^\| v3 \|'` → `v4` |
 | repo `CLAUDE.md` | 結構樹註解「bundle SemVer(3.0.0)…version: 3」、「兩個版本號別搞混」表、跨檔耦合表等寫死 v3／`3.x.y` 處；「兩個版本號別搞混」表 bundle release 列的「git tag（`v3.x.y`，發版時打）」補上 D6 的 release commit 定義與「自 4.0.0 起實際執行」；跨檔耦合表 Compatibility 那列的「CI 直接 fail」補一句：新增列而舊列保留時不會 fail，而是默默讀舊列 |
 | `docs/roadmap.md`（+ zh-TW） | **design 階段核對結果：需要連動**。v2、v3 各有一段「— Released」，v4 照例新增一段（schema major 4、bundle 4.0.0；說明 Task 寫法與程式碼區塊行為變更） |
-| fixtures 目錄 | 新增 D7 的測試資料與凍結預期 |
+| `docs/superpowers/poc/2026-09-03-tdd-evidence-mutation-fixtures/` | `fixtures/` 新增 D7 的測試資料；凍結預期記在上一層的 `README.md` |
 
 ## Risks / Trade-offs
 
 - [Risk] 上游 selector 抽錯範圍（D3 五種），Agent 拿到被污染的簡報照做。→ Mitigation：guidance 三句；D7 第 3 點比對內容而非 exit code。殘餘風險：不照 guidance 寫的 plan 仍會被抽錯，Bridge 不攔。
 - [Risk] 外部 plan 的 ``` 區塊內有 `##` 標題，v3 靠它通過、v4 變不通過（或反之）。→ Mitigation：列為 v4 行為變更並寫進遷移說明；本 repo 查過無此情況，不推及外部。
 - [Risk] 舊 plan 有 `## Task <數字>` 開頭的非條目 H2，v4 把它讀成條目。→ Mitigation：遷移說明點名此例外；fixture「舊非條目被重新解讀」把破壞具體化。
+- [Risk] 外部 plan 用 `##1.1` 或縮排的 ` ## 1.1` 當條目，v3 照字面收、v4 不收，變成缺鍵被擋。→ Mitigation：遷移說明點名此例外；fixture「非行首 H2 不再是條目」把破壞具體化；本 repo 掃過無此情況。
 - [Risk] check 12 是說明文字、沒有程式，Agent 可能讀錯新規則。→ Mitigation：D7 第 1、2 點的 agent 執行變異測試，Agent 事先看不到答案、要回報中間值。殘餘風險：證據是 instruction 層的行為樣本，不是窮舉。
 - [Risk] `version-check.yml` 改抓 v4 後讀錯欄位，每週檢查默默比錯版本。→ Mitigation：D7 第 5 點列為必驗；表下說明不寫進格子。
 - [Risk] 有人「好心統一」check 12 與 check 13 的區塊處理。→ Mitigation：兩處都寫刻意不對稱的理由（D5）。
@@ -165,11 +168,12 @@
 
 **採用者（v3 → v4）**——寫進 bridge README「Migrating v3 → v4」：
 
-> 既有 plan 一般不需遷移，舊的 `## <編號> —` 條目標題仍有效。需要檢查的例外有兩種：
+> 既有 plan 一般不需遷移，舊的 `## <編號> —` 條目標題仍有效。需要檢查的例外有三種：
 > 1. 原本作為非條目使用、但標題以 `## Task <數字>` 開頭的 H2：v4 會把它解讀成條目，需要改名。
 > 2. 行首 ``` 區塊內寫著 `##` 標題：check 12 現在跳過它們，原本靠區塊內標題才通過（或因此被擋）的 plan 判定會改變。
+> 3. 條目標題必須從行首開始，且 `##` 後必須有空白：v3 照字面可能接受的 `##1.1` 或縮排的 ` ## 1.1`，v4 不再視為條目。
 >
-> 本 repo 已確認兩種情況都沒有。
+> 本 repo 已確認三種情況都沒有。
 
 **本 repo 部署順序**：
 

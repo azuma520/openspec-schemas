@@ -2,7 +2,7 @@
 
 Superpowers v6.0.0 起，subagent-driven-development 用 `scripts/task-brief` 從 plan 抽出單一任務的簡報，它只認 `Task <數字>` 形式的標題。bridge Plan Contract 規定的條目標題 `## 1.1 — …` 交給它會 exit 3，所以照 bridge 寫的 plan 無法直接交給上游的主要執行器（Compatibility S11；2026-10-02 dogfood 實際撞到，以等效抽取繞過）。
 
-本 change 讓 bridge 的 plan 能被上游辨識，同時保留既有的編號條目寫法：既有 plan 一般不需遷移，例外見下方兩項 breaking。改條目寫法會重新解讀 v3 合法的 `## Task 3 備註` 這類標題，必須升 schema major，連帶把版本宣告整理成誠實的狀態：bundle release 要打 tag 的規則寫在 repo `CLAUDE.md` 與 README，但 repo 至今沒有任何 tag；Compatibility 的驗證日期與退回說明也指向不存在的事物。
+本 change 讓 bridge 的 plan 能被上游辨識，同時保留既有的編號條目寫法：既有 plan 一般不需遷移，例外見下方三項 breaking。改條目寫法會重新解讀 v3 合法的 `## Task 3 備註` 這類標題，必須升 schema major，連帶把版本宣告整理成誠實的狀態：bundle release 要打 tag 的規則寫在 repo `CLAUDE.md` 與 README，但 repo 至今沒有任何 tag；Compatibility 的驗證日期與退回說明也指向不存在的事物。
 
 ## What Changes
 
@@ -17,6 +17,12 @@ Superpowers v6.0.0 起，subagent-driven-development 用 `scripts/task-brief` �
 - To: 行首未縮排的 ``` 區塊內的標題形狀文字不構成條目（不認 `~~~`、縮排 fence，與上游一致）。check 13 刻意維持不跳過，兩處都寫理由。
 - Reason: 程式碼範例不該改變 plan 的任務結構；若 Bridge 收、上游不收，又是一個新的辨識差異。
 - Impact: **breaking**——靠區塊內標題通過（或被擋）的 plan，判定會改變。
+
+**條目標題必須是行首 H2**
+- From: 條文說編號「從 `##` 之後第一個非空白字元開始」，沒要求 `##` 後有空白、也沒限定 `##` 在行首；照字面讀，`##1.1` 與縮排的 ` ## 1.1` 都會被收成條目。
+- To: 條目標題必須從行首開始，且 `##` 後至少一個空白（space 或 tab）；兩種寫法同一條規則。
+- Reason: `##1.1` 在 Markdown 不是標題；縮排 1–3 格的 ` ## 1.1` 在 CommonMark 仍是 H2，但上游 `task-brief` 只認行首的 `#`，所以「行首」是比 Markdown 更嚴、與上游一致的辨識規則。若只替 legacy 寫法保留寬鬆讀法，同一份 plan 會有兩套辨識規則。
+- Impact: **breaking**——v3 照字面可能收到的 `##1.1`、` ## 1.1`，v4 不再是條目。本 repo 已掃描全部 45 個 `plan.md`，無此情況。
 
 **check 12**
 - From: 只收以編號開頭的 `##` 標題。
@@ -35,7 +41,7 @@ Superpowers v6.0.0 起，subagent-driven-development 用 `scripts/task-brief` �
 - `release-versioning`: bundle release 的版本宣告要對應可驗證的事實——release 以同版本 Git tag 標記（自 4.0.0 起）與 release commit 的定義；Compatibility 驗證日期只在對該列版本跑完完整流程後填入；退回說明只指向實際存在的 tag 或 commit。
 
 ### Modified Capabilities
-- `plan-contract`: 新增條目標題辨識的需求——canonical／legacy 兩種寫法、正面的條目定義、跳過行首 ``` 區塊、兩種寫法同編號為重複；REQ-1 的 1:1 對應規則本身不變。
+- `plan-contract`: 新增條目標題辨識的需求——canonical／legacy 兩種寫法、正面的條目定義（行首 `##` 接空白）、跳過行首 ``` 區塊、兩種寫法同編號為重複；REQ-1 的 1:1 對應規則本身不變。
 
 ## Impact
 
@@ -44,5 +50,5 @@ Superpowers v6.0.0 起，subagent-driven-development 用 `scripts/task-brief` �
 - `.github/workflows/version-check.yml`（不改不會 fail：v3 列仍在，每週檢查會默默讀 v3 列而非 v4 列，所以改完要手動觸發確認讀到 v4 列）。
 - repo `CLAUDE.md`、`docs/roadmap.md`、`docs/roadmap.zh-TW.md`。
 - `docs/superpowers/poc/2026-09-03-tdd-evidence-mutation-fixtures/fixtures/` 新增測試資料。
-- 採用者：既有 plan 一般不需遷移；例外為以 `## Task <數字>` 開頭的非條目標題、行首 ``` 區塊內的 `##` 標題。目前沒有外部採用者。
+- 採用者：既有 plan 一般不需遷移；例外為以 `## Task <數字>` 開頭的非條目標題、行首 ``` 區塊內的 `##` 標題、`##` 後無空白或 `##` 前有縮排的標題。目前沒有外部採用者。
 - 不影響：上游 Superpowers、OpenSpec CLI、adopters fragment、tasks.md 的解析、check 13 的判定。
