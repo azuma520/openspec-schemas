@@ -46,6 +46,22 @@
 | `f11-duplicate-subject-one-side` | 同一任務下兩筆 RED 記錄的 `subject:` 值逐字相同（GREEN 只有一筆） | check 11（per-subject 唯一性／cardinality）BLOCK |
 | `f12-two-subjects-paired` | **沒有破壞任何東西**——同一任務下兩個不同 `subject:`，各自完整配對一組 RED＋GREEN | 不 BLOCK（正向對照） |
 | `f13-deferred-task-in-tasks` | `tasks.md` 有一個 `[~]` deferred 任務、`plan.md` 為一個沒有任務列的合規 v2 entry | 兩種讀法皆不 BLOCK,BLOCK/不 BLOCK 無法區分——改記有鑑別力的結果:現行 check 7(讀 `tasks.md`)找到**1 筆** deferred 任務、需列入 §7;舊 check 7(讀 `plan.md` 找 `[~]` 列)找到 **0 筆**、合法留空 §7(舊測 BLOCK 條件「§7 空且 `plan.md` 有 `[~]` 列」不成立;新測條件「§7 空且 `tasks.md` 有 deferred 任務」因 §7 非空也不成立)。這個 fixture 驗的是讀哪個檔、找到幾筆,不是 BLOCK 與否。**check 2 的預期判定（2026-09-14 追加）**:修訂後的 check 2 接受 `- [x]` 或 `- [~]`,所以本 fixture 的 `[~]` 任務**不使 check 2 失敗**;修訂前的 check 2 要求每個 checkbox 皆為 `- [x]`,同一份輸入會失敗——這是本 fixture 對 check 2 修訂的鑑別力所在。⚠️ 此列為**作者推導**、尚未經獨立執行者複驗:2026-09-08 的獨立再推導只實作 checks 8–12,不涵蓋 check 2 |
+| `f14-fenced-heading-not-entry` | `plan.md` 在行首 ``` 區塊內有 `## 9.9`，區塊外是 `## 1.1`、`## 1.2`；tasks `{1.1, 1.2}`（舊式編號標題，不用 Task 寫法） | **v3**：BLOCK，check 12 第二階段（plan 多 `9.9`，因為 v3 條文收每個 `##` 標題）；**v4**：PASS（區塊內標題不收，plan 鍵 `1.1, 1.2`）。性質：RED→GREEN |
+| `f15-task-form-entry` | `plan.md` 的條目寫成 `## Task 1.1 — …`、`## Task 1.2 — …`（沒有程式碼區塊）；tasks `{1.1, 1.2}` | **v3**：BLOCK，check 12 第二階段（`Task` 不是數字，plan 收不到任何鍵，tasks 的 `1.1`、`1.2` 都缺條目）；**v4**：PASS（鍵 `1.1, 1.2`）。性質：RED→GREEN |
+| `f16-task-and-legacy-same-key` | `plan.md` 同時有 `## Task 1.1 — …` 與 `## 1.1 — …`；tasks `{1.1}` | **v3**：PASS（只有 legacy 那行有鍵，鍵 `1.1` 出現一次——這個 PASS 是錯的）；**v4**：BLOCK，check 12 第一階段（`1.1` occurs more than once in plan.md；第二階段兩邊集合相等，無差異）。性質：RED→GREEN |
+| `f17-task-number-nonentry-reinterpreted` | `plan.md` 有 `## 1.1 — …` 與原本是非條目段落的 `## Task 3 notes`；tasks `{1.1}` | **v3**：PASS（`Task 3 notes` 不以數字開頭，不是條目）；**v4**：BLOCK，check 12 第二階段（`Task 3` 被讀成條目，鍵 `3` 沒有對應任務）。性質：breaking change（把相容性破壞具體化，非 TDD 證據） |
+| `f18-no-space-after-hashes` | `plan.md` 唯一可能的條目是 `##1.1 — …`（`##` 後沒有空白）；tasks `{1.1}` | **v3**：PASS（v3 從 `##` 之後第一個非空白字元讀鍵，收到 `1.1`）；**v4**：BLOCK，check 12 第二階段（`##` 後沒有空白，不是條目，任務 `1.1` 沒有條目）。性質：breaking change |
+| `f19-indented-heading` | `plan.md` 唯一可能的條目是 ` ## 1.1 — …`（行首有一個空白）；tasks `{1.1}` | **v3**：PASS（v3 條文沒限定 `##` 在行首，收到 `1.1`）；**v4**：BLOCK，check 12 第二階段（不在行首，不是條目，任務 `1.1` 沒有條目）。性質：breaking change |
+| `f20-lowercase-task-heading` | `plan.md` 唯一可能的條目是 `## task 1.1 — …`（小寫 `task`）；tasks `{1.1}` | **v3**：BLOCK，check 12 第二階段（`task` 不是數字，plan 收不到鍵，缺 `1.1`）；**v4**：BLOCK，同階段同訊息（`Task` 大小寫精確，小寫不算，`1.1` 沒有條目）。性質：regression（v3 已判對，不是 RED） |
+| `f21-h3-task-heading` | `plan.md` 唯一可能的條目是 `### Task 1.1 — …`（三個 `#`）；tasks `{1.1}` | **v3**：BLOCK，check 12 第二階段（`###` 不是條目，缺 `1.1`）；**v4**：BLOCK，同階段同訊息（`###` 以下仍是條目內的子標題）。性質：regression |
+| `f22-task-suffixed-number-heading` | `plan.md` 唯一可能的條目是 `## Task 1.1a — …`（編號後面緊接字母）；tasks `{1.1}` | **v3**：BLOCK，check 12 第二階段（`Task` 不是數字，缺 `1.1`）；**v4**：BLOCK，同階段同訊息（編號後必須是空白或行尾，`1.1a` 不是編號）。性質：regression |
+| `f23-task-form-with-fenced-task-heading` | `plan.md` 的 `## Task 1.1`、`## Task 1.2` 之間夾一個行首 ``` 區塊，區塊內是 `## Task 9.9`；tasks `{1.1, 1.2}` | **v3**：不凍結（只要求 v4 判定；照 v3 條文會因 `Task` 不是數字而收不到鍵，BLOCK，但那個失敗原因不是「沒排除區塊」，所以不當作 v3 預期）；**v4**：PASS，plan 鍵只有 `1.1, 1.2`（`9.9` 不收）。性質：positive control（綜合） |
+
+**f14–f23 的設計決定（change `task-prefixed-plan-headings`，D7）。** 每個 fixture 只破壞一件事：`f14` 用舊式編號標題、`f15` 沒有區塊，才能讓 v3 紅的原因只有一個；`f23` 是唯一同時用 Task 寫法與區塊的綜合樣本，只要求 v4 判定正確。
+- **「不再是條目」拆成 `f18`、`f19` 兩份**：兩種寫法的 v3 判定都是 PASS、v4 都是 BLOCK；合成一份的話，`1.1` 在 v3 會被收兩次而 BLOCK（第一階段重複），那不是要凍結的 v3 行為。
+- **「寫錯格式」拆成 `f20`、`f21`、`f22` 三份，各一種形式**：合成一份的話，若 v4 錯收其中兩種，兩個條目會以重複鍵的 BLOCK 呈現，看起來和預期的 BLOCK（缺 `1.1`）一樣，分辨不出誤收。拆開後每份只有一種形式，錯收就會變 PASS 或訊息不同。
+- **`f16` 的 v3 PASS 是「錯的」判定**：RED 的意思沿用 `fix-v2-blocking-defects`——照改前原文判定是錯的。`f14`、`f15`、`f16` 是 RED→GREEN；`f17`–`f19` 是破壞相容的具體化；`f20`–`f22` 是 v3 已判對的回歸；`f23` 是正向對照。
+- ⚠️ **`f14`–`f23` 尚未盲測**：預期判定是作者依 `task-prefixed-plan-headings` 的 REQ-4 與 v3 現行條文手推的，還沒有對本 change 無脈絡的執行者在不看答案的情況下跑過。
 
 `f6` 與 `f7` 是這批裡最重要的兩個，理由相反：`f6` 證明「檢查通過 ≠ 判斷通過」，`f7` 證明檢查**不會誤擋合規品**。六個證明「違規會被擋」的 fixture，對「合規不會被誤擋」一句話都沒說——沒有 `f7`，這組防呆就是單向的。`f12` 是 `f7` 之後的第二個正向對照，理由同構：`f10`、`f11` 證明「subject 語法／cardinality 違規會被擋」，但單靠它們無法排除「檢查會不會連合法的雙 subject 配對都一併誤擋」——沒有 `f12`，這條防呆一樣是單向的。
 
@@ -88,8 +104,17 @@
    openspec instructions verify --change <某個 active change> --schema superpowers-bridge
    ```
    ⚠️ 這條指令**需要一個 active change 存在**，兩種失敗訊息不同（皆為實測，測時 repo 內 0 個 change）：完全沒有 change → `✖ Error: No changes found. Create one with: openspec new change <name>`；`--change` 指到不存在的名字 → `✖ Error: Change '<名字>' not found. No changes exist. …`（後半句是「repo 內 0 個 change」這個狀態造成的，換個狀態會不同）。**兩者都不是壞了。** 單純要讀條文時直接看 `schema.yaml` 即可。
-2. 把 `fixtures/` 複製一份，**用中性名稱重新打亂**（`case-A`、`case-B`…），順序自己重排。**現在共十三個 fixture（`f1`–`f13`），全部一起打亂**——不要只打亂 `f1`–`f7` 或只打亂 `f8`–`f13`，兩批分開重跑量不到「新舊檢查混在一起會不會互相干擾」。
+2. 把 `fixtures/` 複製一份，**用中性名稱重新打亂**（`case-A`、`case-B`…），順序自己重排。**整批打亂的範圍是 `f1`–`f13`（共十三個 fixture），這十三個全部一起打亂**——不要只打亂 `f1`–`f7` 或只打亂 `f8`–`f13`，兩批分開重跑量不到「新舊檢查混在一起會不會互相干擾」。**`f14`–`f23` 不進這個整批重跑**：它們不放進打亂後的目錄、也不和 `f1`–`f13` 用同一份措辭比對第一張表，只走下面「`f14`–`f23` 的單份交付」（v3、v4 措辭各跑一次）。下面第 3、4 步的「打亂後的目錄」同樣只指 `f1`–`f13`。
 3. 把指令與打亂後的目錄交給一個對本 change 無脈絡的執行者,請它對每個 case 回報「哪一條 check BLOCK、或不 BLOCK」。**額外針對 check 7**:BLOCK/不 BLOCK 兩種讀法在 `f13` 上答案相同、這題不能拿來鑑別新舊行為,所以再請執行者回報 check 7 找到的 deferred 任務**數量與識別(哪一筆)**——這才是能區分「讀 `tasks.md`」與「讀 `plan.md`」兩種讀法的結果。其餘每個 fixture 仍只需回答 BLOCK/不 BLOCK。
 4. 用本檔第一張表比對。⚠️ 若把 `f7` 或 `f12` 併進去，**它們的正確答案都是「不 BLOCK」**——把正向對照判成 BLOCK 才是失敗。
 
 fixtures 是純 markdown，沒有任何工具依賴；`f1`–`f7` 的 `plan.md` 除 `f5` 外全部相同（`f5` 蓄意改了 entry key）；`f8`–`f13` 各自的 `plan.md` 依其破壞的東西各不相同，見第一張表逐項對照。
+
+### `f14`–`f23` 的單份交付（v3 / v4 措辭各跑一次）
+
+`f14`–`f23` 的預期答案同時出現在上面的表格裡，而且 v3 與 v4 的判定常常不同（有的 v3 PASS、v4 BLOCK），所以：
+
+1. **一次只交付一個 fixture，只交它的 `plan.md` 與 `tasks.md`**。複製到本 README 不在其中的位置（不是 `fixtures/` 的上一層，也不是含有本檔的任何目錄），目錄名用中性名稱（`case-A` 之類），不要沿用 `f14-…` 這種帶答案的原名。不要把整個 `fixtures/` 目錄交出去。
+2. **執行者不可看到本 README**，也不可看到 `design.md` D7、`specs/plan-contract/spec.md` 或任何寫著預期判定的檔案。執行者只拿到：要測的 check 12 措辭（v3 或 v4，一次一種）與那一個 fixture。
+3. 同一個 fixture 用 v3 措辭跑一次、用 v4 措辭跑一次，各自回報中間值（plan 收到的鍵、tasks 收到的鍵、重複、集合差）與判定；之後由另一層拿結果對照本檔表格。`f23` 的 v3 欄不凍結，只比對 v4。
+4. 這十個 fixture 目前**尚未盲測**，表格裡的 v3、v4 判定是手推值。

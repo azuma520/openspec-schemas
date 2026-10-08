@@ -9,7 +9,7 @@
 
 > Bridges [OpenSpec](https://github.com/Fission-AI/OpenSpec)'s artifact governance (the **what**) with [obra/superpowers](https://github.com/obra/superpowers) execution skills (the **how**) into a single workflow. Adds an evidence-first `retrospective` artifact filling a gap Superpowers does not natively cover.
 >
-> The integration lives entirely at the prompt layer — no Superpowers source modified, no OpenSpec CLI changes. Schema version: v3 (see [Compatibility](#compatibility) and [Migrating v2 → v3](#migrating-v2--v3)).
+> The integration lives entirely at the prompt layer — no Superpowers source modified, no OpenSpec CLI changes. Schema version: v4 (see [Compatibility](#compatibility) and [Migrating v3 → v4](#migrating-v3--v4)).
 
 ---
 
@@ -114,7 +114,7 @@ rm -rf /tmp/oss-upgrade
 
 > Within one schema major, in-flight changes (any phase: brainstorm / design / specs / ...) remain valid because the schema graph (`requires:` edges, PRECHECKs, artifact dependencies) does not change across patch releases. Existing `verify.md` / `retrospective.md` from before the upgrade are still readable; if you re-run `/opsx:verify` or `/opsx:continue → retrospective` on them, the new template structure applies on overwrite.
 
-> **Crossing a schema major does need migration.** Upgrading from bundle `1.x.y` (schema major `v1`) to `2.x.y` (schema major `v2`) changed what `tasks.md` and `plan.md` must contain; upgrading from `2.x.y` (`v2`) to `3.x.y` (`v3`) requires every Requirement and Scenario heading to carry a stable ID. An in-flight `v2` change needs the steps in [Migrating v2 → v3](#migrating-v2--v3) before it will pass verify (check 13). Any schema-major bump — previously-valid artifacts becoming invalid (independently sufficient), an artifact being added or removed, a `requires:` edge changing, or a PRECHECK's shape changing — is always announced with a migration guide under [Versioning](#versioning).
+> **Crossing a schema major does need migration.** Upgrading from bundle `1.x.y` (schema major `v1`) to `2.x.y` (schema major `v2`) changed what `tasks.md` and `plan.md` must contain; upgrading from `2.x.y` (`v2`) to `3.x.y` (`v3`) requires every Requirement and Scenario heading to carry a stable ID; upgrading from `3.x.y` (`v3`) to `4.x.y` (`v4`) changes which `plan.md` headings count as entries. An in-flight `v2` change needs the steps in [Migrating v2 → v3](#migrating-v2--v3) before it will pass verify (check 13); an in-flight `v3` change usually needs nothing, apart from the three exceptions listed in [Migrating v3 → v4](#migrating-v3--v4). Any schema-major bump — previously-valid artifacts becoming invalid (independently sufficient), an artifact being added or removed, a `requires:` edge changing, or a PRECHECK's shape changing — is always announced with a migration guide under [Versioning](#versioning).
 
 ---
 
@@ -482,12 +482,14 @@ This bundle carries **two version identifiers** that should not be confused:
 
 | Identifier | Where | Meaning | Example |
 |---|---|---|---|
-| Schema major | `schema.yaml: version: 3` | Contract of the schema graph. Bumps on any breaking change: previously-valid artifacts becoming invalid (independently sufficient), an artifact added/removed, a `requires:` edge changing, or a PRECHECK's shape changing. | `3` |
-| Bundle release | `VERSION` file + git tag | SemVer release of this bundle, scoped to a schema major. | `3.0.0` (tag `v3.0.0` at release) |
+| Schema major | `schema.yaml: version: 4` | Contract of the schema graph. Bumps on any breaking change: previously-valid artifacts becoming invalid (independently sufficient), an artifact added/removed, a `requires:` edge changing, or a PRECHECK's shape changing. | `4` |
+| Bundle release | `VERSION` file + a same-version Git tag `vX.Y.Z` | SemVer release of this bundle, scoped to a schema major. Each bundle release is marked by an annotated Git tag named `v` plus the exact `VERSION` value, pointing at its release commit; this release discipline is practised from bundle `4.0.0`. | `4.0.0` (tag name `v4.0.0`) |
 
-A bundle release `3.x.y` is a published cut of schema major `v3`, as `2.x.y` was of `v2` and `1.x.y` was of `v1`. Adopters who pin to a `1.x.y`, `2.x.y` or `3.x.y` bundle are guaranteed schema-graph compatibility within that major.
+A bundle release `4.x.y` is a published cut of schema major `v4`, as `3.x.y` was of `v3`, `2.x.y` of `v2` and `1.x.y` of `v1`. Adopters who pin to a `1.x.y`, `2.x.y`, `3.x.y` or `4.x.y` bundle are guaranteed schema-graph compatibility within that major.
 
-> The compatibility matrix below uses the schema major (`v1`, `v2`, `v3`) as the row key, because compatibility with OpenSpec / Superpowers is governed by the schema contract, not by patch-level edits inside this bundle.
+The **release commit** is the final commit published to `main` after the change carrying the release has been archived, finally verified and every release-coupled document updated — not necessarily the archive commit. Bundle releases before `4.0.0` carry no Git tags, and none will be created for them retroactively, so a pre-`4.0.0` bundle can be identified only by a commit.
+
+> The compatibility matrix below uses the schema major (`v1`, `v2`, `v3`, `v4`) as the row key, because compatibility with OpenSpec / Superpowers is governed by the schema contract, not by patch-level edits inside this bundle.
 
 ### Why v1 → v2 is a schema-major bump
 
@@ -507,6 +509,32 @@ One of the policy's criteria is met, and it is on its own sufficient:
 PRECHECK shape is unaffected this time: check 13 is a new verify check, not a change to any skill PRECHECK, and every existing PRECHECK (brainstorm, apply pre-flight, verify, retrospective) is untouched.
 
 Keeping `version: 2` and only checking newly-written requirements was considered and rejected: that would redefine "breaking" to fit the change, the same reasoning that rejected the equivalent option for v1 → v2 above.
+
+### Why v3 → v4 is a schema-major bump
+
+One of the policy's criteria is met, and it is on its own sufficient:
+
+1. **Previously-valid artifacts become invalid.** v4 defines a `plan.md` entry by a positive rule: a column-0 `##` heading, followed by whitespace, whose text is either the canonical form — `Task`, one or more spaces or tabs, then a number — or the legacy form — the number alone — where the number matches `\d+(\.\d+)*` and is followed by whitespace or the end of the line, outside any column-0 backtick fenced code block. v3 said only that a `##` heading whose text does not begin with a number is not an entry, so a non-entry section headed `## Task 3 notes` was legal under v3; under v4 that heading keys `3`, and a plan with no task `3` now fails verify's check 12. Two further behaviour changes come with the positive rule: `##` heading-shaped lines inside a column-0 backtick fence no longer yield keys, and `##1.1` or an indented ` ## 1.1`, which v3's wording read literally could collect, are no longer entries.
+
+The canonical form exists because Superpowers' `subagent-driven-development` (since `v6.0.0`) extracts a task brief with `scripts/task-brief`, which recognises `Task <number>` headings and does not recognise the v3 form `## 1.1 — …` (S11 in the re-verification log below). The bridge does not change upstream; it accepts a form that upstream recognises. No artifact is added or removed, no `requires:` edge changes, and every PRECHECK is untouched.
+
+Keeping `version: 3` was rejected for the same reason as in the two bumps above: it would redefine "breaking" to fit the change.
+
+### Migrating v3 → v4
+
+Existing plans generally need no migration: the legacy entry heading `## <number> — …` is still valid, with no scheduled removal, and the two forms may be mixed in one plan. The canonical form `## Task <number> — …` is recommended for new or edited plans. The same number in both forms is the same key, so `## Task 1.1` and `## 1.1` in one plan are a repeated key. The entry rule, and the guidance for plans handed to upstream `task-brief`, are defined once, in the `plan` artifact instruction in [schema.yaml](./schema.yaml).
+
+Three exceptions need checking:
+
+1. **A non-entry `##` heading of the form `Task <number>`** — at column 0, the word `Task`, one or more spaces or tabs, then a number matching `\d+(\.\d+)*` followed by whitespace or the end of the line (for example `## Task 3 notes`): v4 reads it as an entry, so rename it. `## Task 3a notes`, `## Task3 notes` and `### Task 3 notes` stay non-entries.
+2. **`##` headings inside a column-0 backtick fenced code block**: check 12 now skips them, so a plan that passed (or was blocked) only because of a heading inside such a block gets a different verdict. A `~~~` fence or an indented fence hides nothing.
+3. **An entry heading must start at column 0, and `##` must be followed by whitespace**: `##1.1` or an indented ` ## 1.1`, which v3's wording read literally could accept, is no longer an entry.
+
+This repository's `plan.md` files were checked for all three, and none occurs outside the mutation fixtures that exercise these cases on purpose.
+
+For an in-flight change started under a `3.x.y` bundle: upgrade the bundle to `4.0.0`, check its `plan.md` for the three exceptions above, then run verify.
+
+**Rollback:** check out commit `V3_ROLLBACK_SHA_PLACEHOLDER` — the parent of the first commit that sets `schema.yaml` to `version: 4` — and copy its `superpowers-bridge/` directory into `openspec/schemas/`. Bundles before `4.0.0` carry no tags, so the rollback names a commit rather than a bundle version. Schema major `v3` remains a published cut and is not withdrawn.
 
 ### Migrating v2 → v3
 
@@ -538,15 +566,18 @@ The annotation grammar and the record shape are defined once, in the `tasks` art
 
 Baseline versions this schema was authored against. This is a **historical snapshot, not an end-to-end compatibility guarantee** — CI cannot run the full prompt-layer workflow in headless mode, so behavioral compatibility relies on human review when drift fires.
 
-Current bundle release: **`3.0.0`** (see [VERSION](./VERSION); git tag `v3.0.0` created at release).
+Current bundle release: **`4.0.0`** (see [VERSION](./VERSION)). Each bundle release is marked by a same-version Git tag `vX.Y.Z`; this release discipline is practised from bundle `4.0.0`.
 
 | superpowers-bridge | OpenSpec CLI | Superpowers plugin | Baseline as of |
 |---|---|---|---|
+| v4 | `1.14.0` | `v5.1.0` | pending |
 | v3 | `1.14.0` | `v5.1.0` | 2026-10-02 |
 | v2 | `1.3.1` | `v5.1.0` | 2026-09-01 |
 | v1 | `1.3.1` | `v5.1.0` | 2026-05-11 |
 
-> Newest major first. Each major keeps its own row, and the v1 and v2 rows are retained for adopters still pinned to a `1.x.y` or `2.x.y` bundle.
+> Newest major first. Each major keeps its own row, and the v1, v2 and v3 rows are retained for adopters still pinned to a `1.x.y`, `2.x.y` or `3.x.y` bundle.
+>
+> **The v4 row's Superpowers entry (`v5.1.0`) is a historical declaration carried forward without revalidation — it is not a compatibility guarantee.** No full cycle has been re-run against `v5.1.0` since v2; the bridge currently has no external adopters, and no further investment in revalidating `v5.1.0` is planned. The value stays in the cell, with this explanation below the table rather than inside it, because the weekly version check reads that cell as a version. The environment known to have been exercised by the PoC for this change is Superpowers `v6.4.1`; this change's dogfood records the Superpowers version it actually loaded, and the row must not be described as fully verified until a full verification has been done. The OpenSpec entry `1.14.0` is carried over from the v3 row. The **Baseline as of** cell reads `pending`: it is filled only with the date a maintainer re-runs a full cycle against the versions listed in this row and confirms nothing degraded, and a run against any other version — this change's dogfood on the Superpowers version it actually loaded included — is not grounds to fill it.
 >
 > **The v3 row declares the same Superpowers baseline as v1 and v2 (`v5.1.0`, unbumped) — v3 does not touch the Superpowers dependency any more than v2 did, and the `brainstorming` drift recorded in the re-verification log below is still open. The environment actually exercised while implementing this change is recorded separately below, distinct from that declared baseline.** OpenSpec `1.14.0` (bumped from `1.3.1` on 2026-10-02): **OpenSpec `1.14.0` has completed a CLI-level compatibility confirmation** — not a full workflow run; see the 2026-10-02 re-verification entry below. Earlier, under OpenSpec `1.3.1`: `openspec schema validate superpowers-bridge` passed against the v3 schema in throwaway test-project copies while implementing the `requirement-scenario-identity` change, and the 22 identity mutation fixtures were run through `openspec validate` / `openspec archive` / `openspec show` — all under CLI `1.3.1`. **Observed environment, not the declared baseline:** the `requirement-scenario-identity` change's own apply phase — and only the paths it exercised, loading the `using-git-worktrees` and `subagent-driven-development` skills — ran on the installed Superpowers `v6.4.1` and passed. This is not a full `/opsx:new` → archive cycle; it does not cover that change's own brainstorm or design phases, which ran earlier under an unrecorded Superpowers version; and it does not by itself justify raising the declared baseline — that requires a full compatibility verification after the `brainstorming` drift fix lands. See the re-verification log below for the still-open `v6.3.0` findings, which this row does not resolve.
 >
@@ -600,14 +631,16 @@ The same spike checked the bridge's 18 Superpowers dependencies against `v6.4.2`
 |---|---|---|
 | S4 | `brainstorming` runs the five steps listed in the `brainstorm` instruction | ❌ Three paths (spike / bounded / architectural); only architectural runs those steps, and `v6.4.1` added an intent check and a HARD-GATE in front of them. This is the open drift above, deepened |
 | S5 | `brainstorming` hands off into `proposal` → `design` → `specs` → `tasks` | ❌ Architectural may hand off only to `writing-plans`; bounded proceeds **directly to implementation** with no plan document |
-| S11 | `subagent-driven-development` can execute this schema's `plan.md` | ❌ Its `scripts/task-brief` only matches `## Task N` headings; a Plan Contract entry `## 1.1 — …` returns exit 3 (since `v6.0.0`; already met while dogfooding and worked around by a controller ruling) |
+| S11 | `subagent-driven-development` can execute this schema's `plan.md` | ❌ Its `scripts/task-brief` delimits tasks with the regex `^#+[ \t]+Task[ \t]+[0-9]+` (per the locally installed `v6.4.1` source) — a `Task N` heading at any `#` level, which also matches `## Task 1.1a` [corrected in schema v4: the 2026-10-02 wording, "only matches `## Task N` headings", was narrower than this regex]; a Plan Contract entry `## 1.1 — …` returns exit 3 (since `v6.0.0`; already met while dogfooding and worked around by a controller ruling). **Addressed for recognition in schema v4:** the Plan Contract accepts the canonical form `## Task 1.1 — …`, which `task-brief` recognises; the legacy form stays accepted by the bridge and is still not recognised by `task-brief`, and the range `task-brief` extracts for an entry is not guaranteed correct |
 | S12 | `finishing-a-development-branch` offers merge / PR / keep / discard and cleans up the worktree | ❌ Three options only; discard happens only on an explicit request, and the PR option keeps the worktree |
 | S13 | `executing-plans` dispatches no independent reviewer and mentions neither TDD nor code review | ❌ Rebuilt in `v6.4.1`: it loads `test-driven-development` and dispatches one fresh whole-branch review at the end (still no per-task reviewer). This supersedes the 2026-08-26 "✅ Still true" row above |
 | S14 | Upstream directs users to `subagent-driven-development` whenever subagents are available | ❌ The plan handoff now offers Subagent-driven and Native (inline) execution as a choice |
 
-**Why the baseline stays at `v5.1.0`:** S4, S5, S13 and S14 are statements in this schema's own instruction text or its stated rationale, so bumping the baseline would re-assert them; correcting them changes `schema.yaml` and goes through its own change. Two follow-ups are registered: rewrite the rationale for refusing `executing-plans` as a fallback, and resolve the `task-brief` heading-format gap.
+**Why the baseline stays at `v5.1.0`:** S4, S5, S13 and S14 are statements in this schema's own instruction text or its stated rationale, so bumping the baseline would re-assert them; correcting them changes `schema.yaml` and goes through its own change. Two follow-ups are registered: rewrite the rationale for refusing `executing-plans` as a fallback, and resolve the `task-brief` heading-format gap. Addressing S11 (see the follow-up status below) does not move the baseline either: S4, S5, S12 and S14 are still not aligned.
 
-**Follow-up status (2026-10-06):** the first follow-up is done — the `executing-plans` rationale was corrected to match current upstream behavior by change `fix-executing-plans-rationale`. The `task-brief` heading-format gap is still open.
+**Follow-up status (2026-10-06):** the first follow-up is done — the `executing-plans` rationale was corrected to match current upstream behavior by change `fix-executing-plans-rationale`. The `task-brief` heading-format gap was still open on that date.
+
+**Follow-up status (schema v4, bundle `4.0.0`):** the second follow-up is addressed by change `task-prefixed-plan-headings` — for **recognition only**. A plan whose entries use the canonical form `## Task <number> — …` has every entry recognised by `task-brief`; this does not make the range `task-brief` extracts for an entry correct, and the `plan` instruction's guidance for plans handed to `task-brief` claims recognition only as well. The legacy form `## <number> — …` stays valid in the bridge and is still not recognised by `task-brief`.
 
 Full method, per-item evidence and what was not checked: [issue #2 compatibility spike report](https://github.com/azuma520/openspec-schemas/blob/main/docs/superpowers/poc/2026-10-02-issue2-compat-spike/report.md) (in the openspec-schemas repository; not shipped inside this bundle).
 
@@ -621,9 +654,11 @@ The contract is three layers — **baseline declaration + automated drift detect
 | Drift notification | [`version-check.yml`](../.github/workflows/version-check.yml) weekly, compares baseline above against latest npm / GitHub release | Pinned ≠ latest upstream | Opens / updates a [labelled drift issue](https://github.com/azuma520/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check) for human review (workflow stays green — drift is normal, not a failure) |
 | End-to-end workflow | **Not automated** | Behavioral changes inside Superpowers skills (renames, prose rewrites altering PRECHECK semantics, transitive-dependency changes); subtle OpenSpec engine semantic shifts | A human reads upstream release notes when the drift issue fires |
 
-The "Baseline as of" date is bumped when a maintainer manually re-runs a full cycle against the listed versions and confirms nothing degraded. Until then, the date marks human attestation, not an automated test pass. **Two exceptions, stated so the rows and this definition do not disagree:** the v2 row's `2026-09-01` and the v3 row's `2026-10-02` are each a **CLI-level attestation only** — CLI behaviour under the row's `version:` (for v2, validate / schemas / new / status / instructions against openspec `1.3.1`; for v3, `schema validate` plus the 22 identity mutation fixtures under `validate` / `archive` / `show` against openspec `1.3.1` on 2026-09-30, then the bridge's CLI surface — `schema validate` / `schemas` / `new change` / `status` / `instructions` / `validate` / `show` / `archive` — against openspec `1.14.0` on 2026-10-02, without re-running those fixtures) — **not** a full prompt-layer cycle re-run. Neither date reflects a Superpowers re-verification: the Superpowers column is unbumped in both rows, and the environment `requirement-scenario-identity` actually exercised (Superpowers `v6.4.1`, apply phase only) is recorded above as an observation distinct from the declared baseline, not as grounds to move this date. No full cycle has been re-run since the v1 row's `2026-05-11`.
+The "Baseline as of" date is bumped when a maintainer manually re-runs a full cycle against the listed versions and confirms nothing degraded. Until then, the date marks human attestation, not an automated test pass; the v4 row's `pending` means no such run has been made against that row's versions yet. **Two exceptions, stated so the rows and this definition do not disagree:** the v2 row's `2026-09-01` and the v3 row's `2026-10-02` are each a **CLI-level attestation only** — CLI behaviour under the row's `version:` (for v2, validate / schemas / new / status / instructions against openspec `1.3.1`; for v3, `schema validate` plus the 22 identity mutation fixtures under `validate` / `archive` / `show` against openspec `1.3.1` on 2026-09-30, then the bridge's CLI surface — `schema validate` / `schemas` / `new change` / `status` / `instructions` / `validate` / `show` / `archive` — against openspec `1.14.0` on 2026-10-02, without re-running those fixtures) — **not** a full prompt-layer cycle re-run. Neither date reflects a Superpowers re-verification: the Superpowers column is unbumped in both rows, and the environment `requirement-scenario-identity` actually exercised (Superpowers `v6.4.1`, apply phase only) is recorded above as an observation distinct from the declared baseline, not as grounds to move this date. No full cycle has been re-run since the v1 row's `2026-05-11`.
 
 ### Known breaking changes
+
+**v3 → v4** (bundle `3.0.0` → `4.0.0`). A `plan.md` entry is now defined by a positive rule that accepts the canonical form `## Task <number> — …` beside the legacy `## <number> — …`. Three behaviour changes can alter a v3 plan's check-12 verdict: a non-entry column-0 `##` heading of the form `Task <number>` — the word `Task`, one or more spaces or tabs, then a number matching `\d+(\.\d+)*` followed by whitespace or the end of the line becomes an entry; `##` headings inside a column-0 backtick fenced code block no longer yield keys; and `##1.1` or an indented ` ## 1.1` is no longer an entry. Migration: [Migrating v3 → v4](#migrating-v3--v4). Rollback: check out commit `V3_ROLLBACK_SHA_PLACEHOLDER` (the parent of the first commit that sets `version: 4`); no `3.x.y` tag exists to pin.
 
 **v2 → v3** (bundle `2.0.0` → `3.0.0`). Every Requirement and Scenario heading must now carry a stable ID, verified by check 13: a `spec.md` legal under v2 — an unnumbered heading — fails verification until migrated. Migration: [Migrating v2 → v3](#migrating-v2--v3). Rollback: pin bundle `2.x.y`.
 

@@ -9,7 +9,7 @@
 
 > 把 [OpenSpec](https://github.com/Fission-AI/OpenSpec) 的 artifact 治理流程(**做什麼**)與 [obra/superpowers](https://github.com/obra/superpowers) 的執行技能(**怎麼做**)整合為單一工作流。額外提供 evidence-first 的 `retrospective` artifact,補上 Superpowers 沒有的 retro 能力。
 >
-> 整合**完全發生在 prompt 層**——不修改 Superpowers 任何程式碼,不修改 OpenSpec CLI。Schema 版本:v3(見[相容性](#相容性)與[從 v2 遷移到 v3](#從-v2-遷移到-v3))。
+> 整合**完全發生在 prompt 層**——不修改 Superpowers 任何程式碼,不修改 OpenSpec CLI。Schema 版本:v4(見[相容性](#相容性)與[從 v3 遷移到 v4](#從-v3-遷移到-v4))。
 
 ---
 
@@ -114,7 +114,7 @@ rm -rf /tmp/oss-upgrade
 
 > **在同一個 schema major 之內**,in-flight change(任一 phase:brainstorm / design / specs / ...)仍合法 — schema graph(`requires:` edges、PRECHECKs、artifact 依賴)不會跨 patch release 變動。升級前產出的 `verify.md` / `retrospective.md` 仍可讀;若對它們重跑 `/opsx:verify` 或 `/opsx:continue → retrospective`,會用新 template 結構覆蓋。
 
-> **跨 schema major 則需要 migration。** 從 bundle `1.x.y`(schema major `v1`)升到 `2.x.y`(schema major `v2`)改變了 `tasks.md` 與 `plan.md` 必須包含的內容;從 `2.x.y`(`v2`)升到 `3.x.y`(`v3`)則要求每個 Requirement 與 Scenario 標題都帶穩定 ID。一個 in-flight 的 `v2` change 要先做完[從 v2 遷移到 v3](#從-v2-遷移到-v3)的步驟才過得了 verify(check 13)。任何 schema major 升版——原本合法的 artifact 變不合法(獨立即足夠)、增刪 artifact、改 `requires:` edges、PRECHECK 形狀改變——都一律會在[版本識別](#版本識別)下附上 migration guide 公告。
+> **跨 schema major 則需要 migration。** 從 bundle `1.x.y`(schema major `v1`)升到 `2.x.y`(schema major `v2`)改變了 `tasks.md` 與 `plan.md` 必須包含的內容;從 `2.x.y`(`v2`)升到 `3.x.y`(`v3`)則要求每個 Requirement 與 Scenario 標題都帶穩定 ID;從 `3.x.y`(`v3`)升到 `4.x.y`(`v4`)改變了 `plan.md` 裡哪些標題算條目。一個 in-flight 的 `v2` change 要先做完[從 v2 遷移到 v3](#從-v2-遷移到-v3)的步驟才過得了 verify(check 13);一個 in-flight 的 `v3` change 通常不需要做什麼,只有[從 v3 遷移到 v4](#從-v3-遷移到-v4)列出的三種例外要處理。任何 schema major 升版——原本合法的 artifact 變不合法(獨立即足夠)、增刪 artifact、改 `requires:` edges、PRECHECK 形狀改變——都一律會在[版本識別](#版本識別)下附上 migration guide 公告。
 
 ---
 
@@ -482,12 +482,14 @@ LLM 不必解讀 timing 文字 —— 跑指令、看結果即可。這是顧慮
 
 | 標識 | 位置 | 含義 | 範例 |
 |---|---|---|---|
-| Schema major | `schema.yaml: version: 3` | schema graph 契約版本。任一破壞性改動就 bump:原本合法的 artifact 變不合法(獨立即足夠)、artifact 增刪、`requires:` 邊改變、PRECHECK 形狀改變 | `3` |
-| Bundle release | `VERSION` 檔 + git tag | 此 bundle 的 SemVer 發佈版本,從屬於某個 schema major | `3.0.0`(發版時打 tag `v3.0.0`) |
+| Schema major | `schema.yaml: version: 4` | schema graph 契約版本。任一破壞性改動就 bump:原本合法的 artifact 變不合法(獨立即足夠)、artifact 增刪、`requires:` 邊改變、PRECHECK 形狀改變 | `4` |
+| Bundle release | `VERSION` 檔 + 同版本 Git tag `vX.Y.Z` | 此 bundle 的 SemVer 發佈版本,從屬於某個 schema major。每個 bundle release 以名為 `v` 加上 `VERSION` 確切值的 annotated Git tag 標記,指向該 release 的 release commit;此 release discipline 自 bundle `4.0.0` 起實際執行 | `4.0.0`(tag 名稱 `v4.0.0`) |
 
-bundle release `3.x.y` 是 schema major `v3` 的一個 published cut,一如 `2.x.y` 之於 `v2`、`1.x.y` 之於 `v1`。Adopter 釘到 `1.x.y`、`2.x.y` 或 `3.x.y` 的 bundle,即享有 schema graph 在該 major 內的相容保證。
+bundle release `4.x.y` 是 schema major `v4` 的一個 published cut,一如 `3.x.y` 之於 `v3`、`2.x.y` 之於 `v2`、`1.x.y` 之於 `v1`。Adopter 釘到 `1.x.y`、`2.x.y`、`3.x.y` 或 `4.x.y` 的 bundle,即享有 schema graph 在該 major 內的相容保證。
 
-> 下方相容矩陣以 schema major(`v1`、`v2`、`v3`)為列鍵,因為 OpenSpec / Superpowers 的相容性由 schema 契約決定,不受 bundle 內部 patch 影響。
+**release commit** 是承載該 release 的 change 完成 archive、最終驗證、所有 release 連動文件都更新之後,發布到 `main` 的最終 commit——不一定是 archive commit。`4.0.0` 之前的 bundle release 都沒有 Git tag,也不會回頭補打,所以 `4.0.0` 之前的 bundle 只能以 commit 指認。
+
+> 下方相容矩陣以 schema major(`v1`、`v2`、`v3`、`v4`)為列鍵,因為 OpenSpec / Superpowers 的相容性由 schema 契約決定,不受 bundle 內部 patch 影響。
 
 ### 為什麼 v1 → v2 是 schema major 升版
 
@@ -507,6 +509,32 @@ bundle release `3.x.y` 是 schema major `v3` 的一個 published cut,一如 `2.x
 這次 PRECHECK 形狀不受影響:第 13 項是新增的 verify 檢查,不是改動任何 skill 的 PRECHECK,現有每一個 PRECHECK(brainstorm、apply pre-flight、verify、retrospective)都沒有動。
 
 「維持 `version: 2` 並只檢查新寫的需求」這個做法有考慮過並被否決:那等於為了遷就這次改動而重新定義「破壞性」,跟上面否決 v1 → v2 那個選項的理由相同。
+
+### 為什麼 v3 → v4 是 schema major 升版
+
+政策裡有一條判準成立,而且它本身就足夠:
+
+1. **原本合法的 artifact 變成不合法。** v4 以正面規則定義 `plan.md` 的條目:位於任何行首 backtick fenced code block 之外、從行首開始的 `##` 標題,後接空白,其文字是 canonical 寫法——`Task`、一個以上 space 或 tab、再接編號——或 legacy 寫法——只有編號;編號符合 `\d+(\.\d+)*`,其後是空白或行尾。v3 只說「文字不以數字開頭的 `##` 標題不是條目」,所以標題為 `## Task 3 notes` 的非條目段落在 v3 合法;到了 v4,這個標題的鍵值是 `3`,沒有 task `3` 的 plan 現在過不了 verify 第 12 項。正面規則另外帶來兩項行為變更:行首 backtick fence 內的 `##` 標題形狀文字不再產生鍵值;v3 條文照字面讀可能收到的 `##1.1` 或縮排的 ` ## 1.1`,不再是條目。
+
+之所以有 canonical 寫法,是因為 Superpowers 的 `subagent-driven-development`(`v6.0.0` 起)用 `scripts/task-brief` 抽出任務簡報,它辨識得到 `Task <編號>` 標題,辨識不到 v3 的 `## 1.1 — …` 寫法(見下方重新查證紀錄的 S11)。bridge 不改上游,而是接受一種上游辨識得到的寫法。沒有增刪 artifact、沒有改 `requires:` 邊,每一個 PRECHECK 都沒有動。
+
+「維持 `version: 3`」被否決,理由跟上面兩次升版相同:那等於為了遷就這次改動而重新定義「破壞性」。
+
+### 從 v3 遷移到 v4
+
+既有 plan 一般不需遷移:舊的條目標題 `## <編號> — …` 仍然有效、沒有排定移除時程,同一份 plan 裡兩種寫法也可以混用。新寫或修改的 plan 建議用 canonical 寫法 `## Task <編號> — …`。同一個編號的兩種寫法是同一個鍵值,所以同一份 plan 裡同時有 `## Task 1.1` 與 `## 1.1` 就是鍵值重複。條目規則,以及給要交給上游 `task-brief` 的 plan 的 guidance,只定義在一個地方,就是 [schema.yaml](./schema.yaml) 的 `plan` artifact instruction。
+
+需要檢查的例外有三種:
+
+1. **形如 `Task <編號>` 的非條目 `##` 標題**——從行首開始,`Task` 一字、一個以上 space 或 tab、再接符合 `\d+(\.\d+)*` 的編號,編號後是空白或行尾(例如 `## Task 3 notes`):v4 會把它解讀成條目,需要改名。`## Task 3a notes`、`## Task3 notes` 與 `### Task 3 notes` 仍是非條目。
+2. **行首 backtick fenced code block 內的 `##` 標題**:第 12 項現在跳過它們,原本靠區塊內標題才通過(或因此被擋)的 plan,判定會改變。`~~~` fence 或縮排的 fence 不會遮住任何標題。
+3. **條目標題必須從行首開始,且 `##` 後必須有空白**:v3 條文照字面讀可能接受的 `##1.1` 或縮排的 ` ## 1.1`,v4 不再視為條目。
+
+本 repo 的 `plan.md` 已針對這三種情況檢查過,除了刻意測試這些情況的 mutation fixtures 之外,都沒有出現。
+
+對於在 `3.x.y` bundle 下開始、目前仍 in-flight 的 change:把 bundle 升級到 `4.0.0`,依上面三種例外檢查它的 `plan.md`,再跑 verify。
+
+**Rollback:** checkout commit `V3_ROLLBACK_SHA_PLACEHOLDER`——第一個把 `schema.yaml` 改成 `version: 4` 的 commit 的 parent——把其中的 `superpowers-bridge/` 目錄複製進 `openspec/schemas/`。`4.0.0` 之前的 bundle 沒有 tag,所以 rollback 指向 commit,而不是 bundle 版本。schema major `v3` 仍是一個已發布的 cut、沒有被撤下。
 
 ### 從 v2 遷移到 v3
 
@@ -538,15 +566,18 @@ Requirement 標題現在的形式是 `### Requirement: <REQ-ID> <description>`,S
 
 本 schema 撰寫時所對齊的 upstream 基準版本。這是**歷史快照,不是端對端相容性承諾** — CI 無法在 headless 環境跑完整的 prompt-layer workflow,行為相容性依賴 drift 觸發人類檢核。
 
-目前 bundle release: **`3.0.0`**(見 [VERSION](./VERSION);tag `v3.0.0` 於發版時建立)。
+目前 bundle release: **`4.0.0`**(見 [VERSION](./VERSION))。每個 bundle release 以同版本 Git tag `vX.Y.Z` 標記;此 release discipline 自 bundle `4.0.0` 起實際執行。
 
 | superpowers-bridge | OpenSpec CLI | Superpowers plugin | 基準日期 |
 |---|---|---|---|
+| v4 | `1.14.0` | `v5.1.0` | pending |
 | v3 | `1.14.0` | `v5.1.0` | 2026-10-02 |
 | v2 | `1.3.1` | `v5.1.0` | 2026-09-01 |
 | v1 | `1.3.1` | `v5.1.0` | 2026-05-11 |
 
-> 新的 major 排在前面。每個 major 各留一列,v1 與 v2 那兩列保留給仍釘在 `1.x.y` 或 `2.x.y` bundle 的採用者。
+> 新的 major 排在前面。每個 major 各留一列,v1、v2、v3 那三列保留給仍釘在 `1.x.y`、`2.x.y` 或 `3.x.y` bundle 的採用者。
+>
+> **v4 那列的 Superpowers 欄位(`v5.1.0`)是沿用、未重新查證的歷史宣告——不構成相容保證。** v2 起就沒有對 `v5.1.0` 重跑過完整 cycle;bridge 目前沒有外部採用者,也不打算再投資重新查證 `v5.1.0`。這個值之所以仍留在格子裡、說明寫在表格下方而不寫進格子,是因為每週版本檢查把那一格當版本號讀。已知本 change 的 PoC 實測環境是 Superpowers `v6.4.1`;本 change 的 dogfood 以實際載入的 Superpowers 版本為準並留紀錄,完整驗證完成之前,不得把這一列寫成「已完整驗證」。OpenSpec 欄位 `1.14.0` 沿用自 v3 那列。**基準日期**那格是 `pending`:只有在 maintainer 對**這一列所列的版本**重跑完整 cycle、確認沒退步之後,才填入那天的日期;對其他任何版本跑的結果——包括本 change 在實際載入的 Superpowers 版本上跑的 dogfood——都不構成填日期的依據。
 >
 > **v3 那列宣告的 Superpowers 基準跟 v1、v2 相同(`v5.1.0`,未推進)——v3 並沒有比 v2 更動到 Superpowers 這個依賴,而下方重新查證紀錄裡的 `brainstorming` 漂移也仍未解。實作這個 change 時實際用到的環境,另外記錄在下面,跟這個已宣告的基準是兩件事。** OpenSpec `1.14.0`(2026-10-02 由 `1.3.1` 推進):**OpenSpec `1.14.0` 已完成 CLI 層級相容性確認** —— 不是一次完整的 workflow 執行,見下方 2026-10-02 的重新查證紀錄。更早之前,在 OpenSpec `1.3.1` 之下:實作 `requirement-scenario-identity` 這個 change 期間,`openspec schema validate superpowers-bridge` 在拋棄式測試專案複本裡對 v3 schema 通過過;另外 22 個 identity mutation fixtures 跑過 `openspec validate` / `openspec archive` / `openspec show` —— 全部在 CLI `1.3.1` 之下。**實際觀察到的環境,不是已宣告的基準:** `requirement-scenario-identity` 這個 change 自己的 apply phase —— 且僅限它實際跑到的路徑,載入了 `using-git-worktrees` 與 `subagent-driven-development` 兩個 skill —— 在已安裝的 Superpowers `v6.4.1` 上跑過且通過。這不是一次完整的 `/opsx:new` → archive cycle;也不涵蓋那個 change 自己的 brainstorm 或 design phase,那兩個 phase 更早跑完、當時的 Superpowers 版本沒有記錄;這件事本身也不足以正當化推進已宣告的基準——那需要等 `brainstorming` 漂移修好之後,重跑一次完整的相容性查證。`v6.3.0` 仍未解的 finding 見下方重新查證紀錄,這一列不解決它們。
 >
@@ -600,14 +631,16 @@ bridge 對 OpenSpec 的 24 項依賴(逐項列在 [issue #2 相容性 spike 報�
 |---|---|---|
 | S4 | `brainstorming` 會執行 `brainstorm` instruction 列的五個步驟 | ❌ 分三條路徑(spike / bounded / architectural);只有 architectural 會走那些步驟,而 `v6.4.1` 又在前面加了意圖確認與 HARD-GATE。這就是上面那條未解漂移,而且更深了 |
 | S5 | `brainstorming` 結束後會接到 `proposal` → `design` → `specs` → `tasks` | ❌ architectural 之後只能接 `writing-plans`;bounded 在核可後**直接進入實作**,不寫 plan 文件 |
-| S11 | `subagent-driven-development` 能執行本 schema 的 `plan.md` | ❌ 它的 `scripts/task-brief` 只認 `## Task N` 這種標題;Plan Contract 的 entry `## 1.1 — …` 會回 exit 3(`v6.0.0` 起就是這樣;dogfood 時已經遇過,當時由 controller 用 ruling 繞過) |
+| S11 | `subagent-driven-development` 能執行本 schema 的 `plan.md` | ❌ 它的 `scripts/task-brief` 以 regex `^#+[ \t]+Task[ \t]+[0-9]+` 切分任務(依本機安裝的 `v6.4.1` 原始碼)——任何 `#` 層級的 `Task N` 標題,`## Task 1.1a` 也會配到 [schema v4 更正:2026-10-02 的寫法「只認 `## Task N` 這種標題」比這個 regex 窄];Plan Contract 的 entry `## 1.1 — …` 會回 exit 3(`v6.0.0` 起就是這樣;dogfood 時已經遇過,當時由 controller 用 ruling 繞過)。**schema v4 已處理辨識問題:** Plan Contract 接受 canonical 寫法 `## Task 1.1 — …`,`task-brief` 辨識得到;legacy 寫法仍被 bridge 接受、`task-brief` 仍辨識不到,而且 `task-brief` 替某個條目抽出的範圍不保證正確 |
 | S12 | `finishing-a-development-branch` 提供 merge / PR / keep / discard,並清理 worktree | ❌ 只剩三個選項;discard 只在使用者明確要求時才做,PR 那個選項會保留 worktree |
 | S13 | `executing-plans` 不派獨立的 reviewer,也不提 TDD 與 code review | ❌ `v6.4.1` 重寫:它會載入 `test-driven-development`,並在最後派一次全新 context 的全分支 review(仍然沒有每個 task 一個 reviewer)。這筆取代上面 2026-08-26 那列的「✅ 仍成立」 |
 | S14 | 上游在有 subagent 時一律導向 `subagent-driven-development` | ❌ plan 交接時現在讓使用者在 Subagent-driven 與 Native(inline)執行之間選擇 |
 
-**為什麼基準維持 `v5.1.0`:** S4、S5、S13、S14 都是本 schema 自己的 instruction 文字或它寫明的理由,推進基準等於重新宣告它們成立;修正它們要動 `schema.yaml`,得走自己的 change。已登記兩條後續工作:重寫拒用 `executing-plans` 當 fallback 的理由,以及處理 `task-brief` 的標題格式相容缺口。
+**為什麼基準維持 `v5.1.0`:** S4、S5、S13、S14 都是本 schema 自己的 instruction 文字或它寫明的理由,推進基準等於重新宣告它們成立;修正它們要動 `schema.yaml`,得走自己的 change。已登記兩條後續工作:重寫拒用 `executing-plans` 當 fallback 的理由,以及處理 `task-brief` 的標題格式相容缺口。處理掉 S11(見下方後續狀態)同樣不會移動基準:S4、S5、S12、S14 仍未對齊。
 
-**後續狀態(2026-10-06):** 第一條已完成——`executing-plans` 的拒用理由已由 change `fix-executing-plans-rationale` 依目前的上游行為修正。`task-brief` 標題格式相容缺口仍未處理。
+**後續狀態(2026-10-06):** 第一條已完成——`executing-plans` 的拒用理由已由 change `fix-executing-plans-rationale` 依目前的上游行為修正。`task-brief` 標題格式相容缺口在那天仍未處理。
+
+**後續狀態(schema v4、bundle `4.0.0`):** 第二條已由 change `task-prefixed-plan-headings` 處理——**只處理辨識**。條目全部用 canonical 寫法 `## Task <編號> — …` 的 plan,每個條目 `task-brief` 都辨識得到;這不代表 `task-brief` 替某個條目抽出的範圍是對的,`plan` instruction 裡給要交給 `task-brief` 的 plan 的 guidance 也只宣稱辨識。legacy 寫法 `## <編號> — …` 在 bridge 仍然有效,`task-brief` 仍辨識不到。
 
 完整方法、逐項證據與沒查的範圍:[issue #2 相容性 spike 報告](https://github.com/azuma520/openspec-schemas/blob/main/docs/superpowers/poc/2026-10-02-issue2-compat-spike/report.md)(在 openspec-schemas repository 裡;**不**隨本 bundle 內含)。
 
@@ -621,9 +654,11 @@ bridge 對 OpenSpec 的 24 項依賴(逐項列在 [issue #2 相容性 spike 報�
 | Drift 通知 | [`version-check.yml`](../.github/workflows/version-check.yml) 每週,把基準 vs 最新 npm / GitHub release 字串比對 | Pinned ≠ latest upstream | 開 / 更新 [labelled drift issue](https://github.com/azuma520/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check),由人類檢核(workflow 維持綠 — drift 是正常狀態,不是錯誤) |
 | 端對端 workflow | **未自動化** | Superpowers skill 內部行為改變(改名、改寫 prose 影響 PRECHECK 語意、傳遞依賴變動);OpenSpec 引擎語意微調 | drift issue 觸發時,人類讀 upstream release notes |
 
-「基準日期」由 maintainer 手動重跑完整 cycle 確認沒退步後才推進。在那之前,日期代表的是人類聲明,不是自動測試通過。**有兩個例外,寫在這裡是為了讓那兩列與這個定義不互相矛盾:** v2 那列的 `2026-09-01` 與 v3 那列的 `2026-10-02` 都**只是 CLI 層級的聲明** —— 各自那一列 `version:` 之下的 CLI 行為(v2 是 validate / schemas / new / status / instructions,對 openspec `1.3.1` 跑;v3 是 2026-09-30 用 `schema validate` 加上 22 個 identity mutation fixtures 跑過 `validate` / `archive` / `show`,對 openspec `1.3.1`,之後 2026-10-02 再把 bridge 用到的 CLI 介面 —— `schema validate` / `schemas` / `new change` / `status` / `instructions` / `validate` / `show` / `archive` —— 對 openspec `1.14.0` 跑過,那些 fixtures 沒有重跑)—— **不是**一次完整的 prompt-layer cycle 重跑。這兩個日期都不代表對 Superpowers 重新查證過:兩列的 Superpowers 欄位都沒有推進,`requirement-scenario-identity` 實際用到的環境(Superpowers `v6.4.1`,僅 apply phase)記錄在上面,是跟已宣告基準分開的觀察,不構成移動這個日期的理由。自 v1 那列的 `2026-05-11` 以來,沒有重跑過完整 cycle。
+「基準日期」由 maintainer 手動重跑完整 cycle 確認沒退步後才推進。在那之前,日期代表的是人類聲明,不是自動測試通過;v4 那列的 `pending` 代表還沒有人對那一列所列的版本跑過這樣的完整 cycle。**有兩個例外,寫在這裡是為了讓那兩列與這個定義不互相矛盾:** v2 那列的 `2026-09-01` 與 v3 那列的 `2026-10-02` 都**只是 CLI 層級的聲明** —— 各自那一列 `version:` 之下的 CLI 行為(v2 是 validate / schemas / new / status / instructions,對 openspec `1.3.1` 跑;v3 是 2026-09-30 用 `schema validate` 加上 22 個 identity mutation fixtures 跑過 `validate` / `archive` / `show`,對 openspec `1.3.1`,之後 2026-10-02 再把 bridge 用到的 CLI 介面 —— `schema validate` / `schemas` / `new change` / `status` / `instructions` / `validate` / `show` / `archive` —— 對 openspec `1.14.0` 跑過,那些 fixtures 沒有重跑)—— **不是**一次完整的 prompt-layer cycle 重跑。這兩個日期都不代表對 Superpowers 重新查證過:兩列的 Superpowers 欄位都沒有推進,`requirement-scenario-identity` 實際用到的環境(Superpowers `v6.4.1`,僅 apply phase)記錄在上面,是跟已宣告基準分開的觀察,不構成移動這個日期的理由。自 v1 那列的 `2026-05-11` 以來,沒有重跑過完整 cycle。
 
 ### Known breaking changes
+
+**v3 → v4**(bundle `3.0.0` → `4.0.0`)。`plan.md` 的條目改由正面規則定義,在 legacy 的 `## <編號> — …` 之外接受 canonical 寫法 `## Task <編號> — …`。有三項行為變更可能改變一份 v3 plan 在第 12 項的判定:形如 `Task <編號>` 的行首非條目 `##` 標題——`Task` 一字、一個以上 space 或 tab、再接符合 `\d+(\.\d+)*` 的編號,編號後是空白或行尾,這種標題變成條目;行首 backtick fenced code block 內的 `##` 標題不再產生鍵值;`##1.1` 或縮排的 ` ## 1.1` 不再是條目。Migration:[從 v3 遷移到 v4](#從-v3-遷移到-v4)。Rollback:checkout commit `V3_ROLLBACK_SHA_PLACEHOLDER`(第一個把 `schema.yaml` 改成 `version: 4` 的 commit 的 parent);沒有可以釘的 `3.x.y` tag。
 
 **v2 → v3**(bundle `2.0.0` → `3.0.0`)。每個 Requirement 與 Scenario 標題現在都必須帶穩定 ID,由第 13 項檢查驗證:一份在 v2 下合法的 `spec.md`(標題沒有編號)沒遷移就過不了驗證。Migration:[從 v2 遷移到 v3](#從-v2-遷移到-v3)。Rollback:把 bundle 釘回 `2.x.y`。
 

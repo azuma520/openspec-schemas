@@ -16,6 +16,10 @@
 
 - [x] **Contract identity(Requirement / Scenario 穩定 ID)** — 每個 Requirement 與 Scenario 標題現在都帶穩定、可被機器引用的 ID(`### Requirement: <REQ-ID> <description>` / `#### Scenario: <REQ-ID>-S<m> <description>`),改措辭不會斷掉;新 ID 的配置依固定規則。verify 新增的第 13 項檢查,以決定性方式判定這個 change 的歸檔後候選狀態有沒有缺號、重號、前綴錯位,並與 OpenSpec CLI 的 JSON 交叉核對(schema major 3、bundle 3.0.0)。這一版只做身分層——`tasks.md` 的 `Contracts:` 承接標註、驗收台帳、可執行(不可繞過)的 gate 都留給後續 change。
 
+## v4 — 已釋出
+
+- [x] **以 `Task` 開頭的 plan 條目標題** — `plan.md` 的條目現在可以寫成 canonical 寫法 `## Task <編號> — <標題>`,Superpowers 的 `task-brief` 抽取器辨識得到;legacy 寫法 `## <編號> — <標題>` 繼續接受、沒有排定移除時程,`Task` 不屬於鍵值(schema major 4、bundle 4.0.0)。條目改由正面規則定義,verify 第 12 項不再收行首 backtick fenced code block 內的 `##` 標題形狀文字。這條規則另外帶來兩項行為變更:形如 `Task <編號>` 的行首非條目 `##` 標題——`Task` 一字、一個以上 space 或 tab、再接符合 `\d+(\.\d+)*` 的編號,編號後是空白或行尾,這種標題變成條目;`##1.1` 或縮排的 ` ## 1.1` 不再是條目。canonical 寫法的條目變得能被 `task-brief` 辨識;這不代表它替某個條目抽出的範圍是對的。
+
 ## v1.x — 後續 backlog
 
 這些項目記錄在 `~/.claude/plans/pr-quizzical-oasis.md`(實作 plan):

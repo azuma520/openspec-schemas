@@ -41,7 +41,7 @@ jobs:
       - name: Read pinned versions from README
         id: pinned
         run: |
-          line=$(grep -E '^\| v3 \| `' superpowers-bridge/README.md | head -1)
+          line=$(grep -E '^\| v4 \| `' superpowers-bridge/README.md | head -1)
           if [ -z "$line" ]; then
             echo "::error::Could not find Compatibility table row in superpowers-bridge/README.md"
             exit 1
@@ -131,7 +131,7 @@ jobs:
               '',
               '- [ ] Review Superpowers release notes for behavioral changes (skill renames, PRECHECK semantics, transitive deps): https://github.com/obra/superpowers/releases',
               '- [ ] Review OpenSpec changelog: https://github.com/Fission-AI/OpenSpec/releases',
-              '- [ ] If safe, bump the Compatibility table in `superpowers-bridge/README.md` and `superpowers-bridge/README.zh-TW.md` (set `Last verified` to today).',
+              '- [ ] If safe, bump the Compatibility table in `superpowers-bridge/README.md` and `superpowers-bridge/README.zh-TW.md`. Fill the "Baseline as of" cell of a row only with the date a full cycle was re-run against the versions listed in that row (see "How this is checked" in the bridge README); until then it holds `pending`. Never set it to today by default.',
               '- [ ] If breaking, add an entry under "Known breaking changes" in both READMEs.',
               '',
               `_Workflow run: ${runUrl}_`,

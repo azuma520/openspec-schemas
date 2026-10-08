@@ -1,5 +1,5 @@
 name: superpowers-bridge
-version: 3
+version: 4
 description: >
   Spec-driven workflow integrated with Superpowers skills.
   Requirements: Superpowers plugin installed, providing skills:
@@ -384,18 +384,59 @@ artifacts:
          a DIFFERENT defect from a task with no entry or an entry
          keyed to no task: a repeat is repaired by renumbering one of
          the two, a missing or extra key by adding or removing an
-         entry. Write each entry as a `##` heading whose text BEGINS
-         with that task number, e.g. `## 1.1 — Login error handling`;
-         the number is followed by whitespace (or the end of the line)
-         and the title after it is free — two entries carrying the
+         entry. Write each entry as a `##` heading carrying that task
+         number, in one of two forms: the CANONICAL form
+         `## Task 1.1 — Login error handling`, or the LEGACY form
+         `## 1.1 — Login error handling`. A line of plan.md is an
+         entry if and only if ALL of the following hold:
+
+         a. it is not inside a backtick fenced code block (see below);
+         b. it begins at column 0 with EXACTLY `##` followed by a run
+            of one or more spaces or tabs — `###` and deeper are
+            sub-headings inside an entry, never entries;
+         c. the text after that WHOLE run is either the literal word
+            `Task` (exact case), then a run of one or more spaces or
+            tabs, then the entry number starting right after that
+            whole run (canonical form), or the entry number alone
+            (legacy form);
+         d. the entry number matches `\d+(\.\d+)*` and is followed by
+            whitespace or the end of the line.
+
+         Every other `##` heading is a non-entry section (this plan's
+         own header, a self-review section). The KEY is the entry
+         number only: `Task` marks the canonical form and is not part
+         of the key, so `## Task 1.1 — …` and `## 1.1 — …` carry the
+         same key `1.1`, and a plan holding both repeats that key. The
+         title after the number is free — two entries carrying the
          same key are a repeat even when their titles differ. Written
-         `## 1.1a — …` or `## 1x — …`, a heading begins with no number
-         and keys nothing. The key
-         must LEAD so the keys are readable without interpretation —
-         verify's deterministic 1:1 check reads exactly this heading
-         form, in both of its stages. A `##` heading that
-         does not begin with a number is not an entry (this plan's own
-         header, a self-review section). Each entry states:
+         `## 1.1a — …`, `## 1x — …` or `## 1. — …`, with or without
+         `Task`, a heading carries no entry number and keys nothing.
+         The key must LEAD — it comes first, or follows only the fixed
+         word `Task` — so the keys are readable without
+         interpretation; verify's deterministic 1:1 check reads
+         exactly this rule, in both of its stages. In recognising plan
+         structure, heading-like text inside a column-0, unindented
+         backtick fenced code block does not constitute an entry; a
+         `~~~` fence or an indented fence hides nothing, and a block
+         left unclosed hides every heading after its opening line.
+         Verify's check 12 states line by line how such a block opens
+         and closes. Both forms are accepted, with no scheduled
+         removal of the legacy form, and mixing them in one plan is
+         legal. Use the canonical form for new or edited plans: it is
+         the canonical form this Bridge defines, and it is
+         recognisable by the upstream Superpowers `task-brief`
+         extractor.
+
+         Guidance for a plan handed to that upstream `task-brief`
+         extractor — NOT enforced by verify: use the canonical form
+         for every entry; do not begin a non-entry `##` heading with
+         `Task` followed by a number; place non-entry sections (a
+         self-review section) before the first entry. Followed, it
+         makes every entry RECOGNISABLE by that extractor; it does
+         not guarantee that the range the extractor pulls out for an
+         entry is correct.
+
+         Each entry states:
 
          - Delivers — the end-to-end behaviour this task produces, not a
            layer-by-layer implementation list.
@@ -829,24 +870,66 @@ artifacts:
           defect as a non-numeric token, never a task numbered `1.1`.
           Collect the ENTRY KEY of every plan.md contract entry. The
           `plan` artifact's instruction is what REQUIRES the entry
-          form — each entry a `##` heading whose text begins with the
-          tasks.md task number, e.g. `## 1.1 — <title>`; this check
-          implements that requirement and introduces nothing of its
-          own. So: the leading `\d+(\.\d+)*` token of each `##` heading
-          in plan.md whose text begins with such a token — a heading
-          at EXACTLY that level. The token is DELIMITED on both sides:
-          it starts at the first non-space character after `##`, and
-          the character right after its last digit must be whitespace
-          or the end of the line. A heading whose leading token is
-          `1x`, `1.1a` or `1.` therefore begins with NO number and
-          carries NO entry key — the same result as a non-numeric
-          task-line token above, never the key `1` or `1.1` with a
-          suffix ignored. `###` or deeper is a sub-heading
+          form — its Plan Contract defines which plan.md lines are
+          entries, in a canonical form `## Task 1.1 — <title>` and a
+          legacy form `## 1.1 — <title>`; this check implements that
+          requirement and introduces nothing of its own. So: read
+          plan.md LINE BY LINE from the top, tracking whether each
+          line is inside a backtick fenced code block.
+
+          - FENCE. A line whose first three characters are three
+            backticks, at column 0, TOGGLES the block state: outside
+            a block it opens one, inside a block it closes it. Neither
+            the toggling line nor any line inside a block can be an
+            entry. Only that line delimits a block here: a `~~~` line
+            and a backtick fence indented by any whitespace do NOT,
+            and a heading between such lines is read exactly as if no
+            fence surrounded it. A block that is never closed produces
+            NO separate finding: the entries after its opening line
+            are simply not collected, and stage two reports the task
+            numbers that are left without an entry key.
+          - ENTRY. Outside a block, a line is an entry if and only if
+            it begins at column 0 with EXACTLY `##` followed by a run
+            of one or more spaces or tabs, and the text after that
+            WHOLE run is either the literal word `Task` (exact case),
+            then a run of one or more spaces or tabs, then a
+            `\d+(\.\d+)*` token starting right after that whole run
+            (canonical form), or such a token alone (legacy form). The
+            token is DELIMITED: the character right after its last
+            digit must be whitespace or the end of the line.
+          - KEY. The entry key is that token and nothing else: `Task`
+            marks the canonical form and is not part of the key, so
+            `## Task 1.1 — A` and `## 1.1 — B` both carry `1.1`, and a
+            plan holding both repeats that key (stage one). The two
+            forms may be mixed in one plan.
+
+          A heading whose token is `1x`, `1.1a` or `1.` — with or
+          without `Task` — therefore carries NO entry key, the same
+          result as a non-numeric task-line token above, never the
+          key `1` or `1.1` with a suffix ignored. Nor do `## task 1.1`,
+          `## Tasks 1.1`, `## Task1.1`, `##1.1` or ` ## 1.1` (leading
+          whitespace) carry one. `###` or deeper is a sub-heading
           INSIDE an entry, not an entry: it is not collected, so a
           `### 1.1 — <detail>` sitting under `## 1.1 — <title>` does
-          not make `1.1` a repeated key. Headings
-          that do not begin with a number (the plan header, a
-          self-review section) are not entries and are not collected.
+          not make `1.1` a repeated key. Every other `##` heading (the
+          plan header, a self-review section) is a non-entry section
+          and is not collected — and a `##` heading that DOES meet the
+          rule above is an entry whatever its author meant by it:
+          `## Task 3 notes` carries the key `3`.
+
+          The fence and entry rules above apply to plan.md only. The
+          tasks.md TASK NUMBER collection above, including its
+          treatment of code blocks, is unchanged by them and outside
+          their scope. The fence rule is deliberately ASYMMETRIC with
+          check 13, which counts heading-shaped lines inside a fenced
+          code block: this check recognises the plan's entry
+          structure, and code inside a fence must not change that
+          structure — only a column-0 backtick fence counts because
+          that is also the only fence the upstream Superpowers
+          `task-brief` extractor honours — whereas
+          check 13 is a conservative line-by-line count, compared
+          against the OpenSpec CLI's count, that recognises no
+          markdown structure. Do not align the two.
 
           If plan.md does not exist at all, this check fails: `plan`
           is a required artifact of this schema, so an absent plan.md
@@ -940,7 +1023,11 @@ artifacts:
             NOT counted here. Either way the two counts disagree and
             13.E blocks. This is a known, deliberately conservative
             limitation; do not correct a count by hand in either
-            direction.
+            direction. Check 12 deliberately skips backtick-fenced
+            headings in plan.md and this check deliberately counts
+            fenced lines: check 12 recognises the plan's entry
+            structure, while this check is a conservative count
+            compared against the CLI's — do not align the two.
           - A REQUIREMENT BLOCK is a requirement heading together with
             every line after it, up to the next requirement heading,
             the next line whose first characters are `## `, or the end

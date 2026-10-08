@@ -16,6 +16,10 @@ This repository is actively maintained as a side project. The roadmap below sket
 
 - [x] **Contract identity (Requirement / Scenario stable IDs)** — every Requirement and Scenario heading now carries a stable, machine-referenceable ID (`### Requirement: <REQ-ID> <description>` / `#### Scenario: <REQ-ID>-S<m> <description>`) that survives a rewording; new-ID allocation follows a fixed rule. Verify's new check 13 deterministically judges the change's post-archive candidate state for missing/duplicate/misplaced IDs, cross-checked against the OpenSpec CLI's JSON (schema major 3, bundle 3.0.0). This is the identity layer only — a `Contracts:` annotation on tasks, a verification-results ledger, and an executable (non-bypassable) gate stay out of scope for later changes.
 
+## v4 — Released
+
+- [x] **Task-prefixed plan entry headings** — a `plan.md` entry may now be written in the canonical form `## Task <number> — <title>`, which Superpowers' `task-brief` extractor recognises; the legacy form `## <number> — <title>` stays accepted, with no scheduled removal, and `Task` is not part of the key (schema major 4, bundle 4.0.0). Entries are defined by a positive rule, and verify's check 12 no longer collects `##` heading-shaped lines inside a column-0 backtick fenced code block. Two other behaviour changes come with the rule: a non-entry column-0 `##` heading of the form `Task <number>` — the word `Task`, one or more spaces or tabs, then a number matching `\d+(\.\d+)*` followed by whitespace or the end of the line becomes an entry, and `##1.1` or an indented ` ## 1.1` is no longer one. Canonical entries become recognisable by `task-brief`; this does not make the range it extracts for an entry correct.
+
 ## v1.x — In follow-up backlog
 
 These items are tracked in `~/.claude/plans/pr-quizzical-oasis.md` (the implementation plan):
