@@ -200,11 +200,13 @@ Orca 方向的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k �
 
 **release commit 的定義**:承載該 release 的 change 完成 archive、最終驗證與所有 release 連動文件更新後,準備發布到 `main` 的最終 commit。不等同 archive commit——archive 之後仍可能有 review 修正或收尾 commit;要標記的是最後完整代表該版發布內容的 tree。push tag 屬受管制的 git 操作,執行當下要取得使用者對該次 push 的明確授權;遠端 tag **剝開後**(`refs/tags/vX.Y.Z^{}`)指向的 commit 與事先記下的 release commit SHA 一致,才算發版完成。`4.0.0` 之前的 bundle release(1.0.0、1.0.1、2.0.0、3.0.0)都沒有 tag,不回頭補打(哪個 commit 才是那一版缺證據)。來源:`openspec/changes/task-prefixed-plan-headings/design.md` D6、`specs/release-versioning/spec.md` REQ-1。
 
+**v3 → v4 rollback SHA 只在仍能從 `main` 追到時成立**:bridge README(en + zh-TW)的 v3 → v4 rollback 寫死 `737aa56ecfd3f2fc9c5562fbdd82e8d005ca14a2`,它是第一個 `version: 4` commit(`0b11be5`)的 parent,要靠承載 v4 的 branch 併入 `main` 才會出現在 `main` 上。所以**整條 branch** 併入 `main` 時**不得 squash、不得 rebase**(用保留原 commit 的合併方式),必須保證這個 SHA 併入後仍能從 `main` 追到——不是只有某一個 commit 本身不能重寫。若歷史仍被改寫,要重新找出 `main` 上第一個把 `superpowers-bridge/schema.yaml` 改成 `version: 4` 的 commit(例:`git log --reverse -S 'version: 4' --format=%H -- superpowers-bridge/schema.yaml` 取第一筆,並看那筆的 diff 確認確實是 3 → 4),取它的 parent、實際 checkout 一次確認 `schema.yaml` 是 `version: 3`,再改寫 repo 內所有寫死這兩個 SHA 的地方(至少兩份 bridge README,以及 `docs/superpowers/poc/2026-09-03-tdd-evidence-mutation-fixtures/README.md` 裡 check-12 重算的 git 來源;以 `git grep` 搜這兩個 SHA 找全)。來源:`openspec/changes/task-prefixed-plan-headings/design.md` D6。
+
 Compatibility 表的列鍵用的是 **schema major(`v4`)**,不是 bundle 版本 —— 改 VERSION 不要順手去動那張表的第一欄(會打爆上面的 CI grep)。
 
 ## CI / 自動化的既有約定
 
-- `version-check.yml` 每週一 14:00 UTC 跑:比對 npm 上的 `@fission-ai/openspec` 與 obra/superpowers 最新 release,與 README 釘住的 baseline 有差就開/更新一張帶 `upstream-version-check` label 的 issue。**漂移不算失敗**(workflow 保持綠);只有「用最新版驗 schema 失敗」才 fail run。
+- `version-check.yml` 每週一 14:00 UTC 跑:比對 npm 上的 `@fission-ai/openspec` 與 obra/superpowers 最新 release,與 README 釘住的 baseline 有差就開/更新一張帶 `upstream-version-check` label 的 issue。**漂移不算失敗**(workflow 保持綠);workflow 裡刻意 `exit 1` 的有兩處(其他 step 意外出錯,例如網路或 npm 失敗,另計):「用最新版驗 schema 失敗」,以及 `Read pinned versions` step 在 bridge README 的 Compatibility 表抓不到列鍵那一列(該 step `exit 1`,見上面跨檔耦合表)。
 - `upstream-version-check` label 由 workflow 每次執行時保證存在(README 的 Upstream Drift badge 靠它解析),不要手動刪。
 - 本 repo 是 `JiangWay/openspec-schemas` 的 fork;CI 與每週 drift 檢查在 fork 上跑。bridge README 的 badge、drift issue 連結、安裝 / 升級的 `git clone` URL、adopters fragment 連結,以及 roadmap 的開 issue 連結,都硬寫了 `azuma520/openspec-schemas`(2026-10-01 起);repo 若改名 / 換 owner,這些要一起改。`LICENSE` 的著作權人 `JiangWay` 是原作者紀錄,不跟著改。fork 的 Issues 必須開著(drift issue 開在這裡);排程 workflow 在 fork 上曾從未跑過,2026-10-01 開 Issues 後以 `workflow_dispatch` 手動觸發驗證成功(run 36840373547、建立 issue #2)。
 - 兩支 workflow 都固定 Node 24 + `actions/checkout@v6` / `setup-node@v6` / `github-script@v9`。

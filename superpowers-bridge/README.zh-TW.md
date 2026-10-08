@@ -527,14 +527,14 @@ bundle release `4.x.y` 是 schema major `v4` 的一個 published cut,一如 `3.x
 需要檢查的例外有三種:
 
 1. **形如 `Task <編號>` 的非條目 `##` 標題**——從行首開始,`Task` 一字、一個以上 space 或 tab、再接符合 `\d+(\.\d+)*` 的編號,編號後是空白或行尾(例如 `## Task 3 notes`):v4 會把它解讀成條目,需要改名。`## Task 3a notes`、`## Task3 notes` 與 `### Task 3 notes` 仍是非條目。
-2. **行首 backtick fenced code block 內的 `##` 標題**:第 12 項現在跳過它們,原本靠區塊內標題才通過(或因此被擋)的 plan,判定會改變。`~~~` fence 或縮排的 fence 不會遮住任何標題。
+2. **行首 backtick fenced code block 內的 `##` 標題**:第 12 項現在跳過它們,原本靠區塊內標題才通過(或因此被擋)的 plan,判定會改變。`~~~` fence 或縮排的 fence 不會遮住任何標題。要留意 fence 對不上的情況:行首 ``` 開頭、收尾那行卻有縮排,或 `~~~` 區塊裡有一行行首 ```,都會開出一個只有下一個行首 ``` 才關得上的區塊,到那一行為止(沒有的話就到檔尾)的條目全部被遮住;第 12 項不會為此另報問題,通常表現成某些任務編號缺條目鍵值;若後面的 fence 因此開關錯位,也可能表現成多出或重複的條目鍵值。
 3. **條目標題必須從行首開始,且 `##` 後必須有空白**:v3 條文照字面讀可能接受的 `##1.1` 或縮排的 ` ## 1.1`,v4 不再視為條目。
 
 本 repo 的 `plan.md` 已針對這三種情況檢查過,除了刻意測試這些情況的 mutation fixtures 之外,都沒有出現。
 
 對於在 `3.x.y` bundle 下開始、目前仍 in-flight 的 change:把 bundle 升級到 `4.0.0`,依上面三種例外檢查它的 `plan.md`,再跑 verify。
 
-**Rollback:** checkout commit `V3_ROLLBACK_SHA_PLACEHOLDER`——第一個把 `schema.yaml` 改成 `version: 4` 的 commit 的 parent——把其中的 `superpowers-bridge/` 目錄複製進 `openspec/schemas/`。`4.0.0` 之前的 bundle 沒有 tag,所以 rollback 指向 commit,而不是 bundle 版本。schema major `v3` 仍是一個已發布的 cut、沒有被撤下。
+**Rollback:** checkout commit `737aa56ecfd3f2fc9c5562fbdd82e8d005ca14a2`——第一個把 `schema.yaml` 改成 `version: 4` 的 commit 的 parent——把其中的 `superpowers-bridge/` 目錄複製進 `openspec/schemas/`。`4.0.0` 之前的 bundle 沒有 tag,所以 rollback 指向 commit,而不是 bundle 版本;這個 SHA 只有在仍能從 `main` 追到時才有效,所以承載 v4 的整條分支併入 `main` 時不得 squash、不得 rebase。schema major `v3` 仍是一個已發布的 cut、沒有被撤下。
 
 ### 從 v2 遷移到 v3
 
@@ -650,7 +650,7 @@ bridge 對 OpenSpec 的 24 項依賴(逐項列在 [issue #2 相容性 spike 報�
 
 | 層級 | 機制 | 抓什麼 | 觸發時機 |
 |---|---|---|---|
-| 結構性 | [`validate-schemas.yml`](../.github/workflows/validate-schemas.yml) 每次 push/PR;[`version-check.yml`](../.github/workflows/version-check.yml) 每週對 latest OpenSpec 跑 | OpenSpec schema 驗證器會報的結構錯誤 —— 例如 `requires:` 指向不存在的 artifact、依賴形成環。**抓不到**(2026-10-01 實測):刪掉一條 `requires:` 邊、鍵名拼錯(如 `requirez:`)、`instruction:` 文字(含 PRECHECK)的任何改動 —— 這些要靠人審 | CI run 變紅 |
+| 結構性 | [`validate-schemas.yml`](../.github/workflows/validate-schemas.yml) 在 push 到 `main`、對 `main` 開 PR,以及手動觸發時跑;[`version-check.yml`](../.github/workflows/version-check.yml) 每週對 latest OpenSpec 跑 | OpenSpec schema 驗證器會報的結構錯誤 —— 例如 `requires:` 指向不存在的 artifact、依賴形成環。**抓不到**(2026-10-01 實測):刪掉一條 `requires:` 邊、鍵名拼錯(如 `requirez:`)、`instruction:` 文字(含 PRECHECK)的任何改動 —— 這些要靠人審 | CI run 變紅 |
 | Drift 通知 | [`version-check.yml`](../.github/workflows/version-check.yml) 每週,把基準 vs 最新 npm / GitHub release 字串比對 | Pinned ≠ latest upstream | 開 / 更新 [labelled drift issue](https://github.com/azuma520/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check),由人類檢核(workflow 維持綠 — drift 是正常狀態,不是錯誤) |
 | 端對端 workflow | **未自動化** | Superpowers skill 內部行為改變(改名、改寫 prose 影響 PRECHECK 語意、傳遞依賴變動);OpenSpec 引擎語意微調 | drift issue 觸發時,人類讀 upstream release notes |
 
@@ -658,7 +658,7 @@ bridge 對 OpenSpec 的 24 項依賴(逐項列在 [issue #2 相容性 spike 報�
 
 ### Known breaking changes
 
-**v3 → v4**(bundle `3.0.0` → `4.0.0`)。`plan.md` 的條目改由正面規則定義,在 legacy 的 `## <編號> — …` 之外接受 canonical 寫法 `## Task <編號> — …`。有三項行為變更可能改變一份 v3 plan 在第 12 項的判定:形如 `Task <編號>` 的行首非條目 `##` 標題——`Task` 一字、一個以上 space 或 tab、再接符合 `\d+(\.\d+)*` 的編號,編號後是空白或行尾,這種標題變成條目;行首 backtick fenced code block 內的 `##` 標題不再產生鍵值;`##1.1` 或縮排的 ` ## 1.1` 不再是條目。Migration:[從 v3 遷移到 v4](#從-v3-遷移到-v4)。Rollback:checkout commit `V3_ROLLBACK_SHA_PLACEHOLDER`(第一個把 `schema.yaml` 改成 `version: 4` 的 commit 的 parent);沒有可以釘的 `3.x.y` tag。
+**v3 → v4**(bundle `3.0.0` → `4.0.0`)。`plan.md` 的條目改由正面規則定義,在 legacy 的 `## <編號> — …` 之外接受 canonical 寫法 `## Task <編號> — …`。有三項行為變更可能改變一份 v3 plan 在第 12 項的判定:形如 `Task <編號>` 的行首非條目 `##` 標題(`Task` 一字、一個以上 space 或 tab、再接符合 `\d+(\.\d+)*` 的編號,編號後是空白或行尾)變成條目;行首 backtick fenced code block 內的 `##` 標題不再產生鍵值;`##1.1` 或縮排的 ` ## 1.1` 不再是條目。Migration:[從 v3 遷移到 v4](#從-v3-遷移到-v4)。Rollback:checkout commit `737aa56ecfd3f2fc9c5562fbdd82e8d005ca14a2`(第一個把 `schema.yaml` 改成 `version: 4` 的 commit 的 parent;只有仍能從 `main` 追到時才有效——整條分支併入時不得 squash、不得 rebase);沒有可以釘的 `3.x.y` tag。
 
 **v2 → v3**(bundle `2.0.0` → `3.0.0`)。每個 Requirement 與 Scenario 標題現在都必須帶穩定 ID,由第 13 項檢查驗證:一份在 v2 下合法的 `spec.md`(標題沒有編號)沒遷移就過不了驗證。Migration:[從 v2 遷移到 v3](#從-v2-遷移到-v3)。Rollback:把 bundle 釘回 `2.x.y`。
 

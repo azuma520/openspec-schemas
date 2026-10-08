@@ -22,7 +22,7 @@ Superpowers v6.0.0 起，subagent-driven-development 用 `scripts/task-brief` �
 - From: 條文說編號「從 `##` 之後第一個非空白字元開始」，沒要求 `##` 後有空白、也沒限定 `##` 在行首；照字面讀，`##1.1` 與縮排的 ` ## 1.1` 都會被收成條目。
 - To: 條目標題必須從行首開始，且 `##` 後至少一個空白（space 或 tab）；兩種寫法同一條規則。
 - Reason: `##1.1` 在 Markdown 不是標題；縮排 1–3 格的 ` ## 1.1` 在 CommonMark 仍是 H2，但上游 `task-brief` 只認行首的 `#`，所以「行首」是比 Markdown 更嚴、與上游一致的辨識規則。若只替 legacy 寫法保留寬鬆讀法，同一份 plan 會有兩套辨識規則。
-- Impact: **breaking**——v3 照字面可能收到的 `##1.1`、` ## 1.1`，v4 不再是條目。本 repo 已掃描全部 45 個 `plan.md`，無此情況。
+- Impact: **breaking**——v3 照字面可能收到的 `##1.1`、` ## 1.1`，v4 不再是條目。本 repo 已掃描全部 45 個 `plan.md`，無此情況（掃描早於本 change 加入的變異 fixtures；f18、f19 刻意含這兩種寫法）。
 
 **check 12**
 - From: 只收以編號開頭的 `##` 標題。

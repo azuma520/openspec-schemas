@@ -18,7 +18,7 @@
 
 ## v4 — 已釋出
 
-- [x] **以 `Task` 開頭的 plan 條目標題** — `plan.md` 的條目現在可以寫成 canonical 寫法 `## Task <編號> — <標題>`,Superpowers 的 `task-brief` 抽取器辨識得到;legacy 寫法 `## <編號> — <標題>` 繼續接受、沒有排定移除時程,`Task` 不屬於鍵值(schema major 4、bundle 4.0.0)。條目改由正面規則定義,verify 第 12 項不再收行首 backtick fenced code block 內的 `##` 標題形狀文字。這條規則另外帶來兩項行為變更:形如 `Task <編號>` 的行首非條目 `##` 標題——`Task` 一字、一個以上 space 或 tab、再接符合 `\d+(\.\d+)*` 的編號,編號後是空白或行尾,這種標題變成條目;`##1.1` 或縮排的 ` ## 1.1` 不再是條目。canonical 寫法的條目變得能被 `task-brief` 辨識;這不代表它替某個條目抽出的範圍是對的。
+- [x] **以 `Task` 開頭的 plan 條目標題** — `plan.md` 的條目現在可以寫成 canonical 寫法 `## Task <編號> — <標題>`,Superpowers 的 `task-brief` 抽取器辨識得到;legacy 寫法 `## <編號> — <標題>` 繼續接受、沒有排定移除時程,`Task` 不屬於鍵值(schema major 4、bundle 4.0.0)。條目改由正面規則定義,verify 第 12 項不再收行首 backtick fenced code block 內的 `##` 標題形狀文字。這條規則另外帶來兩項行為變更:形如 `Task <編號>` 的行首非條目 `##` 標題(`Task` 一字、一個以上 space 或 tab、再接符合 `\d+(\.\d+)*` 的編號,編號後是空白或行尾)變成條目;`##1.1` 或縮排的 ` ## 1.1` 不再是條目。canonical 寫法的條目變得能被 `task-brief` 辨識;這不代表它替某個條目抽出的範圍是對的。
 
 ## v1.x — 後續 backlog
 

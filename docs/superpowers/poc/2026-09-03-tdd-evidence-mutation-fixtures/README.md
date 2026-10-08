@@ -61,11 +61,11 @@
 - **「不再是條目」拆成 `f18`、`f19` 兩份**：兩種寫法的 v3 判定都是 PASS、v4 都是 BLOCK；合成一份的話，`1.1` 在 v3 會被收兩次而 BLOCK（第一階段重複），那不是要凍結的 v3 行為。
 - **「寫錯格式」拆成 `f20`、`f21`、`f22` 三份，各一種形式**：合成一份的話，若 v4 錯收其中兩種，兩個條目會以重複鍵的 BLOCK 呈現，看起來和預期的 BLOCK（缺 `1.1`）一樣，分辨不出誤收。拆開後每份只有一種形式，錯收就會變 PASS 或訊息不同。
 - **`f16` 的 v3 PASS 是「錯的」判定**：RED 的意思沿用 `fix-v2-blocking-defects`——照改前原文判定是錯的。`f14`、`f15`、`f16` 是 RED→GREEN；`f17`–`f19` 是破壞相容的具體化；`f20`–`f22` 是 v3 已判對的回歸；`f23` 是正向對照。
-- ⚠️ **`f14`–`f23` 尚未盲測**：預期判定是作者依 `task-prefixed-plan-headings` 的 REQ-4 與 v3 現行條文手推的，還沒有對本 change 無脈絡的執行者在不看答案的情況下跑過。
+- **`f14`–`f23` 的盲測狀態（2026-10-08）**：預期判定是作者依 `task-prefixed-plan-headings` 的 REQ-4 與 v3 條文手推後凍結的；之後交給不看答案的執行者跑過——v4 措辭：`f14`–`f23` 全部；v3 措辭：`f14`–`f16`（RED）與 `f17`–`f22`（補充執行，tasks 未要求）。`f23` 沒有 v3 執行（它的 v3 欄本來就不凍結）。每輪的對照、sha256 與交付方式的偏離，見下方「2026-10-08 盲測紀錄（task-prefixed-plan-headings）」。
 
 `f6` 與 `f7` 是這批裡最重要的兩個，理由相反：`f6` 證明「檢查通過 ≠ 判斷通過」，`f7` 證明檢查**不會誤擋合規品**。六個證明「違規會被擋」的 fixture，對「合規不會被誤擋」一句話都沒說——沒有 `f7`，這組防呆就是單向的。`f12` 是 `f7` 之後的第二個正向對照，理由同構：`f10`、`f11` 證明「subject 語法／cardinality 違規會被擋」，但單靠它們無法排除「檢查會不會連合法的雙 subject 配對都一併誤擋」——沒有 `f12`，這條防呆一樣是單向的。
 
-⚠️ **`f8`–`f13` 這六個是目標 change `fix-v2-blocking-defects`（修正措辭後）的行為，且從未進過任何盲測**——見下一節。
+⚠️ **`f8`–`f13` 這六個是目標 change `fix-v2-blocking-defects`（修正措辭後）的行為。其中 `f10`–`f13` 從未進過任何盲測；`f8`、`f9` 只在 2026-10-08 以 v4 的 check 12 措辭盲測過一次**（不是它們當初鎖定的 `fix-v2-blocking-defects` 措辭）——見下一節與「2026-10-08 盲測紀錄」。
 
 ## 證據來源：哪幾個是盲測的，哪一個不是
 
@@ -91,9 +91,9 @@
 
 盲測目錄本身不保存——刪除前以 SHA256 比對確認它與 `f1`–`f6` 逐位元組相同，留著只是同一份東西的第二份拷貝（**該比對同樣不可複驗**，理由見本節開頭）。有價值的是上面的對照表，不是拷貝。
 
-**另一項範圍限制：** 盲測驗的是 R25 / R26 兩項修正**之前**的檢查措辭。之後 check 12 的表述與空行處理有變動，而**變動後沒有再跑第二次盲測**。`f7` 正是會測到新行為的那個 fixture。
+**另一項範圍限制：** 盲測驗的是 R25 / R26 兩項修正**之前**的檢查措辭。之後 check 12 的表述與空行處理有變動，而**變動後沒有對 `f1`–`f7` 整批再跑第二次盲測**。`f7` 正是會測到新行為的那個 fixture。唯一的部分例外是 `f5`：2026-10-08 它和 `f8`、`f9` 一起以 v4 的 check 12 措辭盲測過（只交 check 12，不含其他檢查；見「2026-10-08 盲測紀錄」），`f1`–`f4`、`f6`、`f7` 沒有。
 
-**`f8`–`f13` 沒有盲測判定，句點。** 這六個是 change `fix-v2-blocking-defects` 修正五個 P1 缺陷後才新增的 fixture，鎖定的是修正**後**的檢查措辭；上面兩張表（判定者、盲測名稱對照）只涵蓋 `f1`–`f7`，`f8`–`f13` 不在其中，也不該被讀成隱含通過了某種盲測。它們**沒有**盲測判定這件事不變；但「尚未經任何獨立執行者驗證」已不再成立——2026-09-08 的第 3 輪 code re-review（fallback reviewer）對 13 個 fixture 做過一次**獨立再推導**，13/13 與預期判定一致，報告保存在 `docs/superpowers/retrospectives/2026-09-08-fix-v2-review-reports/code-rereview-fallback-3.md` § Regression。兩者的差別要留著：再推導是知道預期答案後重新導一次，盲測是不知道預期答案的執行者跑一次；**只有後者能反駁預期判定本身**，而 `f8`–`f13` 仍然沒有後者。
+**`f10`–`f13` 沒有盲測判定；`f8`、`f9` 只有一次 v4 措辭下的盲測判定。** 這六個是 change `fix-v2-blocking-defects` 修正五個 P1 缺陷後才新增的 fixture，鎖定的是修正**後**的檢查措辭；上面兩張表（判定者、盲測名稱對照）只涵蓋 `f1`–`f7`，`f8`–`f13` 不在其中，也不該被讀成隱含通過了某種盲測。`f8`、`f9` 是 check 12 的 fixture，2026-10-08 在 change `task-prefixed-plan-headings` 的 v4 盲測（`v4-25-r1`）裡被不看答案的執行者跑過，判定與第一張表一致（見「2026-10-08 盲測紀錄」）；那次交付的是 v4 的 check 12 措辭，不是 `fix-v2-blocking-defects` 當時的措辭，所以它不回頭證明那個版本。`f10`–`f13` 至今**沒有**盲測判定；但「尚未經任何獨立執行者驗證」已不再成立——2026-09-08 的第 3 輪 code re-review（fallback reviewer）對 13 個 fixture 做過一次**獨立再推導**，13/13 與預期判定一致，報告保存在 `docs/superpowers/retrospectives/2026-09-08-fix-v2-review-reports/code-rereview-fallback-3.md` § Regression。兩者的差別要留著：再推導是知道預期答案後重新導一次，盲測是不知道預期答案的執行者跑一次；**只有後者能反駁預期判定本身**，而 `f10`–`f13` 仍然沒有後者（`f8`、`f9` 有，限 v4 措辭）。
 
 ## 怎麼重跑
 
@@ -117,4 +117,85 @@ fixtures 是純 markdown，沒有任何工具依賴；`f1`–`f7` 的 `plan.md` 
 1. **一次只交付一個 fixture，只交它的 `plan.md` 與 `tasks.md`**。複製到本 README 不在其中的位置（不是 `fixtures/` 的上一層，也不是含有本檔的任何目錄），目錄名用中性名稱（`case-A` 之類），不要沿用 `f14-…` 這種帶答案的原名。不要把整個 `fixtures/` 目錄交出去。
 2. **執行者不可看到本 README**，也不可看到 `design.md` D7、`specs/plan-contract/spec.md` 或任何寫著預期判定的檔案。執行者只拿到：要測的 check 12 措辭（v3 或 v4，一次一種）與那一個 fixture。
 3. 同一個 fixture 用 v3 措辭跑一次、用 v4 措辭跑一次，各自回報中間值（plan 收到的鍵、tasks 收到的鍵、重複、集合差）與判定；之後由另一層拿結果對照本檔表格。`f23` 的 v3 欄不凍結，只比對 v4。
-4. 這十個 fixture 目前**尚未盲測**，表格裡的 v3、v4 判定是手推值。
+4. 這十個 fixture 的 v4 判定與 `f14`–`f22` 的 v3 判定已於 2026-10-08 盲測過、全部與表格一致（`f23` 沒有 v3 執行）；表格裡的值仍是先手推、後凍結的預期，盲測是拿來對照的。那幾輪**沒有完全照上面第 1 步**（一個執行者一次收到多個 case 目錄），偏離內容見下一節。
+
+## 2026-10-08 盲測紀錄（task-prefixed-plan-headings）
+
+這幾輪的原始工作紀錄（執行帳本、case 名稱對照檔、交出去的目錄）都在 git-ignored 的 SDD 工作區與 session scratch 裡，branch 收尾後不保留。本節把對照結果與**任何人都能重算的部分**寫進版控。
+
+**每輪共同條件**
+
+| 項目 | 內容 |
+|---|---|
+| 執行者 | 控制者派出的全新 subagent，每輪一個，派工參數明確指定模型 `sonnet`（六輪皆是，含下述被取代的兩輪）；只被允許讀該輪的 `check12.txt` 與該輪的 `case-*` 目錄，沒有拿到本 README、design、spec 或任何寫著預期判定的檔案 |
+| 交付內容 | `check12.txt`（下述抽取規則的產物）＋若干 `case-<四位隨機數>/`，每個目錄只有某個 fixture 的 `plan.md` 與 `tasks.md`，放在 repo 外的 scratch 目錄 |
+| 對照者 | 控制者拿執行者回報的判定對照本檔第一張表的凍結預期；case ↔ fixture 對照檔沒交給執行者 |
+| 受測物完整性 | 每個 case 的 `plan.md`、`tasks.md` 與 `fixtures/` 內對應檔案的 sha256 在交付時記錄，2026-10-08 收尾前重算全部一致 |
+| check 12 抽取規則 | 讀 `superpowers-bridge/schema.yaml`（UTF-8），從**第一個**去掉前後空白後以 `12. **tasks.md task numbers` 開頭的行起，到其後第一個去掉前後空白後恰為 `CHECK 13 — CONTRACT IDENTITY.` 的行為止（**不含**該行）；每行若以 6 個空白開頭就刪掉這 6 個，其餘原樣；以 LF 接起來，去掉整段結尾的空白字元，再補一個 LF；以 UTF-8 編碼後算 sha256 |
+
+**check 12 措辭的來源與 sha256**
+
+| 措辭 | 來源（可重算） | `check12.txt` sha256 |
+|---|---|---|
+| v3 | commit `737aa56ecfd3f2fc9c5562fbdd82e8d005ca14a2` 的 `superpowers-bridge/schema.yaml` | `4d1ac91beec78e18d98f875cb6198ddd0752658f89a9cb01f7e8541d25cec91e` |
+| v4 | commit `0b11be5147ab3be3f47dd08187a0708bc686bae4`（第一個把 `schema.yaml` 改成 `version: 4` 的 commit；`green-v4-r1`、`v4-25-r1` 跑的是它 commit 前的工作樹，重算值相同）的 `superpowers-bridge/schema.yaml` | `79d796db5b7a4facbbc7a6cf76548e81186c9847efebaed927208cdbc0e9d046` |
+
+兩個值都於 2026-10-08 依上述規則從 `git show <commit>:superpowers-bridge/schema.yaml` 重算過，與執行時交出去的 `check12.txt` 相同。之後 schema 若再改 check 12，重算出的值會不同，那不代表這裡記錯——比對時請用上表的 commit。
+
+**被取代的兩輪。** v4 最早的兩輪 `green-v4`（`f14`–`f16`，3/3 一致）與 `v4-25`（`f17`–`f23`、`f5`、`f8`、`f9`，10/10 一致）用的是修正前的 v4 措辭（`check12.txt` sha256 `2c4735b0fc0d965cfef6d509577fbc4e80c39ecefb242eeb67ff0a2714fa1b0e`）。之後審查改了 check 12 的兩處措辭（理由句不再宣稱與上游 task-brief 的任務切分一致、只講圍欄；`##` 後的空白改成「整段空白」），所以兩輪都重跑，下表的 `green-v4-r1`、`v4-25-r1` 才是紀錄。修正前的措辭從未 commit，該 sha256 無法從 git 重算。
+
+**交付方式的偏離（照實記錄）。** 「`f14`–`f23` 的單份交付」第 1 步要求「一次只交付一個 fixture」，這幾輪沒有照做：每輪由**一個**執行者收到多個 case 目錄（3、6、3、10 個）。各 case 彼此獨立、目錄名是隨機數、沒有任何 README；但同一個執行者看得到同一輪的其他 case，可能從並列的樣本推測出題意圖，這比「一個執行者只看一個 fixture」弱。`v4-25-r1` 另外把 `f5`、`f8`、`f9`（屬於 `f1`–`f13`）與 `f17`–`f23` 放在同一輪，也不是「怎麼重跑」第 2 步描述的分批方式。
+
+**另一項限制。** v4 的 check 12 條文直接以例子點名了幾種不算條目的寫法（` ## 1.1`、`##1.1`、`## task 1.1`、`1.1a`），`f18`–`f22` 的 v4 判定因此可能是執行者對上了條文裡的例子，而不是套用一般規則；這幾份的 v4 鑑別力比 `f14`–`f16`、`f23` 弱。
+
+下表欄位：「plan 鍵」「判定」是執行者回報；「tasks 鍵」是該 fixture `tasks.md` 的任務編號（交付內容本身）；「凍結預期」取自本檔第一張表。
+
+### `red-v3`：v3 措辭，`f14`–`f16`（task 2.2 RED）
+
+| case | fixture | plan 鍵 | tasks 鍵 | 判定 | 凍結預期（v3） | 一致 |
+|---|---|---|---|---|---|---|
+| `case-8741` | `f14-fenced-heading-not-entry` | `1.1, 9.9, 1.2` | `1.1, 1.2` | BLOCK（第二階段，plan 多 `9.9`） | BLOCK（plan 多 `9.9`） | ✓ |
+| `case-6034` | `f15-task-form-entry` | （無） | `1.1, 1.2` | BLOCK（第二階段，缺 `1.1`、`1.2`） | BLOCK | ✓ |
+| `case-7316` | `f16-task-and-legacy-same-key` | `1.1` | `1.1` | PASS | PASS（錯的 PASS，即 RED） | ✓ |
+
+3/3 與凍結的 v3 預期一致，也就是三份都在 v3 下紅。
+
+### `v3-supp`：v3 措辭，`f17`–`f22`（補充執行，tasks 未要求）
+
+| case | fixture | plan 鍵 | tasks 鍵 | 判定 | 凍結預期（v3） | 一致 |
+|---|---|---|---|---|---|---|
+| `case-3106` | `f17-task-number-nonentry-reinterpreted` | `1.1` | `1.1` | PASS | PASS | ✓ |
+| `case-9962` | `f18-no-space-after-hashes` | `1.1` | `1.1` | PASS | PASS | ✓ |
+| `case-2237` | `f19-indented-heading` | `1.1` | `1.1` | PASS | PASS | ✓ |
+| `case-5396` | `f20-lowercase-task-heading` | （無） | `1.1` | BLOCK（缺 `1.1`） | BLOCK | ✓ |
+| `case-3657` | `f21-h3-task-heading` | （無） | `1.1` | BLOCK（缺 `1.1`） | BLOCK | ✓ |
+| `case-9245` | `f22-task-suffixed-number-heading` | （無） | `1.1` | BLOCK（缺 `1.1`） | BLOCK | ✓ |
+
+6/6 一致。執行者對 `f18`、`f19` 主動註明：照條文字面讀會收到 `1.1`，但 CommonMark 不會把 `##1.1` 當標題、條文也沒要求 `##` 在行首——它照條文判定。
+
+### `green-v4-r1`：v4 措辭，`f14`–`f16`（task 2.2 GREEN）
+
+| case | fixture | plan 鍵 | tasks 鍵 | 判定 | 凍結預期（v4） | 一致 |
+|---|---|---|---|---|---|---|
+| `case-9740` | `f14-fenced-heading-not-entry` | `1.1, 1.2` | `1.1, 1.2` | PASS | PASS | ✓ |
+| `case-1237` | `f15-task-form-entry` | `1.1, 1.2` | `1.1, 1.2` | PASS | PASS | ✓ |
+| `case-9746` | `f16-task-and-legacy-same-key` | `1.1, 1.1` | `1.1` | BLOCK（第一階段，`1.1` occurs more than once in plan.md） | BLOCK（第一階段，同訊息） | ✓ |
+
+3/3 一致：同一批輸入（sha256 與 `red-v3` 相同）在 v3 紅、v4 綠。
+
+### `v4-25-r1`：v4 措辭，`f17`–`f23`、`f5`、`f8`、`f9`（task 2.5）
+
+| case | fixture | plan 鍵 | tasks 鍵 | 判定 | 凍結預期（v4） | 一致 |
+|---|---|---|---|---|---|---|
+| `case-9152` | `f17-task-number-nonentry-reinterpreted` | `1.1, 3` | `1.1` | BLOCK（第二階段，`3` 沒有任務） | BLOCK（鍵 `3` 沒有對應任務） | ✓ |
+| `case-2206` | `f18-no-space-after-hashes` | （無） | `1.1` | BLOCK（`1.1` 沒有條目；收不到任何鍵） | BLOCK（缺 `1.1`） | ✓ |
+| `case-3009` | `f19-indented-heading` | （無） | `1.1` | BLOCK（同上） | BLOCK（缺 `1.1`） | ✓ |
+| `case-3993` | `f20-lowercase-task-heading` | （無） | `1.1` | BLOCK（同上） | BLOCK（缺 `1.1`） | ✓ |
+| `case-5909` | `f21-h3-task-heading` | （無） | `1.1` | BLOCK（同上） | BLOCK（缺 `1.1`） | ✓ |
+| `case-8487` | `f22-task-suffixed-number-heading` | （無） | `1.1` | BLOCK（同上） | BLOCK（缺 `1.1`） | ✓ |
+| `case-8937` | `f23-task-form-with-fenced-task-heading` | `1.1, 1.2` | `1.1, 1.2` | PASS | PASS（只收 `1.1, 1.2`） | ✓ |
+| `case-4718` | `f5-key-set-mismatch` | `1, 2, 9` | `1, 2, 3` | BLOCK（`3` 沒有條目；`9` 沒有任務） | check 12 BLOCK | ✓ |
+| `case-8415` | `f8-duplicate-task-number` | `1.1` | `1.1, 1.1` | BLOCK（`1.1` occurs more than once in tasks.md） | check 12 BLOCK，具名重複鍵 `1.1` | ✓ |
+| `case-1176` | `f9-duplicate-plan-key` | `2.3, 2.3` | `2.3` | BLOCK（`2.3` occurs more than once in plan.md） | check 12 BLOCK，具名重複鍵 `2.3` | ✓ |
+
+10/10 一致。

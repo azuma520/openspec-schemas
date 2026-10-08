@@ -103,12 +103,12 @@ remote peeled tag equals the release commit.
   - TDD: n/a — prose/doc-only; verified by doc review
 - [x] 3.7 Add a v4 "Released" section to `docs/roadmap.md` and `docs/roadmap.zh-TW.md`
   - TDD: n/a — prose/doc-only; verified by doc review
-- [ ] 3.8 Once the commit setting `version: 4` exists, write the v3 → v4 rollback as the full SHA of its parent into both READMEs, and check that SHA out once to confirm `superpowers-bridge/schema.yaml` reads `version: 3` (REQ-4 of `release-versioning`)
+- [x] 3.8 Once the commit setting `version: 4` exists, write the v3 → v4 rollback as the full SHA of its parent into both READMEs, and check that SHA out once to confirm `superpowers-bridge/schema.yaml` reads `version: 3` (REQ-4 of `release-versioning`)
   - TDD: n/a — documentation of a ref; verified by the checkout itself, and no placeholder may remain
 
 ## 4. Integration
 
-- [ ] 4.1 Re-sync `openspec/schemas/superpowers-bridge/` from the source bundle, then run `openspec schema validate superpowers-bridge` and `openspec schemas` in a throwaway project
+- [x] 4.1 Re-sync `openspec/schemas/superpowers-bridge/` from the source bundle, then run `openspec schema validate superpowers-bridge` and `openspec schemas` in a throwaway project
   - TDD: n/a — structural validation; its output is the evidence
 - [x] 4.2 During this change's apply, run the loaded upstream Superpowers `task-brief` on this change's own plan.md for at least one non-final entry, record the Superpowers version and script path, and show the extracted brief is line-for-line identical to that plan entry; record whether the final entry swallows trailing non-entry text as a known upstream limitation
   - TDD: n/a — integration acceptance test; `rc=0` is not evidence, the line comparison is
