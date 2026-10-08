@@ -160,3 +160,83 @@ workflow-harness — Handoff template
 
 1. 主線：`/opsx:apply task-prefixed-plan-headings`，從測試資料 1.1–1.3 開始，改 schema 前先拿到 2.2 的 RED。
 2. 不搶主線：push 本機領先的 3 個 commit（需授權）；研究題 Verification Strategy 要不要選定下一步。
+
+## Session 14:50
+
+### 一、本 session 主題
+
+C′ change `task-prefixed-plan-headings` 從 6/8 做到結案並正式發布：照 SDD 跑完 apply（18/18）、verify、retrospective、文件審、archive，fast-forward 併入 `main`、push，建立並推送 repo 第一個 tag `v4.0.0`（schema major 4／bundle 4.0.0）。開工時另回覆 workflow-harness session 一則跨 session 詢問（「規則升級四維度」出處：查 memory 未找到，已照實回覆、未改檔）。
+
+### 二、完成事項
+
+- 開工三步完成；使用者指示「繼續、不用一直問」，主線直接做 apply。
+- **Apply（SDD，worktree `.claude/worktrees/task-prefixed-plan-headings`、branch `feat/task-prefixed-plan-headings`）**：
+  - fixtures f14–f23（RED→GREEN 3、breaking 3、回歸 3、綜合對照 1）＋ fixtures README 凍結預期。
+  - 2.2 TDD：盲測 red-v3（改前條文）3/3 判錯方向正確 → schema 改寫 → green-v4-r1 3/3 正確；紀錄寫在 tasks.md 2.2。2.5：v4-25-r1 10/10；補充 v3-supp 6/6。完整表格與 check-12 sha256 存進 fixtures README §2026-10-08 盲測紀錄（tracked）。
+  - schema.yaml：Plan Contract 正面條目規則、check 12 鍵值收集＋fence 開關、check 12/13 不對稱理由、`version: 4`。模板、VERSION 4.0.0、bridge README en/zh（遷移、Known breaking、Compatibility v4 列 `pending`、S11）、version-check.yml 改讀 v4、CLAUDE.md、roadmap、根 README 狀態欄。
+  - 4.2：上游 task-brief（Superpowers 6.4.1）抽 1.1/1.2/1.3/4.2，與 plan 原文逐行相同。3.5：workflow_dispatch run `37723513752` 讀到 1.14.0/v5.1.0。
+  - 審查：每組任務審＋修正複審、最後整體審（opus）＋一次修正波＋複審；裁定 R1–R16 已端給使用者、無推翻。
+- **verify**（獨立 opus 執行者）⚠️ PASS WITH WARNINGS、無 BLOCK；**retrospective** 已寫。
+- **文件審**：Codex 4 批全因額度用完失敗（`codex_fail`，reason=quota）→ 改派 `contract-neutral-reviewer`，4 批 ✅ Mergeable（SENTINEL_VALID）；使用者裁定 A 修 4 項會誤導讀者的 🟡（rollback 可達性前提、validate-schemas 觸發條件、design/proposal 過時「0 筆」、retro 不實句）→ 重審 ✅；CLAUDE.md 再一行修正 → 重審 ✅；archive 後兩份主規格審 ✅。
+- **Commits（皆使用者當次授權）**：`0b11be5`（實作）、`d5770b4`（收尾＋verify＋retro）、`d2a350c`（archive）。分支 push 兩次。
+- **Archive**：暫存複本跑真正 `openspec archive -y` 當標準答案 → 套進 worktree → 使用者 `rm` 原 change 目錄 → `openspec/` 與標準答案 diff 為空、`validate --all` 6/6。
+- **發布**：本機 `main` fast-forward 到 `d2a350c` → push `main`（e139fc1..d2a350c）→ CI Validate schemas run `37739053544` success（v4 首次 CI 驗證）→ annotated tag `v4.0.0` 推送，`git ls-remote --exit-code --tags origin 'refs/tags/v4.0.0^{}'` = `d2a350c4a992994f9d054b1cbb00617b53593143`（release commit，使用者裁定 A）。
+- 工作地圖 `task-20261002-task-brief-heading-compat` → DONE（readback ok）。
+- 封裝候選檢查：唯一 open 的 `[SOP 候選]`（precommit 入口）本 session 未觸發，不 bump。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **清理（使用者已同意發布後處理，尚未做）**：
+  - worktree `.claude/worktrees/task-prefixed-plan-headings`（內含 git-ignored 的 SDD ledger `.superpowers/sdd/plan/`；證據已搬進 tracked 檔、裁定已列給使用者）。worktree 不在 `.worktrees/` 下，移除要用 `git worktree remove`。
+  - 本機與遠端分支 `feat/task-prefixed-plan-headings`（遠端停在 `d5770b4`，`d2a350c` 已在 main）：刪遠端分支屬對外動作，需授權。
+  - scratchpad（本 session 的 blind/、docrev*/、arch1/、vt-*/ 等）：AI 的 rm 會被擋，給使用者 `!` 指令。
+- [#接力] **延後的審查項（記錄，未修）**：`release-versioning` 主規格 Purpose 仍是 archive 自動填的 TBD；plan-contract REQ-4 把「不提前結束」歸給 REQ-1（REQ-1 沒寫）；v1→v2、v2→v3 舊 rollback 仍寫「pin bundle」（設計 Non-Goal）；check 12 理由句缺「as of Superpowers v6.4.1」（R15）；README :580「since v2」與 :657「since v1」措辭；CLAUDE.md:203 重算指令沒寫 `main`、不可 squash 的理由也繫於 `0b11be5`；f18/f19 可能被 markdown 自動格式化「修好」；fixtures README :32 開頭仍寫「v2 checks 8–12」。
+- [#接力] **R8 提醒（使用者）**：roadmap「v4 — Released」只在遠端 tag 存在後才成立——現已成立。
+- [#接力] Codex 額度：本次 14:47 前用完，之後的審查先確認額度。
+- [#不重議] release commit = `d2a350c`；tag 不隨後續交接 commit 移動；整條分支不得 squash／rebase 的規則（已寫進 README 與 CLAUDE.md）；R1–R16。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **說過頭的句子**（沿用，本 session 至少 4 次，3 次被審查抓到、1 次自己抓到）：
+  - 「`737aa56` 目前只在承載 v4 的 branch 上」——寫完前一刻我才剛對使用者說過本機 main 也有它（審查抓到）。
+  - 「改成『fixtures 以外沒有』」——只改了 README，同類句在 design D2/D4、proposal 沒一起改（審查抓到；一個缺陷＝一類缺陷沒做到）。
+  - 存備援審查報告時先存了自己節錄的版本，差點拿節錄版去驗證「原始報告」（自己抓到，改存逐字原文）。
+  - check 12「與上游劃分任務一致」（實作子代理寫的、任務審抓到）。
+
+  做法照舊，另加一條：**修一個 finding 時，用 grep 掃同一句話在其他 artifact 的副本**（design / proposal / README 常有同一事實的三份陳述）。
+- **說要先做的查核，被授權後跳過**（沿用）：本 session 未發生。
+- **審查等級傳低了**（沿用）：本 session 未發生。
+
+**【當日洞見】**
+
+- **證據要寫明落在哪個 tracked 檔**：盲測結果一開始只在 git-excluded 的 SDD ledger，與 loosen-plan 弄丟證據同一形狀；最後整體審查才救回。
+- **條文綁 sha 的證據讓後期措辭修正變貴**：check 12 改一個理由句，GREEN 與 2.5 都要重跑；之後用 R15 擋下第三次重跑。
+- **worktree 預設從 `origin/main` 起分支**：本機領先遠端時會漏掉 plan，要改從本機 HEAD 開。
+- **worktree 隔離檢查會擋含 `git` 字樣的複合指令與 `orca … --shell git-bash`**：拆成單純指令；Orca 分頁派不成時依 CLAUDE.md 改背景 Bash。
+- **使用者貼來的裁定裡有一句前提不成立**（「archive 還沒完成」）：照辦結論、更正理由，沒有附和。
+
+【學習候選】
+
+- **Case**：一個 finding 修在 README，同一事實在 design D2/D4 與 proposal 的副本沒改，審查下一輪才指出。
+- **Candidate Pattern**：一個 change 內同一事實常有多份陳述（proposal / design / README / retrospective）；修其中一份時，以該事實的關鍵詞 grep 全 change 目錄與連動文件。只適用於「事實陳述」型 finding；措辭風格不適用。
+- **Evidence**：本次 1 例；與全域「一個缺陷＝一類缺陷」同類，**Hypothesis**（是既有規則的一個未被觸發的實例，而非新規則）。
+- **Minimum Sufficient Intervention**：不新增規則；併入既有「說過頭」紀律接力觀察。
+- **Promotion**：History only。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（737aa56、開工於 2026-10-08T09:40:28）——列 737aa56..HEAD
+
+- `0b11be5`：schema.yaml、VERSION、templates/plan.md、bridge README en/zh、根 README en/zh、version-check.yml、CLAUDE.md、roadmap en/zh、fixtures f14–f23 與 fixtures README、change tasks.md
+- `d5770b4`：fixtures README（盲測紀錄）、CLAUDE.md、roadmap、bridge README en/zh（rollback SHA 與修正）、design.md、proposal.md、tasks.md、verify.md（新）、retrospective.md（新）
+- `d2a350c`：change 目錄移至 `openspec/changes/archive/2026-10-08-task-prefixed-plan-headings/`；`openspec/specs/plan-contract/spec.md`（+REQ-4）、`openspec/specs/release-versioning/spec.md`（新）
+- tag `v4.0.0` → `d2a350c`
+- 本收工 commit：`workflow-harness/work-map.jsonl`（C′ → DONE）、本交接檔
+
+### 六、下一步建議
+
+1. 清理收尾：worktree 已解除登記、本機分支已刪（`-D`，tip `d2a350c` 在 origin/main）、scratchpad 已清；剩空目錄 `.claude/worktrees/task-prefixed-plan-headings/`（rmdir 回 Device or resource busy，疑本 session 仍持有 handle；下個 session 開工時 `! rmdir` 它）與遠端分支是否刪除。
+2. 接續工作地圖：`6.x 相容基準重新定錨`（C′ 的 S11 證據已可納入）；`每週版本檢查加 VERSION 無 tag 提醒`（v4.0.0 已發布，該重新評估）。
+3. 延後的審查項（見三）挑要不要開小 change 處理，優先 `release-versioning` Purpose TBD。
