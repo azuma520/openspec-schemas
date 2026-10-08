@@ -240,3 +240,65 @@ C′ change `task-prefixed-plan-headings` 從 6/8 做到結案並正式發布：
 1. 清理收尾：worktree 已解除登記、本機分支已刪（`-D`，tip `d2a350c` 在 origin/main）、scratchpad 已清；剩空目錄 `.claude/worktrees/task-prefixed-plan-headings/`（rmdir 回 Device or resource busy，疑本 session 仍持有 handle；下個 session 開工時 `! rmdir` 它）與遠端分支是否刪除。
 2. 接續工作地圖：`6.x 相容基準重新定錨`（C′ 的 S11 證據已可納入）；`每週版本檢查加 VERSION 無 tag 提醒`（v4.0.0 已發布，該重新評估）。
 3. 延後的審查項（見三）挑要不要開小 change 處理，優先 `release-versioning` Purpose TBD。
+
+## Session 17:15
+
+### 一、本 session 主題
+
+同一 session 14:50 收工後的延續（使用者指示補記，故追加新區塊而非沿用「同 session 只 append 一次」）：決定 v4 之後的方向（6.x 相容基準重新定錨），完成第一步「能力契約缺口盤點」研究與 D1–D5 裁定，修正工作地圖上 execution record 的表示，並完成第一個工作單位「README 上游行為描述更正」（審查通過，待 commit）。
+
+### 二、完成事項
+
+- **方向**：使用者裁定 v4 之後優先做 `task-20261007-superpowers-6x-rebaseline`，先研究盤點、不急著開 change；Completion Gate 等 6.x 對齊後再推進。公開 roadmap 未反映下一代改造，方向收斂後再整理。
+- **工作地圖修正**：`task-20261007-formal-design-execution-record` 被 09:29 收工的序 5 自動規則升成 NEXT，與 10/07 B-6 裁定（暫不實作、依賴 Gate 落地）矛盾 → 使用者選 A′：改回 TODO 並改掛到 `task-20260826-superpowers-bridge-next-gen`（Gate 那條不再只有一個子項，不會再被自動升 NEXT）。依賴關係仍由 Gate 那條的 description 與 B-6 承載。
+- **研究**：`docs/superpowers/research/2026-10-08-superpowers-6x-capability-gap.md`（研究 agent 產出，索引加一列）。範圍 S4/S5/S12/S14＋S6/S7/S17/S18，確認 S11/S13；新發現 S19（SDD 收尾自叫 finishing）。Codex 文件審 4 輪（同一 thread `01a11a86-6be1-7241-9b65-ae53ef2516d1`，已回覆 3 次）：r1 ⛔（S12 建議改法與上游矛盾）→ 修 → ✅；加 §4 裁定後 r3 ⛔（我寫的「正式設計與 schema 都沒有隔離要求」不成立）→ 修 → r4 ✅。
+- **D1–D5 裁定**（記在研究文件 §4）：D1 B（接受上游三路徑，附核可停頓點驗證條件）；D2 只改散文、不升 major；D3 有條件允許降級（三情形＋原則，依 cost-aware policy）；D4 以 `v6.4.1` 為驗證目標與宣告版本；D5 由 B 改 A——本輪就補明「控制權交接」，含工作區保留到 verify 完成且證據持久化之後。
+- **commit `6cbf82c`**（使用者授權）：研究文件、研究索引、工作地圖修正。
+- **README 中英更正（未 commit）**：S17 安裝指令實際裝 6.4.1、S7 Workspace 改寫為 6.4.1 實際流程＋untracked change 目錄的事實、S12 Completion 三選項與清理條件、S5 Open drift 後加「更正」段（writing-plans 終點 v5.1.0 已有；HARD-GATE v5.1.0 已有、6.4.1 改寫為分段核可）、S14/S12 後續狀態段。查證：v5.1.0 原文以 `gh api …?ref=v5.1.0` 讀、6.3.0/6.4.1 讀本機。新 Codex thread `01a11ac8-0a2a-77d0-aa8a-3becdf3351e2` 一輪 ✅ Mergeable；compatibility 表未動、CI grep 仍讀 1.14.0/v5.1.0、中英 713 行章節對齊、installed copy 已同步。
+- 工作地圖：`task-20261007-superpowers-6x-rebaseline` → DOING（本 session 實際推進：研究＋README 更正）。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] README 中英更正若本次未 commit，下次先 commit（審查已過、`doc_review` 已記 pass）。
+- [#接力] 下一個工作單位：opsx change「brainstorming 路徑對齊＋S19 交接」（沿用 `task-20260826-fix-brainstorming-drift`）：S4、S5、S6；S19 須在 proposal/tasks **明列為獨立的小範圍相容性修正**；D3 的 apply step 1 措辭可一起；交接契約 4 要點見研究文件 §4.1。使用者本次明示「暫不啟動」。
+- [#接力] README 第 632 行（10/02 紀錄列）寫「`v6.4.1` added … a HARD-GATE」不準（HARD-GATE v5.1.0 已有、6.4.1 是改寫）；屬 S4，依「不改舊紀錄句」慣例，於 S4 change 以後續狀態段更正。
+- [#接力] 非必修 🟡（README:604 中英）：「bounded 直接進入實作」可補「在對話中的設計核可之後」——記錄、未改。
+- [#接力] 第三步驗證追加要求見研究文件 §4.2（D1 核可停頓、D5 控制權交接與工作區保留、D3 情形與紀錄）。
+- [#接力] 空目錄 `.claude/worktrees/task-prefixed-plan-headings/` 仍待 session 結束後 `! rmdir`。
+- [#接力] 本機 `main` 領先 origin（`181e7a7`、`6cbf82c`，加本收工 commit）；未授權 push。
+- [#不重議] D1–D5 裁定；execution record 的 A′ 表示；6.x 先盤點後切 change。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **宣告「沒有」前沒窮舉（本 session 1 次，Codex 抓到）**：我以英文 `isolat|worktree` grep 正式設計得 0 筆，就對使用者與文件宣稱「正式設計與 schema 都沒有隔離要求」；正式設計是中文（「隔離」）、schema 本身就有「isolated workspace」。全域規則「0 命中要換結構不同的路徑交叉驗」沒做到；做法：搜中文文件時中英關鍵字都搜，且先查自己正要談的那個檔（schema）。
+- **說過頭的句子**（沿用，本 session 2 次）：上句；以及我在建議裡說「execution record 是 Gate 的前提」——照工作地圖 NEXT 字面推論、沒回讀 B-6 原文（使用者抓到）。
+- **附和裁定時驗事實前提**（沿用）：本 session 都有驗（18 項依賴數、S13 已處理、cost-aware 出處、archive 狀態），其中「archive 還沒完成」不成立已更正。
+
+**【當日洞見】**
+
+- **登記工具借 parent/child 表達依賴，會撞上收工的「唯一可升子項自動 NEXT」**：B-6 的替代表示在下一次收工就被翻回；改掛到有 DOING 子項的父項下解決。根因是登記工具不能記「在等哪一筆」，屬 workflow-harness 範疇。
+- **上游歷史宣稱要對 tag 原文查**：研究引用的 `git show v5.1.0` 本機無法重現，改用 `gh api …?ref=v5.1.0` 讀 GitHub tag 才驗到，順帶發現 HARD-GATE 的版本說法錯。
+- **子流程完成 ≠ 上層流程完成**：SDD 的 Finish 指示呼叫 finishing 並刪工作區，與 bridge 的 verify → retro → archive 交接點衝突；修法是寫明控制權交接，不是新增驗收機制。
+
+【學習候選】
+
+- **Case**：以英文關鍵字搜中文正式設計得 0 筆，宣稱「沒有隔離要求」，Codex 指出中文「隔離」與 schema 原文。
+- **Candidate Pattern**：對中文（或混語）文件做否定性宣稱前，關鍵字至少中英各一組，並先搜「正在談的對象本身」。適用於宣告不存在；肯定性引用不適用。
+- **Evidence**：本次 1 例；屬全域「宣告沒有前先窮舉」既有規則的又一實例，**Hypothesis**。
+- **Minimum Sufficient Intervention**：不新增規則；併入既有紀律接力觀察。
+- **Promotion**：History only。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（737aa56、開工於 2026-10-08T09:40:28）——列 737aa56..HEAD（14:50 之後的部分如下）
+
+- `6cbf82c`：`docs/superpowers/research/2026-10-08-superpowers-6x-capability-gap.md`（新）、`docs/superpowers/research/README.md`、`workflow-harness/work-map.jsonl`（execution record → TODO＋改掛）
+- 本收工 commit：`workflow-harness/work-map.jsonl`（6.x rebaseline → DOING）、本交接檔；README 中英兩檔依使用者確認決定是否同 commit
+
+### 六、下一步建議
+
+1. 若 README 更正尚未 commit，先 commit；之後清空目錄（rmdir）。
+2. 啟動 opsx change「brainstorming 路徑對齊＋S19 交接」（使用者授權後）。
+3. 之後第三步：以 `v6.4.1` 跑完整相容性驗證（清單見研究文件 §3.2＋§4.2）。
