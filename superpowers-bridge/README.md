@@ -31,6 +31,7 @@ Install the superpowers-bridge schema for OpenSpec into this project:
 7. Clean up the temp directory.
 8. Verify Superpowers plugin is installed by running `claude plugin list`.
    If not listed, run `claude plugin install superpowers@claude-plugins-official`.
+   That command installs the version the official marketplace pins — Superpowers `v6.4.1` when checked on 2026-10-08 — which can lag the latest upstream release.
 9. Show me the final state.
 ```
 
@@ -373,11 +374,11 @@ Confirms these skills are installed before proceeding:
 
 Missing skill → STOP with explicit error. No silent fallback, no manual mode within this schema. The user should either install Superpowers or switch to the built-in `spec-driven` schema for that change.
 
-> The v0 version of this schema once placed an "auto-commit change artifacts to current branch" step here. It was removed after the [PR #970 review](https://github.com/Fission-AI/OpenSpec/pull/970): handling untracked change directories is the worktree skill's responsibility, not the schema's.
+> The v0 version of this schema once placed an "auto-commit change artifacts to current branch" step here. It was removed after the [PR #970 review](https://github.com/Fission-AI/OpenSpec/pull/970): the schema does not commit on your behalf. A new worktree is checked out from a commit, so a change directory you have not committed is not present in it; `using-git-worktrees` (checked against Superpowers `v6.4.1`) does not handle this either.
 
 #### 1. Workspace — `superpowers:using-git-worktrees`
 
-Creates `.worktrees/<change-name>/`, switches to a new branch, runs setup, confirms a clean test baseline.
+Invokes `using-git-worktrees`. As of Superpowers `v6.4.1` that skill skips creation if you are already in a linked worktree; otherwise it asks for your consent unless your instructions already state a preference; it prefers the harness's native worktree tool and otherwise runs `git worktree add` at `<dir>/<branch-name>`, where `<dir>` is a directory your instructions name, an existing `.worktrees/` or `worktrees/`, or `.worktrees/` by default; then it runs project setup and a baseline test run. If you decline, or a sandbox blocks worktree creation, it works in the current directory. This schema's apply instruction still asks for an isolated worktree.
 
 #### 2. Executor — `superpowers:subagent-driven-development`
 
@@ -420,7 +421,7 @@ Syncs delta specs into `openspec/specs/<capability>/spec.md` and moves the chang
 
 #### 6. Completion — `superpowers:finishing-a-development-branch`
 
-Confirms tests are green, presents merge / PR / keep-branch / discard options, cleans up the worktree. **PR is the last step** — if retro or archive haven't been done, finish them first.
+Re-runs the test suite (stops if it fails), confirms the base branch, then offers three options — merge locally, push and open a PR, or keep the branch as-is (two options, without merge, on a detached HEAD). Discard happens only when you ask for it explicitly and type `discard` to confirm. Merge, or a confirmed discard, cleans up a worktree under `.worktrees/` or `worktrees/` (any other worktree is left to the host); PR and keep preserve the worktree (behaviour checked against Superpowers `v6.4.1`). **PR is the last step** — if retro or archive haven't been done, finish them first.
 
 ---
 
@@ -600,6 +601,8 @@ The table above records the upstream versions this schema is declared compatible
 
 **Open drift:** `brainstorming` v6.x opens by classifying the request into three paths — spike / bounded / architectural — and only the architectural path performs the five steps this schema's `brainstorm.instruction` describes. On the spike and bounded paths the skill produces a short in-chat answer and stops, which starves the `design` artifact's Context / Goals / Decisions / Risks / Migration reorganization. Separately, the v6.x skill states that after the architectural path the only skill to invoke next is `writing-plans`, whereas this schema inserts `proposal` → `design` → `specs` → `tasks` in between.
 
+**Correction (2026-10-08):** the "only `writing-plans` after brainstorming" terminal state is not new in v6.x — Superpowers `v5.1.0`'s `brainstorming` already says "The terminal state is invoking writing-plans … The ONLY skill you invoke after brainstorming is writing-plans" ([`v5.1.0` `skills/brainstorming/SKILL.md`](https://github.com/obra/superpowers/blob/v5.1.0/skills/brainstorming/SKILL.md), line 66). What v6.x changed is the three-path classification with a bounded path that proceeds to implementation with no plan document (present in `v6.3.0`), and in `v6.4.1` an intent-discovery step plus a rewrite of the existing HARD-GATE into per-path, staged approvals (the single HARD-GATE already existed in `v5.1.0`).
+
 **Resolved in v2 — TDD is conditional upstream (and was never verified as unconditional).** The finding below stands as recorded on 2026-08-26; the fix it points at landed in schema v2. `subagent-driven-development`'s `SKILL.md` (32 KB in v6.3.0) contains no TDD mandate at all; every TDD reference lives in `implementer-prompt.md` and each one is conditional — "Write tests (**following TDD if task says to**)", "Did I follow TDD **if required**?", "**TDD Evidence** (**if TDD was required for this task**)". TDD therefore reaches the implementer only because `writing-plans` bakes "Step 1: Write the failing test / Step 2: Run test to verify it fails" into the tasks it judges to need tests (prose-only work may carry none). Loosening `plan.md` without replacing that channel silently removes TDD. The same prompt already defines a `TDD Evidence` reporting slot (RED command + failing output, GREEN command + passing output), so the fix direction identified at the time was to make the task contract *require* TDD and *demand that evidence*, rather than prescribe the steps.
 
 Status: the false enforcement claim itself was removed in bundle 1.0.1 (apply step 2 now states the conditional truth). **The deeper fix landed in schema v2** — TDD applicability is declared per task in `tasks.md`, applicable tasks record RED/GREEN evidence there, and verify's deterministic checks 8–12 read the presence and structure of both before archive and block on failure (instruction-mediated, not a non-bypassable gate; see [apply step 3](#3-verification--openspec-verify-change) for the full boundary). The bridge no longer depends on `writing-plans` as the TDD channel, so the loosening of `plan.md` no longer removes it.
@@ -641,6 +644,8 @@ The same spike checked the bridge's 18 Superpowers dependencies against `v6.4.2`
 **Follow-up status (2026-10-06):** the first follow-up is done — the `executing-plans` rationale was corrected to match current upstream behavior by change `fix-executing-plans-rationale`. The `task-brief` heading-format gap was still open on that date.
 
 **Follow-up status (schema v4, bundle `4.0.0`):** the second follow-up is addressed by change `task-prefixed-plan-headings` — for **recognition only**. A plan whose entries use the canonical form `## Task <number> — …` has every entry recognised by `task-brief`; this does not make the range `task-brief` extracts for an entry correct, and the `plan` instruction's guidance for plans handed to `task-brief` claims recognition only as well. The legacy form `## <number> — …` stays valid in the bridge and is still not recognised by `task-brief`.
+
+**Follow-up status (2026-10-08, documentation only):** the sentence "S4, S5, S12 and S14 are still not aligned" above is out of date for S14 — the claim S14 contradicts was already removed by `fix-executing-plans-rationale` (2026-10-06) before that sentence was written — and for S12, whose remaining mismatch was this README's own Completion description, corrected on 2026-10-08 together with the Workspace (S7) and install (S17) descriptions. S4 and S5 remain open (see Open drift and its correction above). The Superpowers baseline is unchanged.
 
 Full method, per-item evidence and what was not checked: [issue #2 compatibility spike report](https://github.com/azuma520/openspec-schemas/blob/main/docs/superpowers/poc/2026-10-02-issue2-compat-spike/report.md) (in the openspec-schemas repository; not shipped inside this bundle).
 

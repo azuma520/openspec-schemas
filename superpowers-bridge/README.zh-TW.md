@@ -31,6 +31,7 @@ Install the superpowers-bridge schema for OpenSpec into this project:
 7. Clean up the temp directory.
 8. Verify Superpowers plugin is installed by running `claude plugin list`.
    If not listed, run `claude plugin install superpowers@claude-plugins-official`.
+   這條指令安裝的是官方 marketplace 釘住的版本(2026-10-08 查證時為 Superpowers `v6.4.1`),可能落後上游最新 release。
 9. Show me the final state.
 ```
 
@@ -373,11 +374,11 @@ Superpowers skill 有預設輸出路徑(例如 brainstorming 寫到 `docs/superp
 
 skill 缺失 → STOP 並通知使用者,不靜默 fallback,本 schema 內也沒有 manual mode。建議使用者在那個 change 改用 OpenSpec 內建的 `spec-driven` schema,或安裝缺失的 skill 後重來。
 
-> 本 schema 的 v0 版本曾在這裡放「自動 commit change artifacts 到當前分支」邏輯,在 [PR #970 review](https://github.com/Fission-AI/OpenSpec/pull/970) 後移除:處理未追蹤的 change 目錄是 worktree skill 的責任,schema 不該主動改寫使用者的 git history。
+> 本 schema 的 v0 版本曾在這裡放「自動 commit change artifacts 到當前分支」邏輯,在 [PR #970 review](https://github.com/Fission-AI/OpenSpec/pull/970) 後移除:schema 不會替使用者 commit,也不該主動改寫使用者的 git history。新的 worktree 是從某個 commit checkout 出來的,所以還沒 commit 的 change 目錄不會出現在裡面;`using-git-worktrees`(對照 Superpowers `v6.4.1`)也不處理這件事。
 
 #### 1. Workspace — `superpowers:using-git-worktrees`
 
-建立 `.worktrees/<change-name>/`、切到新 branch、跑專案 setup、確認 test baseline 乾淨。
+呼叫 `using-git-worktrees`。依 Superpowers `v6.4.1`,這個 skill 若偵測到已在 linked worktree 裡就不再建立;否則除非你的指示已表明偏好,會先徵求你同意;優先使用 harness 原生的 worktree 工具,沒有才執行 `git worktree add`,路徑是 `<目錄>/<branch 名稱>`,`<目錄>` 依序取你指示裡指定的目錄、既有的 `.worktrees/` 或 `worktrees/`、預設 `.worktrees/`;接著跑專案 setup 與基線測試。你拒絕、或 sandbox 擋下建立 worktree 時,它會直接在目前目錄工作。本 schema 的 apply 指示仍要求建立隔離的 worktree。
 
 #### 2. Executor — `superpowers:subagent-driven-development`
 
@@ -420,7 +421,7 @@ Evidence-first 反思:§0 Evidence(量化前置數據 —— commit 數、diff �
 
 #### 6. Completion — `superpowers:finishing-a-development-branch`
 
-確認 tests 全綠、呈現 merge / PR / keep-branch / discard 選項、清理 worktree。**PR 是最後一步** —— 若 retro 或 archive 還沒跑,先補完。
+重跑測試(失敗就停)、確認 base branch,接著提供三個選項——本機 merge、push 並開 PR、保留 branch 不動(detached HEAD 時只有兩個,沒有 merge)。只有你明確要求、並打字 `discard` 確認時才會丟棄。merge 或確認過的 discard 會清理位在 `.worktrees/` 或 `worktrees/` 底下的 worktree(其他位置的 worktree 交給 host,不動);PR 與保留則會留下 worktree(以上對照 Superpowers `v6.4.1`)。**PR 是最後一步** —— 若 retro 或 archive 還沒跑,先補完。
 
 ---
 
@@ -600,6 +601,8 @@ Requirement 標題現在的形式是 `### Requirement: <REQ-ID> <description>`,S
 
 **未解漂移:** `brainstorming` v6.x 一開始會先把請求分類成三條路徑 — spike / bounded / architectural — 只有 architectural 那條會執行本 schema `brainstorm.instruction` 所描述的五個步驟。走 spike 或 bounded 時,skill 只在對話中給出簡短結論就停住,下游 `design` artifact 要重組出 Context / Goals / Decisions / Risks / Migration 就沒有素材。另外,v6.x 的 skill 明載 architectural 路徑之後唯一該調用的是 `writing-plans`,而本 schema 在中間插入了 `proposal` → `design` → `specs` → `tasks`。
 
+**更正(2026-10-08):**「brainstorming 之後只能接 `writing-plans`」這個終點不是 v6.x 才有——Superpowers `v5.1.0` 的 `brainstorming` 已經寫明「The terminal state is invoking writing-plans … The ONLY skill you invoke after brainstorming is writing-plans」([`v5.1.0` `skills/brainstorming/SKILL.md`](https://github.com/obra/superpowers/blob/v5.1.0/skills/brainstorming/SKILL.md) 第 66 行)。v6.x 改變的是:三條路徑的分類,其中 bounded 路徑不寫 plan 文件、直接進入實作(`v6.3.0` 已有);以及 `v6.4.1` 加入的釐清意圖步驟,並把既有的 HARD-GATE 改寫成依路徑分段核可(單一的 HARD-GATE 在 `v5.1.0` 就已存在)。
+
 **已在 v2 解決 —— TDD 在上游是條件性的(且從未被驗證過是無條件的)。** 下面這條 finding 維持 2026-08-26 記錄當下的原貌;它所指向的修法已經在 schema v2 落地。`subagent-driven-development` 的 `SKILL.md`(v6.3.0 共 32 KB)完全沒有強制 TDD 的條文;所有 TDD 字樣都在 `implementer-prompt.md`,而且**三處全是條件句** —— 「Write tests(**following TDD if task says to**)」、「Did I follow TDD **if required**?」、「**TDD Evidence**(**if TDD was required for this task**)」。TDD 之所以還會到達實作者,純粹是因為 `writing-plans` 把「Step 1: 寫失敗的測試 / Step 2: 跑它確認失敗」寫進它判斷需要測試的任務(純散文類工作可能一條都沒有)。**放寬 `plan.md` 而沒有替代管道,就會靜默地把 TDD 拿掉。** 同一份 prompt 已經定義了 `TDD Evidence` 回報欄位(RED 指令 + 失敗輸出、GREEN 指令 + 通過輸出),因此當時識別出的修正方向是讓 task 契約**要求 TDD 並索取該證據**,而不是規定步驟。
 
 現況:假的強制宣稱本身已在 bundle 1.0.1 刪除(apply 第 2 步現在寫的是條件式的真相)。**更深的修法已在 schema v2 落地** —— TDD 適用性由 `tasks.md` 逐 task 宣告,標為適用的 task 把 RED/GREEN 證據記在那裡,而 verify 的決定性檢查第 8–12 項會在 **archive 之前**讀這兩者的存在與結構,失敗就 block(這層強制是 **instruction 層執行**的,不是無法繞過的 gate;完整邊界見 [apply step 3](#3-verification--openspec-verify-change))。bridge 不再靠 `writing-plans` 當 TDD 的傳遞管道,所以放寬 `plan.md` 不會再把 TDD 拿掉。
@@ -641,6 +644,8 @@ bridge 對 OpenSpec 的 24 項依賴(逐項列在 [issue #2 相容性 spike 報�
 **後續狀態(2026-10-06):** 第一條已完成——`executing-plans` 的拒用理由已由 change `fix-executing-plans-rationale` 依目前的上游行為修正。`task-brief` 標題格式相容缺口在那天仍未處理。
 
 **後續狀態(schema v4、bundle `4.0.0`):** 第二條已由 change `task-prefixed-plan-headings` 處理——**只處理辨識**。條目全部用 canonical 寫法 `## Task <編號> — …` 的 plan,每個條目 `task-brief` 都辨識得到;這不代表 `task-brief` 替某個條目抽出的範圍是對的,`plan` instruction 裡給要交給 `task-brief` 的 plan 的 guidance 也只宣稱辨識。legacy 寫法 `## <編號> — …` 在 bridge 仍然有效,`task-brief` 仍辨識不到。
+
+**後續狀態(2026-10-08,僅文件):** 上方「S4、S5、S12、S14 仍未對齊」這句,對 S14 已不成立——S14 牴觸的那句說法早在 2026-10-06 就由 `fix-executing-plans-rationale` 移除,早於這句寫成;對 S12 也不再成立——它剩下的不一致是本 README 自己的 Completion 描述,已於 2026-10-08 與 Workspace(S7)、安裝(S17)描述一起更正。S4、S5 仍未解決(見未解漂移與其更正)。Superpowers 基準不變。
 
 完整方法、逐項證據與沒查的範圍:[issue #2 相容性 spike 報告](https://github.com/azuma520/openspec-schemas/blob/main/docs/superpowers/poc/2026-10-02-issue2-compat-spike/report.md)(在 openspec-schemas repository 裡;**不**隨本 bundle 內含)。
 
