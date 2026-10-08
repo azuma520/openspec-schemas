@@ -88,3 +88,75 @@ workflow-harness — Handoff template
 
 1. 主線：`/opsx:continue task-prefixed-plan-headings` 寫 `specs`（`plan-contract` delta 加上新的 `release-versioning`）。寫完一樣走文件審；Codex thread 還能再回覆 1 次，再多就換新對話。
 2. 不搶主線：清 scratchpad，並決定 `version-tag-reminder` 名稱裡說過頭的那句要不要處理（不處理也可以，交接已記錄）。
+
+## Session 09:29
+
+### 一、本 session 主題
+
+先收尾上一份交接留下的事（工作地圖名稱那句話查證、清 scratchpad），再把 C′ change `task-prefixed-plan-headings` 從 3/8 推到 6/8：寫完 `specs`、`tasks`、`plan`，規劃階段全部完成。過程中使用者裁定補上第三項 breaking。
+
+### 二、完成事項
+
+- 開工三步完成；照使用者指示「先做 2（名稱那句、清 scratchpad）再做 1（specs）」。
+- **工作地圖名稱那句話查證成立，不改**：打 tag 的規則最晚在第一次宣告 bundle 1.0.0 時就已存在（2026-05-14 commit `f7624d6`）；1.0.0、1.0.1、2.0.0、3.0.0 四個 release 在 fork 與原作者 repo 都沒有 tag。名稱寫「v1–v3 三次」照 schema major 算成立，照發版次數算是 4 次，屬偏保守。
+- **scratchpad**：51 個舊 session 目錄（約 33MB）由使用者以 `!` 指令刪除；本 session 的審查暫存也都已清空並確認。
+- **specs**（commit `238ecbe`）：`plan-contract` 新增 REQ-4「條目標題辨識」（10 個情境）；新規格 `release-versioning`（REQ-1–4）。寫條文前讀了 check 12 的每個特例，條文裡明寫 v2/v3 日期與舊退回說明不在範圍。
+- **使用者裁定 A**：`##1.1`、縮排的 ` ## 1.1` 在 v4 不再是條目，列為第三項 breaking，已同步到 proposal、design（D2 相容性、Risks、Migration、D7 新增測試資料列）。三種例外都以兩條路徑掃過 repo 全部 45 個 `plan.md`，皆 0 筆。design D6 改寫成查證過的 tag 歷史。
+- **tasks**（commit `1efb729`）：18 步、4 組（測試資料先建 → schema → 連動文件 → 整合）；只有 2.2 是 `TDD: applicable`。
+- **plan**（本收工 commit）：18 個條目全用 `## Task <n>` 寫法，開頭聲明刻意比安裝的 v3 說明新、1:1 檢查要等 4.1 同步後才有效。以 v4 規則自查 18↔18 對應、無重複；8 條規格引文逐字比對通過。
+- **文件審**（Codex，共 3 個新對話）：
+  - specs + proposal/design：r1 ⛔（🔴 fixtures README 路徑錯；🟡 縮排 H2 其實是 Markdown H2、47 應為 45）→ 全修 → r2 ✅（thread `01a118fa-f582-7213-ac3c-bf05c540ef5a`，已回覆 1 次）。
+  - tasks：r1 ✅（thread `01a1190a-9be5-7ad2-9e99-3ed3e8d9a50c`）。
+  - plan：r1 ✅ 附 🟡（4.1 前置漏了 3.3/3.4/3.8）→ 修 → r2 ✅（thread `01a1191b-391b-7573-8fc1-a58470eb655f`，已回覆 1 次）。
+  - 各輪都記了 `review-state note doc_review pass`。
+- 封裝候選檢查：唯一 open 的 `[SOP 候選]`（precommit 入口）本 session 沒有觸發，不 bump。
+- 工作地圖：「納入 execution record capability」標為 NEXT（它是「§7 Completion Gate 落地」唯一的子項）。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] C′ 進度 6/8，下一步 `/opsx:apply task-prefixed-plan-headings`。照 tasks.md 順序：先建測試資料（1.1–1.3），**在改 schema 之前**跑出 2.2 的 RED（盲測：執行的 Agent 不可看到 fixtures README）。
+- [#接力] tasks 3.8 需要「第一個 `version: 4` commit」先存在才能填退回 SHA → apply 中途要請使用者授權一次 commit。
+- [#接力] 本機領先遠端 3 個 commit（`238ecbe`、`1efb729`、本收工 commit），push 需使用者授權。
+- [#接力] C′ 完成條件不變：archive、最終驗證、release 連動文件完成後打 v4.0.0 annotated tag、push，並用 `'refs/tags/v4.0.0^{}'` 確認遠端指向 release commit，才能把 `task-20261002-task-brief-heading-compat` 標 DONE。
+- [#接力] 研究題 Verification Strategy 底下 3 條 TODO 尚未選定下一步（使用者未指定）。
+- [#不重議] 第三項 breaking（裁定 A）；工作地圖名稱那句不改；上個 session 的版本、tag 裁定與 design D1–D8。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **說過頭的句子**（沿用，本 session 3 次：1 次自己抓到、2 次被 Codex 抓到）：
+  - 「`##1.1` 和 ` ## 1.1` 在 Markdown 都不是 H2」：縮排 1–3 格其實仍是 H2（Codex 抓到）
+  - 「47 個 plan.md」：`*plan.md` 把 `merge-plan.md` 也算進去，實際 45 個（Codex 抓到）
+  - 「規則比 1.0.0 早」：其實是同一個 commit，改成「最晚在第一次宣告 1.0.0 時」（自己抓到）
+
+  做法照舊，另加一條：**附和使用者裁定時，裁定裡的事實型理由也要逐條驗**——這次回「同意」時沒驗「符合正常 Markdown heading」這個前提。
+- **說要先做的查核，被授權後跳過**（沿用）：本 session 未發生。
+- **審查等級傳低了**（沿用）：本 session 未發生。
+
+**【當日洞見】**
+
+- **寫條文前去讀實作的每個特例，這次真的抓到東西**：check 12 現行條文沒要求 `##` 後有空白、也沒限定 `##` 在行首；design 漏列了這項 breaking，是讀特例分支時才發現的。
+- **「找不到來源」不等於「說法錯」**：交接說工作地圖名稱「沒依據」，實際查 git 歷史後那句話成立，只是當初沒查就寫。
+- **計數用的搜尋條件要精確對到檔名**：`*plan.md` 會連 `merge-plan.md` 一起抓。
+
+【學習候選】
+
+- **Case**：使用者貼來的裁定附了理由（「符合正常 Markdown heading」），我回「同意」時沒驗這個前提，後來 Codex 審查才發現它只對一半。
+- **Candidate Pattern**：附和或照辦裁定時，裁定裡出現的事實型理由要跟自己寫的句子一樣過例外檢查。只適用於可查證的事實；價值判斷不適用。
+- **Evidence**：本次 1 例，**Hypothesis**。
+- **Minimum Sufficient Intervention**：不新增規則，併入既有「說過頭的句子」紀律接力觀察。
+- **Promotion**：History only。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（e139fc1、開工於 2026-10-08T08:34:38）——列 e139fc1..HEAD
+
+- `238ecbe`：`openspec/changes/task-prefixed-plan-headings/specs/plan-contract/spec.md`（新）、`specs/release-versioning/spec.md`（新）、`proposal.md`、`design.md`（第三項 breaking、D6 歷史、fixtures README 路徑）
+- `1efb729`：`openspec/changes/task-prefixed-plan-headings/tasks.md`（新）
+- 本收工 commit：`openspec/changes/task-prefixed-plan-headings/plan.md`（新）、`workflow-harness/work-map.jsonl`（一筆標 NEXT）、本交接檔
+
+### 六、下一步建議
+
+1. 主線：`/opsx:apply task-prefixed-plan-headings`，從測試資料 1.1–1.3 開始，改 schema 前先拿到 2.2 的 RED。
+2. 不搶主線：push 本機領先的 3 個 commit（需授權）；研究題 Verification Strategy 要不要選定下一步。
