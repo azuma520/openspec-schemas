@@ -67,3 +67,89 @@ workflow-harness — Handoff template
 1. 繼續 `executor-governance-wording`：寫 proposal（含版本號判定）。
 2. 之後 design → specs（MODIFIED REQ-3、REQ-4）→ tasks → plan。
 3. 清 10/08 遺留暫存（空 worktree 目錄、`docrev6x/` 等，需使用者執行 rm）。
+
+## Session 17:27
+
+### 一、本 session 主題
+
+開工於 2026-10-12 08:18（接續 08:05 session）。`executor-governance-wording` 從 proposal 一路做到 archive，**發布 bundle v5.0.0**（schema major 5）。verify 後依使用者裁定補 REQ-6，並用四維度判準把 7 份封存 retrospective 的 §6 升級候選清了一次帳。
+
+### 二、完成事項
+
+- **實作**（`2551ea0`）：
+  - `schema.yaml`：description 與 apply 改成能力語言；apply 三種情境分開；Step 0 不再指向不存在的 manual fallback；retrospective 略過 SDD 的寫法。
+  - 模板。
+  - bridge README 中英：重新查證紀錄新增「executing-plans review structure」段、v5 版本處。
+  - 版本連動：`VERSION` 5.0.0、`version-check.yml` 列鍵 v5、頂層 README、roadmap、CLAUDE.md 紅旗。
+- **verify 兩輪**（皆 ⚠️ PASS WITH WARNINGS、無 BLOCK）：
+  - Round 1：備援 agent（Opus 5.5）。
+  - 實作者附記：W5 用分得出對錯的變異測試，證明 version-check 讀 v5 列；同時更正我先前「原樣取出」的不實描述。
+  - Round 2：Fable 獨立驗證。
+- **W6 補規格**（使用者裁定甲）：`tdd-claim-accuracy` ADDED REQ-6，S1–S4 保護三種情境與 Step 0 STOP；proposal／design／tasks／plan 同步。
+- **retrospective** 寫完，§6 每條逐一取得使用者裁定（A–G）。SDD 略過記為第三例（8/31、10/06），並列 §6 F。
+- **§6 候選盤點**：35 條中已做到 10、沒做 12。沒做的全部來自沒有逐條裁定的 retrospective。盤點表保存為 archive 內的 `retro-s6-audit.md`。
+- **四維度判準存檔**：`docs/superpowers/research/2026-10-12-improvement-decision-four-dimensions.md`（備查、非規範）。
+- **memory**：`feedback_claim_first_discriminating_oracle` 補第 3 點——說「讀到 X／原樣／相同」前要 diff 或分得出對錯的實跑。
+- **CLAUDE.md**：跨檔耦合表新增「升 schema major」列；dogfood 同步條件放寬到 bridge 任何檔；兩處 archive 舊路徑。
+- **backlog**：新增 5 條 `[優化建議]`（2.3、3.5、7.1、§6 B、§6 E）與 1 條 `[構想]`（發版前審查留下的 a–f 舊文件問題）。第 80 行補 `[mature: 2026-10-12]`，是我早上手改 case-count 時漏的，改經 writer `repair` 補上。
+- **發版**（使用者授權）：
+  - `58b907e`：archive，spec 合入；`openspec validate --all` 6/6。
+  - `c49a2d9`：release commit。
+  - annotated tag `v5.0.0`，遠端 `^{}` = `c49a2d9`。
+  - `e8515cc`：roadmap v5 標 Released。
+  - 全部已 push。
+  - `workflow_dispatch` run 38229715270 success（讀到 1.14.0／v5.1.0；v4、v5 兩列值相同，故此次實跑本身分不出列鍵，列鍵正確性靠本機變異測試）。
+- **審查**：全程 Codex 無額度，fallback 載體為 Fable（Fable 撞用量上限的一輪改由預設模型）。發版前三批全檔審 ✅ Mergeable；歸檔後兩份 spec 文審 ✅；`.openspec.yaml` 搬移碼審 ✅ Ready；precommit 仍為 `⚠️ NO CHECKS RUN`（非通過）。
+- 封裝候選檢查：本 session 唯一相關的 `[SOP 候選]` 是第 80 行 precommit 缺口，今早已記為 case 5，同日不重複 bump。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **Codex 額度恢復後補審 v5.0.0**：發版前所有審查都由 fallback 擔任（全域規則 2026-09-01：高風險項外部審恢復後必須補審）。範圍：`c49a2d9` 的 bridge 實作與版本連動。出處：archive retrospective §6 C。
+- [#接力] 依 retrospective §6 A：之後寫每份 retrospective 時，§6 每條當場取得使用者裁定。
+- [#接力] backlog 新增各條（2.3／3.5／7.1／B／E／a–f）等累積或下一個 change；f 與 `release-versioning` Purpose TBD、`tdd-claim-accuracy` REQ-3 標題（宜用 RENAMED）留給下一個碰該 spec 的 change。
+- [#接力] 暫存待清（需使用者 rm）：本 session scratchpad、08:05 交接第 33 行的 10/08 遺留。
+- [#不重議] W6 補 REQ-6（不新增 fallback／執行器／檢查／欄位）；N2 標題偏窄這次不改；1.3、3.6 算「已做到（遲到）」；四維度只作判讀輔助、不當規格。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- **說過頭的句子**（沿用；**本 session 被抓 4 次**）：
+  - 「實跑讀到 v5 列」（兩列值相同，證明不了）。
+  - 「原樣取出」（只比了第一行）。
+  - retrospective 把 7.5 寫成「再犯」、把 3.7 寫成「先觀察」。
+  - 「v4.0.0 只靠 fallback 發版」。
+  - 四次都是驗證者或審查者抓到，不是我說出口前自己查。共同形狀：**摘要或轉述別人的結果時，沒回原始資料逐字核對**。memory 已補「讀到／原樣／相同」那半；「摘要盤點結果」這半還沒有掛點。
+- **宣告「沒有」前沒窮舉**（沿用；本 session 0 次）。
+- **附和裁定時驗事實前提**（沿用；本 session 每次都驗）：W6 寫 REQ-6 前讀完 Step 0 所有分支，找到 CLI 工具只 WARNING 的例外，寫進 S4。
+
+**【當日洞見】**
+
+- **retrospective 的價值卡在「執行」那一段，不是「找方案」那一段**：有逐條裁定的 3 份幾乎全部落地，沒有裁定的 3 份漏了 12 條；schema 寫的「未勾選候選帶到下一輪」從沒發生過。最小改法是寫完當場逐條裁定，不是新增追蹤機制（用四維度判讀後的結論）。
+- **獨立驗證真正有價值的是「抓到原本方法證明不了的事」**：W5（測試分不出對錯）與 W6（核心行為沒有規格）都是驗證者抓到、所有文件審都沒抓到（使用者也這樣評價）。
+- **append 式 verify.md 與 retrospective PRECHECK 的「恰好一個勾選框」不合**（Round 2 N3）：這次兩輪結論相同所以沒事。
+
+【學習候選】
+
+- **Case**：本 session 四次說過頭，都在「轉述／摘要」既有結果時發生，都由他人抓到。
+- **Candidate Pattern**：轉述或摘要一份結果（測試輸出、盤點表、別人的報告）之前，回到原始資料逐句核對要寫的那句。適用於寫進 tracked 檔或回報給使用者的摘要句；口頭推理過程不適用。
+- **Evidence**：本 session 4 例。全域 CLAUDE.md「證據先於斷言」已涵蓋「有沒有來源」，但這 4 例都**有**來源、只是轉述時走樣——是另一個形狀。**Hypothesis**。
+- **Minimum Sufficient Intervention**：不新增規則（寫不出 enforcement 掛點 → 依規則降級為 Observe）；在既有 memory `feedback_claim_first_discriminating_oracle` 第 3 點的 Why 已記本次兩例，再累積。
+- **Promotion**：Case Memory（已併入既有 memory），待使用者決定是否升級。
+
+### 五、檔案異動
+
+錨來源：本 session 開工 commit（80fd84b、開工於 2026-10-12T08:18:16）——列 80fd84b..HEAD
+
+- `2551ea0`：`superpowers-bridge/`（schema.yaml、VERSION、README 中英、templates/retrospective.md）、`.github/workflows/version-check.yml`、`CLAUDE.md`、頂層 README 中英、`docs/roadmap*.md`、change 產出物。
+- `ba68235`：`backlog.md`、`backlog-crosscheck-shadow.json`（週檢）。
+- `58b907e`：change 搬進 `openspec/changes/archive/2026-10-12-executor-governance-wording/`（新增 verify.md、retrospective.md、retro-s6-audit.md）；`openspec/specs/{release-versioning,tdd-claim-accuracy}/spec.md`；`superpowers-bridge/README.zh-TW.md`。
+- `c49a2d9`：`CLAUDE.md`、`backlog.md`、`docs/superpowers/research/`（四維度文件＋索引）。
+- `e8515cc`：`docs/roadmap*.md`、`backlog.md`。
+- 本收工 commit：本交接檔、`workflow-harness/work-map.jsonl`。
+
+### 六、下一步建議
+
+1. Codex 額度恢復後補審 v5.0.0（見接力棒第一條）。
+2. 從工作地圖挑下一件：`task-20261012-non-sdd-execution-support`（§9 研究）或 `task-20261007-superpowers-6x-rebaseline`。
+3. 有空時一次修 backlog 那條 a–e 舊文件小問題。
