@@ -130,3 +130,64 @@ Promote candidate under the existing rule for skills skipped across multiple cyc
   this change only, to give the number and location of the earlier cases, and to raise the
   pattern as a §6 Promote candidate; neither presents the earlier rulings as authorising this
   or any later skip
+
+## ADDED Requirements
+
+### Requirement: REQ-6 Apply keeps its three execution situations apart
+
+The apply instruction in `superpowers-bridge/schema.yaml` SHALL keep three situations apart and
+SHALL NOT merge any two of them:
+
+- **Required skill missing.** When any skill that Step 0 lists as required for apply is missing,
+  apply SHALL STOP at Step 0 and inform the user. The instruction SHALL state that the bridge
+  has no internal manual fallback for apply and SHALL NOT point to one. It SHALL name the
+  user's options — install the required skills, or explicitly choose to continue the change
+  under the built-in `spec-driven` schema, a different workflow rather than a degraded path of
+  this one — and SHALL forbid the agent from switching schemas or execution paths on its own
+  initiative.
+- **subagent-driven-development available.** Apply SHALL execute per its step-2 contract through
+  subagent-driven-development.
+- **subagent-driven-development available but deliberately not used under an explicit user
+  ruling.** The instruction SHALL describe this as an exception to the schema's process, not a
+  supported execution mode. It SHALL state that only the user's explicit ruling for this change
+  makes the exception, that the agent SHALL NOT decide it on its own initiative, and that a
+  ruling made for an earlier change does not carry over. It SHALL NOT describe the path taken as
+  equivalent to subagent-driven-development or as satisfying the independent review it
+  provides. When the change requires an assurance the substitute cannot provide, it SHALL direct
+  the agent to STOP and report. The deviation is recorded per REQ-4.
+
+This requirement states the existing execution contract explicitly. It adds no fallback, no
+executor, no mechanical check and no recorded field, and the third situation is not an
+execution path the agent may select. Its STOP rule covers the required-skill check only: the
+CLI-tool check that Step 0 also performs surfaces a missing tool as a warning, not a STOP, and
+this requirement does not change that.
+
+#### Scenario: REQ-6-S1 Missing required skill stops without a fallback
+
+- **WHEN** a required apply skill is missing at Step 0
+- **THEN** the instruction tells the agent to STOP and inform the user, states that the bridge
+  has no internal manual fallback, does not refer to any fallback section, names installing
+  the skills or explicitly choosing `spec-driven` as the user's options, and forbids the agent
+  from switching schemas or execution paths itself
+
+#### Scenario: REQ-6-S2 Deliberate skip is a user-ruled exception, not a mode
+
+- **WHEN** the apply instruction is read for the case where subagent-driven-development is
+  available but not used
+- **THEN** it calls the case an exception rather than a supported execution mode, requires an
+  explicit user ruling for this change, says an earlier ruling does not carry over, forbids the
+  agent from choosing it, and does not present the path taken as equivalent to
+  subagent-driven-development
+
+#### Scenario: REQ-6-S3 Missing assurance stops rather than being recorded away
+
+- **WHEN** a deliberate skip is under way and the change requires an assurance the substitute
+  cannot provide
+- **THEN** the instruction directs the agent to STOP and report, and does not let a record of
+  the deviation stand in for the missing assurance
+
+#### Scenario: REQ-6-S4 CLI-tool warning is unchanged
+
+- **WHEN** Step 0 finds a project CLI tool missing but every required skill present
+- **THEN** the instruction surfaces the missing tool as a warning and does not STOP on that
+  ground

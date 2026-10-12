@@ -19,7 +19,7 @@
 - 設計說明（schema、README、CLAUDE.md）只寫 Bridge 要求的能力、保障與目前限制。上游哪個版本有或沒有這些能力，集中寫在 README 的 Re-verification log。
 - apply 指令寫明三種情境，讓「刻意略過 SDD」有明確定位：例外偏離，不是支援的執行模式。
 - retrospective 說明經裁定略過 SDD 時，既有三題怎麼回答，讓揭露內容包含失去的保障。
-- 改寫 REQ-3、REQ-4，讓規格與新文件一致。
+- 改寫 REQ-3、REQ-4，讓規格與新文件一致；新增 REQ-6，讓 apply 的三種情境與 Step 0 的 STOP 有規格保護（verify W6 後追加）。
 - 依 Versioning 判準，把 schema major 升到 5、bundle 升到 `5.0.0`，並完成所有連動與發版（D8）。
 
 **Non-Goals:**
@@ -65,6 +65,7 @@
   - **有 SDD，但經使用者明確裁定刻意不用**：屬於例外偏離，不是本 schema 支援的執行模式。agent 不得自行決定略過，要由使用者明確裁定。retrospective 必須依略過規則記錄（見 D4），不得宣稱等同 SDD，也不得宣稱已滿足 SDD 提供的保障。若某項保障是這個 change 的必要條件、替代做法又提供不了，就停止並回報，不能靠紀錄放行。
 - **理由**：Step 0 只處理「沒有能力」這一種情況；8/31、10/06 兩次都是「有能力但選擇不用」，目前在指令裡沒有定位（brainstorm Q3）。
 - **已考慮 alternative**：只寫在 CLAUDE.md。拒絕，因為 CLAUDE.md 只給本 repo 的維護者看，採用者的 agent 讀的是 schema 指令。
+- **規格保護（verify W6 後追加，使用者 2026-10-12 裁定甲）**：三種情境與 1.5 修正後的 Step 0 原本只寫在 schema 指令裡，沒有規格要求它們存在；之後有人改 apply 指令，可能在不違反任何規格的情況下重新引入錯誤的 fallback。因此新增 `tdd-claim-accuracy` REQ-6，把這些寫成規格（形狀見 D7）。REQ-6 只把既有執行契約寫明，不新增 fallback、執行器、機械檢查或欄位；第三種情境規定的是怎麼辨識與處理偏離，不是開一條讓 agent 合法跳過 SDD 的路。schema 指令不需為此再改：REQ-6 依現行文字寫成，1.2 與 1.5 的產出即為它的實作。
 - **實作中追加（使用者 2026-10-12 裁定甲，tasks 1.5）**：Step 0 原有一句「explicitly opt into the manual fallback path described at the end of this instruction」，但 apply 指令結尾沒有這條路徑。這句在 `75274b6`（2026-05-02）加入時有對應段落（2b executing-plans fallback 與結尾的 manual fallback 段）；同日稍晚的 `045ab98` 刪除那些段落，卻沒有一併刪除這句，從此指向不存在的段落，也和 README「no manual fallback within this schema」及第一種情境互相矛盾。修法是改寫成：缺必要 skill 就停止；使用者可以安裝所需 skill，或明確選擇改用內建的 `spec-driven` 繼續這個 change；Bridge 沒有內部的手動替代流程，agent 不得自行切換。PRECHECK 和 STOP 行為都不變，也不新增執行能力。
 
 ### D4：retrospective 只說明既有三題怎麼回答，不加欄位
@@ -123,6 +124,10 @@
   - 新增：經裁定略過 SDD 的紀錄必須寫出失去的保障，且不得被模板或指令表述成等於符合 Bridge 或已滿足保障。
   - 新增：裁定只對該 change 有效、不得引用前例沿用；同類略過反覆出現時要寫明次數與前例，並列為 §6 Promote candidate。
   - 新增情境涵蓋上述兩點。
+- **ADDED REQ-6**（編號：living spec 與所有 archive 的 `tdd-claim-accuracy` 最大為 REQ-5，故配 REQ-6）：
+  - apply 指令必須把三種情境分開：缺必要 skill → Step 0 STOP，寫明 Bridge 沒有內部手動替代流程、不指向任何 fallback 段落，列出使用者的兩個選擇（安裝 skill／明確改用 `spec-driven`），禁止 agent 自行切換 schema 或執行路徑；有 SDD → 照第 2 步契約；經使用者裁定略過 → 例外而非支援模式、只有本 change 的明確裁定才成立、前例不沿用、agent 不得自行決定、不得稱等同 SDD、必要保障做不到就 STOP、紀錄依 REQ-4。
+  - 例外照實寫進條文：STOP 只管必要 skill 檢查；Step 0 另做的 CLI 工具檢查缺工具時仍是警告、不 STOP，REQ-6 不改它（情境 S4）。
+  - 情境 S1–S4。
 
 ### D8：schema major 4 → 5、bundle `5.0.0`（使用者 2026-10-12 裁定）
 

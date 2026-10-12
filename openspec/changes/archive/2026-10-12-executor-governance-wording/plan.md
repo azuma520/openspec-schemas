@@ -12,7 +12,7 @@ language, move executing-plans' version facts into the Re-verification log, give
 skipped SDD a defined place (exception, disclosed in the retrospective), and release the result
 as schema major 5 / bundle `5.0.0`.
 
-**Pointers:** `specs/tdd-claim-accuracy/spec.md` (MODIFIED REQ-3, REQ-4); `specs/release-versioning/spec.md` (MODIFIED REQ-3, scenario S2 only); `design.md` (D1–D8;
+**Pointers:** `specs/tdd-claim-accuracy/spec.md` (MODIFIED REQ-3, REQ-4; ADDED REQ-6); `specs/release-versioning/spec.md` (MODIFIED REQ-3, scenario S2 only); `design.md` (D1–D8;
 D6 lists every README location and its disposition, D8 every version-coupled location).
 
 **Global constraints (verbatim from the specs; every entry below is bound by them):**
@@ -27,6 +27,10 @@ D6 lists every README location and its disposition, D8 every version-coupled loc
 - Both surfaces SHALL name that option with the same text, `one-off — schema boundary case`; the template SHALL NOT qualify it as "no prevention possible", because the answer still states how unauthorised deviation, undisclosed gaps and untrue conformance claims are prevented.
 - Neither surface SHALL present such a record as satisfying an assurance that was not obtained, as equivalent to subagent-driven-development, as conformance with the bridge's execution contract, or as making the path actually taken a supported execution mode.
 - A ruling SHALL cover only the change it was made for. Neither surface SHALL treat an earlier ruling as precedent that authorises a later skip. When a similar skip has occurred in earlier cycles, the record SHALL state how many and where, and the pattern SHALL be raised as a §6 Promote candidate under the existing rule for skills skipped across multiple cycles.
+- The apply instruction in `superpowers-bridge/schema.yaml` SHALL keep three situations apart and SHALL NOT merge any two of them.
+- When any skill that Step 0 lists as required for apply is missing, apply SHALL STOP at Step 0 and inform the user. The instruction SHALL state that the bridge has no internal manual fallback for apply and SHALL NOT point to one.
+- It SHALL state that only the user's explicit ruling for this change makes the exception, that the agent SHALL NOT decide it on its own initiative, and that a ruling made for an earlier change does not carry over.
+- This requirement states the existing execution contract explicitly. It adds no fallback, no executor, no mechanical check and no recorded field, and the third situation is not an execution path the agent may select.
 
 ---
 
@@ -40,7 +44,7 @@ D6 lists every README location and its disposition, D8 every version-coupled loc
 ## Task 1.2 — apply instruction: capability rationale and three situations
 
 - **Delivers:** apply step 2's fallback paragraph rests the exclusion on the required capability and the log, and is followed by the three situations of design D3.
-- **Acceptance:** (a) the fallback paragraph meets the same capability / limitation / no-version-mechanism conditions as 1.1 and keeps the reasoning that TDD is not the differentiator because applicability and evidence are carried by the tasks.md annotations and the evidence contract; (b) the three situations are present: no subagent capability → Step 0 STOP (unchanged); SDD available → step 2 contract (unchanged); SDD available but deliberately not used under an explicit user ruling → an exception, not a supported mode, not to be called equivalent to SDD, stop if a required assurance cannot be provided, record per the skipped-skill rules; (c) Step 0's required-skill list and its STOP behaviour are unchanged; the only edit inside Step 0 is the one 1.5 makes.
+- **Acceptance:** (a) the fallback paragraph meets the same capability / limitation / no-version-mechanism conditions as 1.1 and keeps the reasoning that TDD is not the differentiator because applicability and evidence are carried by the tasks.md annotations and the evidence contract; (b) the three situations are present: no subagent capability → Step 0 STOP (unchanged); SDD available → step 2 contract (unchanged); SDD available but deliberately not used under an explicit user ruling → an exception, not a supported mode, not to be called equivalent to SDD, stop if a required assurance cannot be provided, record per the skipped-skill rules — together meeting REQ-6 (situations 2 and 3, scenarios S2 and S3); (c) Step 0's required-skill list and its STOP behaviour are unchanged; the only edit inside Step 0 is the one 1.5 makes.
 - **Blocked by:** none
 - **Interfaces:** the third situation points to the skipped-skill rules written in 1.3; names the log section produced by 3.2; the first situation agrees with Step 0 as corrected by 1.5.
 
@@ -61,7 +65,7 @@ D6 lists every README location and its disposition, D8 every version-coupled loc
 ## Task 1.5 — Step 0 no longer points at a nonexistent manual fallback
 
 - **Delivers:** apply Step 0 tells the user and agent what actually exists when a required skill is missing: STOP, then the user installs the skills or explicitly chooses the built-in `spec-driven` schema for this change.
-- **Acceptance:** the sentence "explicitly opt into the manual fallback path described at the end of this instruction" is gone; Step 0 states that this schema has no internal manual fallback for apply, that switching to `spec-driven` is the user's explicit choice of a different workflow, and that the agent does not switch schemas or execution paths on its own; the required-skill list and the "If any required skill is missing, STOP and inform the user" sentence are unchanged.
+- **Acceptance:** the sentence "explicitly opt into the manual fallback path described at the end of this instruction" is gone; Step 0 states that this schema has no internal manual fallback for apply, that switching to `spec-driven` is the user's explicit choice of a different workflow, and that the agent does not switch schemas or execution paths on its own (REQ-6 situation 1, scenario S1); the CLI-tool check still warns rather than stops (REQ-6-S4); the required-skill list and the "If any required skill is missing, STOP and inform the user" sentence are unchanged.
 - **Blocked by:** none
 - **Interfaces:** agrees with 1.2's first situation (no subagent capability → Step 0 STOP) and with the README apply-phase fallback entry changed in 3.1.
 
@@ -156,7 +160,7 @@ D6 lists every README location and its disposition, D8 every version-coupled loc
 ## Task 6.3 — three semantics unchanged
 
 - **Delivers:** a recorded check, with locations cited, that the change did not alter the three behaviours.
-- **Acceptance:** cites where it still holds that (1) without subagent capability apply stops at Step 0; (2) with SDD apply follows step 2's contract; (3) a deliberate-skip record is stated not to satisfy a required assurance — each with file and section.
+- **Acceptance:** cites where it still holds that (1) without subagent capability apply stops at Step 0; (2) with SDD apply follows step 2's contract; (3) a deliberate-skip record is stated not to satisfy a required assurance — each with file and section; and, for each REQ-6 scenario S1–S4, the schema.yaml passage that satisfies it.
 - **Blocked by:** 1.2, 1.3, 1.5, 2.1
 
 ## Task 6.4 — weekly version check matches the released schema major

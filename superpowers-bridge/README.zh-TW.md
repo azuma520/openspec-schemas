@@ -672,7 +672,7 @@ bridge 對 OpenSpec 的 24 項依賴(逐項列在 [issue #2 相容性 spike 報�
 
 #### executing-plans 審查結構
 
-*僅文件;基準不移動。* bridge 不接受 `superpowers:executing-plans` 當 apply fallback 的理由(`schema.yaml` 的 description 與 apply 第 2 步、[七個 Superpowers 觸點](#七個-superpowers-觸點)下的提示框、設計觸點 #4、[降級策略](#降級策略)的 apply 項,以及維護者的紅旗清單)只寫 apply 需要的能力——執行過程中的獨立審查,每個 task、或每批同類小 task 做完就審,而不是只在最後審——executing-plans 做了什麼,則指向這裡。上游改了 executing-plans,就更新這一段,不改寫那些理由。
+*僅文件;基準不移動。* bridge 不接受 `superpowers:executing-plans` 當 apply fallback 的理由(`schema.yaml` 的 description 與 apply 第 2 步、[七個 Superpowers 觸點](#七個-superpowers-觸點)下的提示框、[設計觸點 #4](#4-opinionated只支援-subagent-平台沒有手動-fallback)、[降級策略](#降級策略)的 apply 項,以及維護者的紅旗清單)只寫 apply 需要的能力——執行過程中的獨立審查,每個 task、或每批同類小 task 做完就審,而不是只在最後審——executing-plans 做了什麼,則指向這裡。上游改了 executing-plans,就更新這一段,不改寫那些理由。
 
 executing-plans 做了什麼,依 Superpowers `v6.4.1` 查證([`v6.4.1` 的 `skills/executing-plans/SKILL.md`](https://github.com/obra/superpowers/blob/v6.4.1/skills/executing-plans/SKILL.md)),`v6.4.2` 未變(上方 2026-10-02 的 spike 發現,已安裝的 `v6.4.1` 與 `v6.4.2` 之間只差 `writing-plans`):
 

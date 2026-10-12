@@ -46,10 +46,10 @@ The existing v2 and v3 row dates are outside this requirement: they are CLI-leve
 - **WHEN** the v4 row lists Superpowers `v5.1.0` and this change's dogfood runs on a different loaded Superpowers version
 - **THEN** the v4 row's "Baseline as of" stays `pending`
 
-#### Scenario: REQ-3-S2 Weekly version check still reads the row
+#### Scenario: REQ-3-S2 Weekly version check reads the row of the released schema major
 
-- **WHEN** the v4 row's date cell holds `pending` and its explanation sits below the table
-- **THEN** the weekly version check reads the v4 row's OpenSpec and Superpowers versions correctly
+- **WHEN** `superpowers-bridge/schema.yaml` declares schema major N, the Compatibility table holds a `vN` row whose date cell may read `pending` with its explanation below the table, and a schema-major bump is released
+- **THEN** the row the weekly version check reads is the `vN` row — the check's row target is updated together with the bump, by whatever means — and running that step yields the OpenSpec and Superpowers versions listed in that row; this scenario does not require the check to detect the newest row on its own
 
 ### Requirement: REQ-4 Rollback instructions point only at refs that exist
 

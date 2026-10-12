@@ -20,6 +20,7 @@
 - 沒有 subagent 能力 → 依現行 Step 0 STOP（不變）
 - 有 SDD → 照契約執行（不變）
 - 有 SDD 但經使用者明確裁定刻意略過 → 例外偏離，不是支援的執行模式，不得稱等同 SDD，記在 retrospective
+- 三種情境與 Step 0「缺必要 skill 就 STOP、Bridge 沒有內部手動替代流程、agent 不得自行切換」寫成規格 `tdd-claim-accuracy` REQ-6，讓之後改 apply 指令時有規格擋著（verify W6，使用者 2026-10-12 裁定甲）
 
 **retrospective 略過規則與模板（schema.yaml、`templates/retrospective.md`）**
 - From: 既有三題（What was skipped／Why this cycle／How to prevent recurrence）沒有說明經裁定略過 SDD 時怎麼答
@@ -34,7 +35,7 @@
 
 **版本判定：schema major 4 → 5（使用者 2026-10-12 裁定）**
 
-依 README Versioning 段逐條核對：沒有新增或刪除 artifact，沒有改 `requires:`，PRECHECK 形狀不變（Step 0 不動）。但「原本合法的 artifact 變不合法」成立，這一條單獨就足以升 major。
+依 README Versioning 段逐條核對：沒有新增或刪除 artifact，沒有改 `requires:`，PRECHECK 形狀不變（Step 0 的必要 skill 清單與 STOP 行為不動；tasks 1.5 只改寫指向不存在段落的那一句）。但「原本合法的 artifact 變不合法」成立，這一條單獨就足以升 major。
 
 這裡的「不合法」是指不符合 schema 契約，不限於「會被 verify 的機械檢查擋下」。retrospective 沒有機械檢查，但它的寫法受 schema 指令與 REQ-4 約束。曾考慮以「沒有檢查會擋」為由維持 4，但被否決：那等於為了這次改動臨時縮小「破壞性變更」的定義。這和 v1→v2 一節否決「改寫政策以配合改動」的理由相同。
 
@@ -43,6 +44,7 @@
    - What was skipped 本來就要寫「具體略過的 skill 或子步驟」，寫出因此失去的審查只是把它講明。
    - 同一個 skill 在多個 cycle 被略過時列為 §6 Promote candidate，是既有規則（schema Skipped-skill rules 末段）。
    - REQ-3 的修改只動 Bridge 自己的說明文件，不涉及採用者的 artifact。
+   - 新增的 REQ-6 把 apply 既有的執行契約寫成規格：缺必要 skill 時 Step 0 STOP、有 SDD 時照契約、經裁定略過時屬例外。它約束的是 apply 指令的文字與 agent 的行為，沒有新增執行方式、檢查或欄位，不讓任何既有 artifact 變不合法。
 2. **真正新增的規範性要求（構成破壞性變更）：**經使用者裁定略過 `subagent-driven-development` 時：
    - How to prevent recurrence 必須選 `one-off — schema boundary case`。模板裡這個選項原本寫成 `one-off — schema boundary case, no prevention possible`，這次刪掉「, no prevention possible」，與 `schema.yaml` 的字面一致。原因是這一題仍然要寫出如何防止未授權偏離、未揭露的缺口與不實的符合宣稱，不是「無法預防」。
    - 必須寫明裁定只對這個 change 有效。
@@ -61,7 +63,7 @@
 
 ### Modified Capabilities
 
-- `tdd-claim-accuracy`: 改寫 REQ-3，把設計理由和版本證據分開：設計說明、schema、CLAUDE.md 寫 Bridge 要求的能力、保障與執行限制；Re-verification log 記上游各版本的事實與查證來源；CLAUDE.md 紅旗不必重述版本事實，但要引用 Re-verification log（移出不代表紅旗可以沒有依據）。現有三條禁令保留。改寫 REQ-4，把刻意略過 SDD 的揭露方式併進來，適用範圍從模板擴到 `schema.yaml` 的 retrospective 略過規則
+- `tdd-claim-accuracy`: 改寫 REQ-3，把設計理由和版本證據分開：設計說明、schema、CLAUDE.md 寫 Bridge 要求的能力、保障與執行限制；Re-verification log 記上游各版本的事實與查證來源；CLAUDE.md 紅旗不必重述版本事實，但要引用 Re-verification log（移出不代表紅旗可以沒有依據）。現有三條禁令保留。改寫 REQ-4，把刻意略過 SDD 的揭露方式併進來，適用範圍從模板擴到 `schema.yaml` 的 retrospective 略過規則。新增 REQ-6：apply 指令必須把三種情境分開——缺必要 skill 時 Step 0 STOP 並寫明沒有內部手動替代流程、有 SDD 時照契約、經使用者裁定略過時是例外而非支援模式；只把既有契約寫明，不新增 fallback、執行器、機械檢查或欄位
 - `release-versioning`: 改寫 REQ-3 的情境 S2：原文寫每週版本檢查讀「v4 列」，升 v5 後就不成立。改成「讀的列要和目前發布的 schema major 一致，升版時同步更新」，不寫死版本號，也不宣稱檢查會自動找出最新那一列（目前是寫死列鍵，升版時手動改）。REQ-3 正文（含 v4 列的歷史宣告）不變（使用者 2026-10-12 裁定，實作時的殘留搜尋發現）
 
 ## Impact
@@ -70,7 +72,7 @@
 - `superpowers-bridge/schema.yaml`：檔頭 `description`、apply 指令的 fallback 段（加三種情境）、retrospective 的 Skipped-skill rules
 - `superpowers-bridge/templates/retrospective.md`：`### Deliberately Skipped Skills` 的填寫說明，以及 `one-off` 選項的字面（刪除「, no prevention possible」）
 - `superpowers-bridge/README.md`、`README.zh-TW.md`：Seven Superpowers touchpoints 段的 executing-plans 提示框、apply 段指向設計觸點的那句、設計觸點 #2（Schema-level vs prompt-level 的維護說明）、設計觸點 #4、Fallback strategy 的 `apply` phase 列、Re-verification log（補 executing-plans 的完整事實與查證版本；舊列不改）。實際行位由 design 逐處列出
-- `openspec/specs/tdd-claim-accuracy/spec.md`：歸檔時合入 REQ-3、REQ-4 的修改
+- `openspec/specs/tdd-claim-accuracy/spec.md`：歸檔時合入 REQ-3、REQ-4 的修改與新增的 REQ-6
 - `openspec/specs/release-versioning/spec.md`：歸檔時合入 REQ-3（情境 S2）的修改
 - schema major 5 的連動（比照 v3 → v4 的 `0b11be5`，逐處清單在 design）：
   - `schema.yaml` 的 `version: 5` 與 `VERSION` 改為 `5.0.0`。

@@ -2,14 +2,14 @@
 
 - [x] 1.1 改寫檔頭 `description` 第 8–13 行：拒用理由改為 apply 所需能力（執行過程中的獨立審查）＋目前限制（本版只支援 SDD、缺能力時改用 `spec-driven`），executing-plans 的版本事實改為引用 bridge README 的 Re-verification log（REQ-3、design D1）
   - TDD: n/a — prose-only：YAML `description` 文字，CLI 只顯示不解讀；正確性由 REQ-3 逐句對照與文件審查判定
-- [x] 1.2 改寫 apply 第 2 步的 executing-plans fallback 段（約第 1795–1806 行），依 D1 只寫能力與限制並引用 log；其後加入三種情境（無 subagent 能力 → Step 0 STOP；有 SDD → 照契約；有 SDD 但經使用者明確裁定刻意略過 → 例外偏離、非支援模式、不得稱等同 SDD、必要保障做不到就停止、依略過規則記錄）（REQ-3、design D3）
+- [x] 1.2 改寫 apply 第 2 步的 executing-plans fallback 段（約第 1795–1806 行），依 D1 只寫能力與限制並引用 log；其後加入三種情境（無 subagent 能力 → Step 0 STOP；有 SDD → 照契約；有 SDD 但經使用者明確裁定刻意略過 → 例外偏離、非支援模式、不得稱等同 SDD、必要保障做不到就停止、依略過規則記錄）（REQ-3、REQ-6、design D3）
   - TDD: n/a — prose-only：instruction 文字，`openspec schema validate` 不讀 prompt 內容；Step 0 STOP 行為不變由文件審查與 verify 確認
 - [x] 1.3 在 retrospective 的 Skipped-skill rules 加入「經使用者明確裁定略過 `subagent-driven-development`」時既有三題的答法：失去的保障、裁定與替代審查、`one-off — schema boundary case` 且裁定只對本 change 有效、已有前例時寫出次數與位置並列 §6 Promote candidate、不得寫成等效 SDD 或符合執行契約（REQ-4、design D4）
   - TDD: n/a — prose-only：instruction 文字，retrospective 沒有機械檢查；正確性由 REQ-4 情境 S2、S3 對照與文件審查判定
 - [x] 1.4 `version: 4` 改為 `version: 5`（design D8）
   - TDD: n/a — configuration：版本識別值，由 `openspec schema validate` 與 `openspec schemas` 確認仍能載入
 
-- [x] 1.5 修正 apply Step 0 指向不存在段落的那句（「explicitly opt into the manual fallback path described at the end of this instruction」：`75274b6` 加入時有對應段落〔2b executing-plans fallback 與結尾的 manual fallback 段〕，`045ab98` 刪除那些段落後未一併刪除這句，自此指向不存在的段落）：改為缺必要 skill 時停止，使用者可安裝所需 skill，或明確選擇改用內建 `spec-driven` schema 繼續該 change；Bridge 沒有內部 manual fallback，agent 不得自行切換 schema 或執行路徑。PRECHECK 與 STOP 行為不變（使用者 2026-10-12 裁定甲）
+- [x] 1.5 修正 apply Step 0 指向不存在段落的那句（「explicitly opt into the manual fallback path described at the end of this instruction」：`75274b6` 加入時有對應段落〔2b executing-plans fallback 與結尾的 manual fallback 段〕，`045ab98` 刪除那些段落後未一併刪除這句，自此指向不存在的段落）：改為缺必要 skill 時停止，使用者可安裝所需 skill，或明確選擇改用內建 `spec-driven` schema 繼續該 change；Bridge 沒有內部 manual fallback，agent 不得自行切換 schema 或執行路徑。PRECHECK 與 STOP 行為不變（使用者 2026-10-12 裁定甲；REQ-6）
   - TDD: n/a — prose-only：instruction 文字，修正指向不存在路徑的說法；正確性由文件審查判定
 
 ## 2. retrospective 模板
@@ -52,7 +52,7 @@
   - TDD: n/a — configuration / 查驗：同步與結構驗證，無新行為
 - [x] 6.2 殘留搜尋：REQ-3 列為已取代的說法（設計說明內的 executing-plans 版本機制描述、「不派任何獨立審查者」、上游推薦類理由、TDD 差異論）全 repo 不再出現於現行文件；`git grep` 搜 `v4`、`version: 4`、`4.x.y`、`4.0.0`，逐筆判定改或屬紀錄不改；排除 archive、handoff、poc、retrospectives、research 等紀錄類位置
   - TDD: n/a — 查驗：搜尋與逐筆判定，無新行為
-- [x] 6.3 逐處確認三個語意未被改變並記下出處：沒有 subagent 時仍在 Step 0 STOP；有 SDD 時仍走第 2 步正式路徑；刻意略過 SDD 的紀錄不會被讀成已滿足必要保障（併入文件審查與 verify，不新增機械檢查）
+- [x] 6.3 逐處確認三個語意未被改變並記下出處：沒有 subagent 時仍在 Step 0 STOP；有 SDD 時仍走第 2 步正式路徑；刻意略過 SDD 的紀錄不會被讀成已滿足必要保障（併入文件審查與 verify，不新增機械檢查）；verify W6 後另逐條對照 REQ-6 情境 S1–S4
   - TDD: n/a — 查驗：語意對照，判準為 brainstorm「驗證」節的三點
 - [x] 6.4 依 `release-versioning` REQ-3-S2（本 change 修改版）查核：`schema.yaml` 宣告的 schema major、`version-check.yml` 讀取列的列鍵、Compatibility 表裡該列三者一致，並原樣取出該 step 實跑，讀到該列的兩個版本號；記錄結果（使用者 2026-10-12 裁定）
   - TDD: n/a — 查驗：一致性比對與實跑既有 step，無新行為
