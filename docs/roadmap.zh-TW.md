@@ -20,6 +20,10 @@
 
 - [x] **以 `Task` 開頭的 plan 條目標題** — `plan.md` 的條目現在可以寫成 canonical 寫法 `## Task <編號> — <標題>`,Superpowers 的 `task-brief` 抽取器辨識得到;legacy 寫法 `## <編號> — <標題>` 繼續接受、沒有排定移除時程,`Task` 不屬於鍵值(schema major 4、bundle 4.0.0)。條目改由正面規則定義,verify 第 12 項不再收行首 backtick fenced code block 內的 `##` 標題形狀文字。這條規則另外帶來兩項行為變更:形如 `Task <編號>` 的行首非條目 `##` 標題(`Task` 一字、一個以上 space 或 tab、再接符合 `\d+(\.\d+)*` 的編號,編號後是空白或行尾)變成條目;`##1.1` 或縮排的 ` ## 1.1` 不再是條目。canonical 寫法的條目變得能被 `task-brief` 辨識;這不代表它替某個條目抽出的範圍是對的。
 
+## v5
+
+- [x] **執行器治理改寫成能力語言,而不是點名工具** — 不接受 `superpowers:executing-plans` 當 apply fallback 的理由,現在寫成 apply 需要的能力(執行過程中的獨立審查)與目前的限制(本版只有 `subagent-driven-development` 提供這項能力);executing-plans 在各上游版本做了什麼,移到 README 的重新查證紀錄。apply 第 2 步分開三種情境——沒有 subagent 能力(Step 0 STOP)、有 `subagent-driven-development`(照契約)、經使用者明確裁定刻意略過(例外偏離,不是受支援的模式)——Step 0 也不再指向一條 schema 沒有的 manual fallback 路徑(schema major 5、bundle 5.0.0)。記錄這種略過的 retrospective 必須寫出沒取得的保障、引用裁定與替代審查、第三題選 `one-off — schema boundary case`,且不得把略過寫成等同 `subagent-driven-development`;這正是本次升版屬於破壞性變更的原因。
+
 ## v1.x — 後續 backlog
 
 這些項目記錄在 `~/.claude/plans/pr-quizzical-oasis.md`(實作 plan):

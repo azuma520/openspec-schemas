@@ -9,7 +9,7 @@
 
 > Bridges [OpenSpec](https://github.com/Fission-AI/OpenSpec)'s artifact governance (the **what**) with [obra/superpowers](https://github.com/obra/superpowers) execution skills (the **how**) into a single workflow. Adds an evidence-first `retrospective` artifact filling a gap Superpowers does not natively cover.
 >
-> The integration lives entirely at the prompt layer — no Superpowers source modified, no OpenSpec CLI changes. Schema version: v4 (see [Compatibility](#compatibility) and [Migrating v3 → v4](#migrating-v3--v4)).
+> The integration lives entirely at the prompt layer — no Superpowers source modified, no OpenSpec CLI changes. Schema version: v5 (see [Compatibility](#compatibility) and [Migrating v4 → v5](#migrating-v4--v5)).
 
 ---
 
@@ -115,7 +115,7 @@ rm -rf /tmp/oss-upgrade
 
 > Within one schema major, in-flight changes (any phase: brainstorm / design / specs / ...) remain valid because the schema graph (`requires:` edges, PRECHECKs, artifact dependencies) does not change across patch releases. Existing `verify.md` / `retrospective.md` from before the upgrade are still readable; if you re-run `/opsx:verify` or `/opsx:continue → retrospective` on them, the new template structure applies on overwrite.
 
-> **Crossing a schema major does need migration.** Upgrading from bundle `1.x.y` (schema major `v1`) to `2.x.y` (schema major `v2`) changed what `tasks.md` and `plan.md` must contain; upgrading from `2.x.y` (`v2`) to `3.x.y` (`v3`) requires every Requirement and Scenario heading to carry a stable ID; upgrading from `3.x.y` (`v3`) to `4.x.y` (`v4`) changes which `plan.md` headings count as entries. An in-flight `v2` change needs the steps in [Migrating v2 → v3](#migrating-v2--v3) before it will pass verify (check 13); an in-flight `v3` change usually needs nothing, apart from the three exceptions listed in [Migrating v3 → v4](#migrating-v3--v4). Any schema-major bump — previously-valid artifacts becoming invalid (independently sufficient), an artifact being added or removed, a `requires:` edge changing, or a PRECHECK's shape changing — is always announced with a migration guide under [Versioning](#versioning).
+> **Crossing a schema major does need migration.** Upgrading from bundle `1.x.y` (schema major `v1`) to `2.x.y` (schema major `v2`) changed what `tasks.md` and `plan.md` must contain; upgrading from `2.x.y` (`v2`) to `3.x.y` (`v3`) requires every Requirement and Scenario heading to carry a stable ID; upgrading from `3.x.y` (`v3`) to `4.x.y` (`v4`) changes which `plan.md` headings count as entries; upgrading from `4.x.y` (`v4`) to `5.x.y` (`v5`) changes how a retrospective must record a deliberately skipped `subagent-driven-development`. An in-flight `v2` change needs the steps in [Migrating v2 → v3](#migrating-v2--v3) before it will pass verify (check 13); an in-flight `v3` change usually needs nothing, apart from the three exceptions listed in [Migrating v3 → v4](#migrating-v3--v4); an in-flight `v4` change needs nothing unless its retrospective will record such a skip ([Migrating v4 → v5](#migrating-v4--v5)). Any schema-major bump — previously-valid artifacts becoming invalid (independently sufficient), an artifact being added or removed, a `requires:` edge changing, or a PRECHECK's shape changing — is always announced with a migration guide under [Versioning](#versioning).
 
 ---
 
@@ -310,7 +310,7 @@ Plus one OpenSpec built-in: `openspec-verify-change` (apply step 3, produces `ve
 
 > **Naming is not requiring.** This table lists the seven skills the schema **names** in its artifact and apply instructions; `superpowers:executing-plans` is named as well — in the paragraph below, and only in order to rule it out. The schema actually requires and PRECHECKs **four**: `brainstorming` (in the `brainstorm` artifact) and the three in [apply step 0](#0-pre-flight--verify-required-superpowers-skills). Of the rest, `writing-plans` is named only as an optional private aid, and `test-driven-development` / `requesting-code-review` are never invoked by the schema itself.
 
-> **No `executing-plans` fallback.** This schema is opinionated: it requires a subagent-capable platform (Claude Code, Codex, etc.). The alternative executor `superpowers:executing-plans` runs with no reviewer per task and reviews the whole branch once at the end; without a subagent tool — exactly where a fallback would run — that final review is performed by the author (verified against its [SKILL.md](https://github.com/obra/superpowers/blob/v6.4.1/skills/executing-plans/SKILL.md), Superpowers v6.4.1–v6.4.2). This schema relies on independent review during execution. TDD is not the differentiator: applicability and the RED/GREEN evidence are carried by the `tasks.md` annotations and the evidence contract, whichever executor runs the tasks. If your platform lacks subagent support, use the built-in `spec-driven` schema instead.
+> **No `executing-plans` fallback.** This schema is opinionated: it requires a subagent-capable platform (Claude Code, Codex, etc.). What apply needs is a capability, not a particular executor — independent review during execution, after each task or each batch of small same-shape tasks rather than only at the end. In this version only `subagent-driven-development` provides it, so without it apply stops at Step 0. `superpowers:executing-plans` was checked against that capability and does not provide it; what it does, in which upstream versions, is recorded in the [Re-verification log](#executing-plans-review-structure). TDD is not the differentiator: applicability and the RED/GREEN evidence are carried by the `tasks.md` annotations and the evidence contract, whichever executor runs the tasks. If your platform lacks subagent support, use the built-in `spec-driven` schema instead.
 
 ### Output redirection
 
@@ -391,6 +391,8 @@ Coarse `tasks.md` checkboxes tick as tasks complete. After all tasks, a final co
 
 This schema does NOT support `superpowers:executing-plans` as a fallback. See the "Six design touches" section below for rationale.
 
+If `subagent-driven-development` is available but the user explicitly rules, for one change, that it will not be used, that is an exception to this schema's process — not a supported execution mode, and not equivalent to `subagent-driven-development`. The agent never decides it on its own, a ruling covers only the change it was made for, and if the change requires an assurance the substitute cannot provide, apply stops. The deviation and the assurance not obtained are recorded in the retrospective's Deliberately Skipped Skills section (see the retrospective instruction in `schema.yaml`).
+
 #### 3. Verification — `openspec-verify-change`
 
 Produces `verify.md` from 13 checks. Checks 1–7 are the cycle-completeness set: structural validation (`openspec validate --all --json`), task completion, delta-spec sync state, design/specs coherence (non-blocking warning), implementation signal (committed code), front-door routing leak detector (non-blocking warning), and deferred-dogfood vs automated-test equivalence. Check 7 reads `tasks.md` and nothing else — under the Plan Contract `tasks.md` is the carrier of task-level state — and blocks only when `tasks.md` carries at least one `- [~]` deferred task line while the equivalence section is empty (gap analysis skipped); otherwise it is informational.
@@ -452,7 +454,7 @@ Each artifact / apply step that invokes a Superpowers skill runs a PRECHECK at t
 
 ### 2. Schema-level vs prompt-level integration
 
-Integration lives entirely in `instruction:` fields (pure prompts), so an upstream behavior change does not break the schema structurally — `openspec schema validate` reads no prompt text and keeps passing. But several instructions describe what a Superpowers skill does (how code review and TDD reach the executor, why `executing-plans` is excluded); when that behavior changes, those descriptions must be re-checked against the new release and corrected in `schema.yaml`. A renamed or removed *required* skill is also caught by its PRECHECK; a skill the schema only names (for example `test-driven-development`) is not.
+Integration lives entirely in `instruction:` fields (pure prompts), so an upstream behavior change does not break the schema structurally — `openspec schema validate` reads no prompt text and keeps passing. But several instructions describe what a Superpowers skill does (how code review and TDD reach the executor); when that behavior changes, those descriptions must be re-checked against the new release and corrected in `schema.yaml`. The exclusion of `executing-plans` is stated as a capability the executor lacks, and its upstream behaviour is recorded in the [Re-verification log](#executing-plans-review-structure); an upstream change to it is recorded there, re-checked against that capability, and changes `schema.yaml` only if executing-plans comes to provide it. A renamed or removed *required* skill is also caught by its PRECHECK; a skill the schema only names (for example `test-driven-development`) is not.
 
 ### 3. How TDD and code review actually arrive — made explicit
 
@@ -460,7 +462,7 @@ TDD and code-review used to be described here as hidden transitive activations o
 
 ### 4. Opinionated: subagent platforms only, no manual fallback
 
-This schema requires a subagent-capable platform (Claude Code, Codex, etc.). The alternative executor `superpowers:executing-plans` runs with no reviewer per task: it executes every task in one context and reviews the whole branch once at the end — with a fresh reviewer when a subagent tool exists, and by the author when none does (verified against its [SKILL.md](https://github.com/obra/superpowers/blob/v6.4.1/skills/executing-plans/SKILL.md), Superpowers v6.4.1–v6.4.2). A fallback for non-subagent platforms would therefore run with no independent review at all, while this schema relies on independent review during execution — after each task, or each batch of small same-shape tasks. TDD is not what separates the two paths — applicability and the RED/GREEN evidence are carried by the `tasks.md` annotations and the evidence contract, whichever executor runs the tasks. Falling back would silently lose the review structure Superpowers brings to this integration, so we prefer to fail loud at Step 0 and direct users to the built-in `spec-driven` schema instead.
+This schema requires a subagent-capable platform (Claude Code, Codex, etc.). The reason is a capability, not a preference for one executor: this schema relies on independent review during execution — after each task, or each batch of small same-shape tasks, rather than only at the end — and in this version only `subagent-driven-development` provides it. `superpowers:executing-plans` was checked against that capability and does not provide it; what it does, in which upstream versions, is recorded in the [Re-verification log](#executing-plans-review-structure), which is where an upstream change to it is recorded. TDD is not what separates the two paths — applicability and the RED/GREEN evidence are carried by the `tasks.md` annotations and the evidence contract, whichever executor runs the tasks. Falling back would silently lose the review structure Superpowers brings to this integration, so we prefer to fail loud at Step 0 and direct users to the built-in `spec-driven` schema instead.
 
 ### 5. Evidence-based PRECHECK for verify and retrospective (Layer 2 capability detection)
 
@@ -483,14 +485,14 @@ This bundle carries **two version identifiers** that should not be confused:
 
 | Identifier | Where | Meaning | Example |
 |---|---|---|---|
-| Schema major | `schema.yaml: version: 4` | Contract of the schema graph. Bumps on any breaking change: previously-valid artifacts becoming invalid (independently sufficient), an artifact added/removed, a `requires:` edge changing, or a PRECHECK's shape changing. | `4` |
-| Bundle release | `VERSION` file + a same-version Git tag `vX.Y.Z` | SemVer release of this bundle, scoped to a schema major. Each bundle release is marked by an annotated Git tag named `v` plus the exact `VERSION` value, pointing at its release commit; this release discipline is practised from bundle `4.0.0`. | `4.0.0` (tag name `v4.0.0`) |
+| Schema major | `schema.yaml: version: 5` | Contract of the schema graph. Bumps on any breaking change: previously-valid artifacts becoming invalid (independently sufficient), an artifact added/removed, a `requires:` edge changing, or a PRECHECK's shape changing. | `5` |
+| Bundle release | `VERSION` file + a same-version Git tag `vX.Y.Z` | SemVer release of this bundle, scoped to a schema major. Each bundle release is marked by an annotated Git tag named `v` plus the exact `VERSION` value, pointing at its release commit; this release discipline is practised from bundle `4.0.0`. | `5.0.0` (tag name `v5.0.0`) |
 
-A bundle release `4.x.y` is a published cut of schema major `v4`, as `3.x.y` was of `v3`, `2.x.y` of `v2` and `1.x.y` of `v1`. Adopters who pin to a `1.x.y`, `2.x.y`, `3.x.y` or `4.x.y` bundle are guaranteed schema-graph compatibility within that major.
+A bundle release `5.x.y` is a published cut of schema major `v5`, as `4.x.y` was of `v4`, `3.x.y` of `v3`, `2.x.y` of `v2` and `1.x.y` of `v1`. Adopters who pin to a `1.x.y`, `2.x.y`, `3.x.y`, `4.x.y` or `5.x.y` bundle are guaranteed schema-graph compatibility within that major.
 
 The **release commit** is the final commit published to `main` after the change carrying the release has been archived, finally verified and every release-coupled document updated — not necessarily the archive commit. Bundle releases before `4.0.0` carry no Git tags, and none will be created for them retroactively, so a pre-`4.0.0` bundle can be identified only by a commit.
 
-> The compatibility matrix below uses the schema major (`v1`, `v2`, `v3`, `v4`) as the row key, because compatibility with OpenSpec / Superpowers is governed by the schema contract, not by patch-level edits inside this bundle.
+> The compatibility matrix below uses the schema major (`v1`, `v2`, `v3`, `v4`, `v5`) as the row key, because compatibility with OpenSpec / Superpowers is governed by the schema contract, not by patch-level edits inside this bundle.
 
 ### Why v1 → v2 is a schema-major bump
 
@@ -520,6 +522,22 @@ One of the policy's criteria is met, and it is on its own sufficient:
 The canonical form exists because Superpowers' `subagent-driven-development` (since `v6.0.0`) extracts a task brief with `scripts/task-brief`, which recognises `Task <number>` headings and does not recognise the v3 form `## 1.1 — …` (S11 in the re-verification log below). The bridge does not change upstream; it accepts a form that upstream recognises. No artifact is added or removed, no `requires:` edge changes, and every PRECHECK is untouched.
 
 Keeping `version: 3` was rejected for the same reason as in the two bumps above: it would redefine "breaking" to fit the change.
+
+### Why v4 → v5 is a schema-major bump
+
+One of the policy's criteria is met, and it is on its own sufficient:
+
+1. **Previously-valid artifacts become invalid.** v5 defines how a retrospective records a deliberate skip of `subagent-driven-development` made under an explicit user ruling (the retrospective instruction's skipped-skill rules in [schema.yaml](./schema.yaml), and the template's `### Deliberately Skipped Skills` guidance). Under v4, such a skip could be answered with the `scope-judgment rule` option and a statement that the substitute review was equivalent to `subagent-driven-development`'s review structure; under v5 that answer is no longer conforming. The record must name the assurance not obtained (independent review during execution), cite the ruling and the substitute review, answer the prevention question with `one-off — schema boundary case` stating that the ruling covers that change only, and — when similar skips are on record — state how many and where. It must not present the skip as equivalent to `subagent-driven-development` or as conformance with the execution contract.
+
+Some of this only states rules that already held — a record could not claim an assurance it did not obtain, and a skip repeated across cycles was already a §6 Promote candidate. The bump rests on the parts that are new. No artifact is added or removed, no `requires:` edge changes, and every PRECHECK keeps its shape (apply Step 0's sentence about what the user can do when a skill is missing was corrected: it still pointed at a manual fallback path that was removed from the schema on 2026-05-02).
+
+"Invalid" here means not conforming to the schema's contract, not "blocked by a deterministic verify check" — no check reads retrospective content. Keeping `version: 4` on the grounds that no check would block an old answer was considered and rejected: it would narrow the definition of "breaking" to fit the change, the reasoning that rejected the equivalent option in each bump above.
+
+### Migrating v4 → v5
+
+Nothing needs migrating unless a retrospective records a deliberate skip of `subagent-driven-development` under a user ruling. A retrospective written after upgrading answers that skip as the retrospective instruction in [schema.yaml](./schema.yaml) describes. Retrospectives already archived are records of their time and are not rewritten. For an in-flight change started under a `4.x.y` bundle: upgrade the bundle to `5.0.0`; if its retrospective is not yet written, follow the v5 rules when writing it.
+
+**Rollback:** check out tag `v4.0.0` and copy its `superpowers-bridge/` directory into `openspec/schemas/`. Schema major `v4` remains a published cut and is not withdrawn.
 
 ### Migrating v3 → v4
 
@@ -567,16 +585,19 @@ The annotation grammar and the record shape are defined once, in the `tasks` art
 
 Baseline versions this schema was authored against. This is a **historical snapshot, not an end-to-end compatibility guarantee** — CI cannot run the full prompt-layer workflow in headless mode, so behavioral compatibility relies on human review when drift fires.
 
-Current bundle release: **`4.0.0`** (see [VERSION](./VERSION)). Each bundle release is marked by a same-version Git tag `vX.Y.Z`; this release discipline is practised from bundle `4.0.0`.
+Current bundle release: **`5.0.0`** (see [VERSION](./VERSION)). Each bundle release is marked by a same-version Git tag `vX.Y.Z`; this release discipline is practised from bundle `4.0.0`.
 
 | superpowers-bridge | OpenSpec CLI | Superpowers plugin | Baseline as of |
 |---|---|---|---|
+| v5 | `1.14.0` | `v5.1.0` | pending |
 | v4 | `1.14.0` | `v5.1.0` | pending |
 | v3 | `1.14.0` | `v5.1.0` | 2026-10-02 |
 | v2 | `1.3.1` | `v5.1.0` | 2026-09-01 |
 | v1 | `1.3.1` | `v5.1.0` | 2026-05-11 |
 
-> Newest major first. Each major keeps its own row, and the v1, v2 and v3 rows are retained for adopters still pinned to a `1.x.y`, `2.x.y` or `3.x.y` bundle.
+> Newest major first. Each major keeps its own row, and the v1, v2, v3 and v4 rows are retained for adopters still pinned to a `1.x.y`, `2.x.y`, `3.x.y` or `4.x.y` bundle.
+>
+> **The v5 row carries the v4 row's entries forward unchanged, with the same standing.** Its Superpowers entry (`v5.1.0`) is the same historical declaration carried forward without revalidation — it is not a compatibility guarantee — and its OpenSpec entry `1.14.0` is carried over from the v4 row. v5 changes only instruction and documentation text (see [Why v4 → v5](#why-v4--v5-is-a-schema-major-bump)) and does not touch either dependency. Its **Baseline as of** cell reads `pending` on the same terms as the v4 row's, explained below.
 >
 > **The v4 row's Superpowers entry (`v5.1.0`) is a historical declaration carried forward without revalidation — it is not a compatibility guarantee.** No full cycle has been re-run against `v5.1.0` since v2; the bridge currently has no external adopters, and no further investment in revalidating `v5.1.0` is planned. The value stays in the cell, with this explanation below the table rather than inside it, because the weekly version check reads that cell as a version. The environment known to have been exercised by the PoC for this change is Superpowers `v6.4.1`; this change's dogfood records the Superpowers version it actually loaded, and the row must not be described as fully verified until a full verification has been done. The OpenSpec entry `1.14.0` is carried over from the v3 row. The **Baseline as of** cell reads `pending`: it is filled only with the date a maintainer re-runs a full cycle against the versions listed in this row and confirms nothing degraded, and a run against any other version — this change's dogfood on the Superpowers version it actually loaded included — is not grounds to fill it.
 >
@@ -649,6 +670,20 @@ The same spike checked the bridge's 18 Superpowers dependencies against `v6.4.2`
 
 Full method, per-item evidence and what was not checked: [issue #2 compatibility spike report](https://github.com/azuma520/openspec-schemas/blob/main/docs/superpowers/poc/2026-10-02-issue2-compat-spike/report.md) (in the openspec-schemas repository; not shipped inside this bundle).
 
+#### executing-plans review structure
+
+*Documentation only; the baseline does not move.* The bridge's rationale for not accepting `superpowers:executing-plans` as an apply fallback (the `schema.yaml` description and apply step 2, the [touchpoints notice](#seven-superpowers-touchpoints), [design touch #4](#4-opinionated-subagent-platforms-only-no-manual-fallback), the apply entry of the [fallback strategy](#fallback-strategy), and the maintainers' red-flag list) states only the capability apply needs — independent review during execution, after each task or each batch of small same-shape tasks rather than only at the end — and refers here for what executing-plans does. When upstream changes executing-plans, this entry is updated; the rationale is not rewritten.
+
+What executing-plans does, as verified against Superpowers `v6.4.1` ([`skills/executing-plans/SKILL.md` at `v6.4.1`](https://github.com/obra/superpowers/blob/v6.4.1/skills/executing-plans/SKILL.md)) and unchanged in `v6.4.2` (the 2026-10-02 spike above found the installed `v6.4.1` differs from `v6.4.2` only in `writing-plans`):
+
+| Aspect | Behaviour |
+|---|---|
+| Review per task | None — it executes every task in one context |
+| Final review | One review of the whole branch at the end: by a fresh reviewer when a subagent tool exists, and by the author when none does |
+| TDD | Loads `test-driven-development` |
+
+So on a platform without a subagent tool — the situation a fallback would serve — executing-plans provides no independent review at any point, and with a subagent tool it provides one at the end only; neither is review during execution. Earlier versions differed: in `v6.3.0` it mentioned neither TDD nor code review (the 2026-08-26 row above), and S13 records its rebuild in `v6.4.1`. Those dated rows stay as recorded.
+
 ### How this is checked
 
 The contract is three layers — **baseline declaration + automated drift detection + human review** — not automated compatibility enforcement.
@@ -659,9 +694,11 @@ The contract is three layers — **baseline declaration + automated drift detect
 | Drift notification | [`version-check.yml`](../.github/workflows/version-check.yml) weekly, compares baseline above against latest npm / GitHub release | Pinned ≠ latest upstream | Opens / updates a [labelled drift issue](https://github.com/azuma520/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check) for human review (workflow stays green — drift is normal, not a failure) |
 | End-to-end workflow | **Not automated** | Behavioral changes inside Superpowers skills (renames, prose rewrites altering PRECHECK semantics, transitive-dependency changes); subtle OpenSpec engine semantic shifts | A human reads upstream release notes when the drift issue fires |
 
-The "Baseline as of" date is bumped when a maintainer manually re-runs a full cycle against the listed versions and confirms nothing degraded. Until then, the date marks human attestation, not an automated test pass; the v4 row's `pending` means no such run has been made against that row's versions yet. **Two exceptions, stated so the rows and this definition do not disagree:** the v2 row's `2026-09-01` and the v3 row's `2026-10-02` are each a **CLI-level attestation only** — CLI behaviour under the row's `version:` (for v2, validate / schemas / new / status / instructions against openspec `1.3.1`; for v3, `schema validate` plus the 22 identity mutation fixtures under `validate` / `archive` / `show` against openspec `1.3.1` on 2026-09-30, then the bridge's CLI surface — `schema validate` / `schemas` / `new change` / `status` / `instructions` / `validate` / `show` / `archive` — against openspec `1.14.0` on 2026-10-02, without re-running those fixtures) — **not** a full prompt-layer cycle re-run. Neither date reflects a Superpowers re-verification: the Superpowers column is unbumped in both rows, and the environment `requirement-scenario-identity` actually exercised (Superpowers `v6.4.1`, apply phase only) is recorded above as an observation distinct from the declared baseline, not as grounds to move this date. No full cycle has been re-run since the v1 row's `2026-05-11`.
+The "Baseline as of" date is bumped when a maintainer manually re-runs a full cycle against the listed versions and confirms nothing degraded. Until then, the date marks human attestation, not an automated test pass; the v4 and v5 rows' `pending` means no such run has been made against those rows' versions yet. **Two exceptions, stated so the rows and this definition do not disagree:** the v2 row's `2026-09-01` and the v3 row's `2026-10-02` are each a **CLI-level attestation only** — CLI behaviour under the row's `version:` (for v2, validate / schemas / new / status / instructions against openspec `1.3.1`; for v3, `schema validate` plus the 22 identity mutation fixtures under `validate` / `archive` / `show` against openspec `1.3.1` on 2026-09-30, then the bridge's CLI surface — `schema validate` / `schemas` / `new change` / `status` / `instructions` / `validate` / `show` / `archive` — against openspec `1.14.0` on 2026-10-02, without re-running those fixtures) — **not** a full prompt-layer cycle re-run. Neither date reflects a Superpowers re-verification: the Superpowers column is unbumped in both rows, and the environment `requirement-scenario-identity` actually exercised (Superpowers `v6.4.1`, apply phase only) is recorded above as an observation distinct from the declared baseline, not as grounds to move this date. No full cycle has been re-run since the v1 row's `2026-05-11`.
 
 ### Known breaking changes
+
+**v4 → v5** (bundle `4.0.0` → `5.0.0`). A retrospective that records a deliberate skip of `subagent-driven-development` under a user ruling must name the assurance not obtained, cite the ruling and the substitute review, answer the prevention question with `one-off — schema boundary case` (ruling covers that change only; prior cases counted when they exist), and must not present the skip as equivalent to `subagent-driven-development`; the v4-era answer "`scope-judgment rule`, substitute review equivalent to its review structure" no longer conforms. No other artifact changes. Migration: [Migrating v4 → v5](#migrating-v4--v5). Rollback: check out tag `v4.0.0`.
 
 **v3 → v4** (bundle `3.0.0` → `4.0.0`). A `plan.md` entry is now defined by a positive rule that accepts the canonical form `## Task <number> — …` beside the legacy `## <number> — …`. Three behaviour changes can alter a v3 plan's check-12 verdict: a non-entry column-0 `##` heading of the form `Task <number>` (the word `Task`, one or more spaces or tabs, then a number matching `\d+(\.\d+)*` followed by whitespace or the end of the line) becomes an entry; `##` headings inside a column-0 backtick fenced code block no longer yield keys; and `##1.1` or an indented ` ## 1.1` is no longer an entry. Migration: [Migrating v3 → v4](#migrating-v3--v4). Rollback: check out commit `737aa56ecfd3f2fc9c5562fbdd82e8d005ca14a2` (the parent of the first commit that sets `version: 4`; valid only while it remains reachable from `main` — merge the whole branch without squash or rebase); no `3.x.y` tag exists to pin.
 
@@ -699,7 +736,7 @@ If a Superpowers skill is unavailable:
 
 - **`brainstorm` artifact** — the user may explicitly opt in to writing the artifact manually (PRECHECK STOPs and informs the user; manual override requires deliberate user action, not silent degradation)
 - **`plan` artifact** — not affected. As of v2 it invokes no skill and has no skill PRECHECK: the agent writes it directly from `tasks.md`, `design.md` and `specs/`, so there is nothing to fall back from
-- **`apply` phase** — no manual fallback within this schema. PRECHECK STOPs at Step 0 if any required skill is missing. The recommended path is to switch to the built-in `spec-driven` schema for that change. Rationale: see Design touch #4 above — `executing-plans` has no reviewer per task, and on a platform without a subagent tool its one final review is performed by the author, so it has no independent review at any point; a degraded apply phase would defeat the schema's purpose.
+- **`apply` phase** — no manual fallback within this schema. PRECHECK STOPs at Step 0 if any required skill is missing. The user can install the missing skills, or explicitly choose to continue that change under the built-in `spec-driven` schema — a different workflow, not a degraded path of this one; the agent does not switch on its own. Rationale: see Design touch #4 above — apply needs independent review during execution, which this version provides only through `subagent-driven-development`; `executing-plans` does not provide it (see the [Re-verification log](#executing-plans-review-structure)), so a degraded apply phase would defeat the schema's purpose.
 
 ---
 

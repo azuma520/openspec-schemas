@@ -9,7 +9,7 @@
 
 > 把 [OpenSpec](https://github.com/Fission-AI/OpenSpec) 的 artifact 治理流程(**做什麼**)與 [obra/superpowers](https://github.com/obra/superpowers) 的執行技能(**怎麼做**)整合為單一工作流。額外提供 evidence-first 的 `retrospective` artifact,補上 Superpowers 沒有的 retro 能力。
 >
-> 整合**完全發生在 prompt 層**——不修改 Superpowers 任何程式碼,不修改 OpenSpec CLI。Schema 版本:v4(見[相容性](#相容性)與[從 v3 遷移到 v4](#從-v3-遷移到-v4))。
+> 整合**完全發生在 prompt 層**——不修改 Superpowers 任何程式碼,不修改 OpenSpec CLI。Schema 版本:v5(見[相容性](#相容性)與[從 v4 遷移到 v5](#從-v4-遷移到-v5))。
 
 ---
 
@@ -115,7 +115,7 @@ rm -rf /tmp/oss-upgrade
 
 > **在同一個 schema major 之內**,in-flight change(任一 phase:brainstorm / design / specs / ...)仍合法 — schema graph(`requires:` edges、PRECHECKs、artifact 依賴)不會跨 patch release 變動。升級前產出的 `verify.md` / `retrospective.md` 仍可讀;若對它們重跑 `/opsx:verify` 或 `/opsx:continue → retrospective`,會用新 template 結構覆蓋。
 
-> **跨 schema major 則需要 migration。** 從 bundle `1.x.y`(schema major `v1`)升到 `2.x.y`(schema major `v2`)改變了 `tasks.md` 與 `plan.md` 必須包含的內容;從 `2.x.y`(`v2`)升到 `3.x.y`(`v3`)則要求每個 Requirement 與 Scenario 標題都帶穩定 ID;從 `3.x.y`(`v3`)升到 `4.x.y`(`v4`)改變了 `plan.md` 裡哪些標題算條目。一個 in-flight 的 `v2` change 要先做完[從 v2 遷移到 v3](#從-v2-遷移到-v3)的步驟才過得了 verify(check 13);一個 in-flight 的 `v3` change 通常不需要做什麼,只有[從 v3 遷移到 v4](#從-v3-遷移到-v4)列出的三種例外要處理。任何 schema major 升版——原本合法的 artifact 變不合法(獨立即足夠)、增刪 artifact、改 `requires:` edges、PRECHECK 形狀改變——都一律會在[版本識別](#版本識別)下附上 migration guide 公告。
+> **跨 schema major 則需要 migration。** 從 bundle `1.x.y`(schema major `v1`)升到 `2.x.y`(schema major `v2`)改變了 `tasks.md` 與 `plan.md` 必須包含的內容;從 `2.x.y`(`v2`)升到 `3.x.y`(`v3`)則要求每個 Requirement 與 Scenario 標題都帶穩定 ID;從 `3.x.y`(`v3`)升到 `4.x.y`(`v4`)改變了 `plan.md` 裡哪些標題算條目;從 `4.x.y`(`v4`)升到 `5.x.y`(`v5`)改變了 retrospective 記錄「刻意略過 `subagent-driven-development`」的寫法。一個 in-flight 的 `v2` change 要先做完[從 v2 遷移到 v3](#從-v2-遷移到-v3)的步驟才過得了 verify(check 13);一個 in-flight 的 `v3` change 通常不需要做什麼,只有[從 v3 遷移到 v4](#從-v3-遷移到-v4)列出的三種例外要處理;一個 in-flight 的 `v4` change 除非它的 retrospective 要記錄這種略過,否則不需要做什麼([從 v4 遷移到 v5](#從-v4-遷移到-v5))。任何 schema major 升版——原本合法的 artifact 變不合法(獨立即足夠)、增刪 artifact、改 `requires:` edges、PRECHECK 形狀改變——都一律會在[版本識別](#版本識別)下附上 migration guide 公告。
 
 ---
 
@@ -310,7 +310,7 @@ APPLY ━━━━━━━━━━━━━━━━━━━━━━━━�
 
 > **點名不等於要求。** 這張表列的是 schema 在 artifact 與 apply instruction 裡**點名**的七個 skill;`superpowers:executing-plans` 也有被點名 —— 在下面那段裡,而且**只為了把它排除掉**。schema 真正**要求並做 PRECHECK** 的是**四個**:`brainstorming`(在 `brainstorm` artifact 裡)加上 [apply step 0](#0-pre-flight--驗證必要的-superpowers-skill) 的那三個。其餘的當中,`writing-plans` 只是被列為可選的私下輔助,而 `test-driven-development` / `requesting-code-review` 從來不由 schema 本身 invoke。
 
-> **不支援 `executing-plans` fallback**。本 schema 是 opinionated 的:要求 subagent-capable 平台(Claude Code、Codex 等)。替代 executor `superpowers:executing-plans` **沒有每個 task 的審查**,只在最後審整條分支一次;沒有 subagent 工具時——正是 fallback 會發生的情境——那次審查由作者自己做(已對 [SKILL.md](https://github.com/obra/superpowers/blob/v6.4.1/skills/executing-plans/SKILL.md) 做事實查核,Superpowers v6.4.1–v6.4.2)。本 schema 依賴的是執行過程中就有獨立審查。TDD 不是兩條路的差異點:適用性與 RED/GREEN 證據都由 `tasks.md` 的註記與證據契約承載,不論是哪個 executor 在跑這些 task。若你的平台沒有 subagent 支援,改用 OpenSpec 內建的 `spec-driven` schema。
+> **不支援 `executing-plans` fallback**。本 schema 是 opinionated 的:要求 subagent-capable 平台(Claude Code、Codex 等)。apply 需要的是一種能力,不是某個特定 executor——執行過程中的獨立審查,每個 task、或每批同類小 task 做完就審,而不是只在最後審。本版只有 `subagent-driven-development` 提供這項能力,所以缺了它,apply 就在 Step 0 停下。`superpowers:executing-plans` 已對照這項能力查過,它不具備;它在哪些上游版本做了什麼,記錄在[重新查證紀錄](#executing-plans-審查結構)。TDD 不是兩條路的差異點:適用性與 RED/GREEN 證據都由 `tasks.md` 的註記與證據契約承載,不論是哪個 executor 在跑這些 task。若你的平台沒有 subagent 支援,改用 OpenSpec 內建的 `spec-driven` schema。
 
 ### Output redirection(產出重導)
 
@@ -391,6 +391,8 @@ Main agent 讀 `plan.md`,為每個 task 派發 fresh subagent。每個 subagent 
 
 本 schema **不支援** `superpowers:executing-plans` 作為 fallback。理由見下方「六個值得記住的設計觸點」段。
 
+若 `subagent-driven-development` 可用,但使用者針對某一個 change 明確裁定不使用它,那是本 schema 流程的例外——不是受支援的執行模式,也不等同 `subagent-driven-development`。agent 不得自行決定這麼做;裁定只對它所針對的那個 change 有效;若該 change 要求的保障是替代做法提供不了的,apply 就停下。偏離本身與沒取得的保障,記在 retrospective 的 Deliberately Skipped Skills 段(見 `schema.yaml` 的 retrospective instruction)。
+
 #### 3. Verification — `openspec-verify-change`
 
 產出 `verify.md`,跑 13 項檢查。第 1–7 項是 cycle 完整性那一組:結構驗證(`openspec validate --all --json`)、task 完成度、delta-spec sync 狀態、design/specs 一致性(non-blocking warning)、實作信號(commit 狀態)、front-door routing leak detector(non-blocking warning)、以及 deferred-dogfood vs automated-test 等價性。第 7 項只讀 `tasks.md`、不讀別的檔——依 Plan Contract,`tasks.md` 才是 task 層級狀態的載體——並且僅在 `tasks.md` 至少帶一條 `- [~]` 延後 task 行、而等價性章節空白(gap 分析被跳過)時才 block,其他情境屬 informational。
@@ -452,7 +454,7 @@ Evidence-first 反思:§0 Evidence(量化前置數據 —— commit 數、diff �
 
 ### 2. Schema-level vs prompt-level 整合
 
-整合**完全**發生在 `instruction:` 欄位(純 prompt),所以上游改了 skill 的行為,不會讓 schema 在結構上壞掉——`openspec schema validate` 不讀 prompt 文字,照樣通過。但有幾段 instruction 在描述 Superpowers skill 做什麼(code review 與 TDD 怎麼送到執行者、為什麼排除 `executing-plans`);上游行為一改,這些描述就要對照新版重新核對,並在 `schema.yaml` 修正。**必要** skill 被改名或移除時,會被它的 PRECHECK 擋下;schema 只點名、沒有檢查的 skill(例如 `test-driven-development`)不會。
+整合**完全**發生在 `instruction:` 欄位(純 prompt),所以上游改了 skill 的行為,不會讓 schema 在結構上壞掉——`openspec schema validate` 不讀 prompt 文字,照樣通過。但有幾段 instruction 在描述 Superpowers skill 做什麼(code review 與 TDD 怎麼送到執行者);上游行為一改,這些描述就要對照新版重新核對,並在 `schema.yaml` 修正。排除 `executing-plans` 則是寫成「它缺少某項能力」,它的上游行為記錄在[重新查證紀錄](#executing-plans-審查結構);上游改了它,就在那裡記錄、對照那項能力重新核對,只有在 executing-plans 開始具備那項能力時才需要改 `schema.yaml`。**必要** skill 被改名或移除時,會被它的 PRECHECK 擋下;schema 只點名、沒有檢查的 skill(例如 `test-driven-development`)不會。
 
 ### 3. TDD 與 code review 實際怎麼來——顯式寫清楚
 
@@ -460,7 +462,7 @@ TDD 與 code-review 過去在這裡被描述成 `subagent-driven-development` �
 
 ### 4. Opinionated:只支援 subagent 平台,沒有手動 fallback
 
-本 schema 要求 subagent-capable 平台(Claude Code、Codex 等)。替代 executor `superpowers:executing-plans` **沒有每個 task 的審查**:它在同一個 context 裡做完所有 task,最後審整條分支一次——有 subagent 工具時派全新的審查者,沒有時由作者自己審(已對其 [SKILL.md](https://github.com/obra/superpowers/blob/v6.4.1/skills/executing-plans/SKILL.md) 做事實查核,Superpowers v6.4.1–v6.4.2)。所以拿它當非 subagent 平台的 fallback,整個過程完全沒有獨立審查;而本 schema 依賴的是執行過程中就有獨立審查——每個 task、或每批同類小 task 做完就審。TDD 不是兩條路的分野——適用性與 RED/GREEN 證據都由 `tasks.md` 的註記與證據契約承載,不論是哪個 executor 在跑這些 task。退過去等於靜默丟掉 Superpowers 帶給整合的審查結構,所以我們選擇在 Step 0 fail loud,並指引使用者改用內建的 `spec-driven` schema。
+本 schema 要求 subagent-capable 平台(Claude Code、Codex 等)。理由是一項能力,不是偏好某個 executor:本 schema 依賴執行過程中的獨立審查——每個 task、或每批同類小 task 做完就審,而不是只在最後審——而本版只有 `subagent-driven-development` 提供這項能力。`superpowers:executing-plans` 已對照這項能力查過,它不具備;它在哪些上游版本做了什麼,記錄在[重新查證紀錄](#executing-plans-審查結構),上游改了它也是記在那裡。TDD 不是兩條路的分野——適用性與 RED/GREEN 證據都由 `tasks.md` 的註記與證據契約承載,不論是哪個 executor 在跑這些 task。退過去等於靜默丟掉 Superpowers 帶給整合的審查結構,所以我們選擇在 Step 0 fail loud,並指引使用者改用內建的 `spec-driven` schema。
 
 ### 5. Evidence-based PRECHECK for verify and retrospective(Layer 2 capability detection)
 
@@ -483,14 +485,14 @@ LLM 不必解讀 timing 文字 —— 跑指令、看結果即可。這是顧慮
 
 | 標識 | 位置 | 含義 | 範例 |
 |---|---|---|---|
-| Schema major | `schema.yaml: version: 4` | schema graph 契約版本。任一破壞性改動就 bump:原本合法的 artifact 變不合法(獨立即足夠)、artifact 增刪、`requires:` 邊改變、PRECHECK 形狀改變 | `4` |
-| Bundle release | `VERSION` 檔 + 同版本 Git tag `vX.Y.Z` | 此 bundle 的 SemVer 發佈版本,從屬於某個 schema major。每個 bundle release 以名為 `v` 加上 `VERSION` 確切值的 annotated Git tag 標記,指向該 release 的 release commit;此 release discipline 自 bundle `4.0.0` 起實際執行 | `4.0.0`(tag 名稱 `v4.0.0`) |
+| Schema major | `schema.yaml: version: 5` | schema graph 契約版本。任一破壞性改動就 bump:原本合法的 artifact 變不合法(獨立即足夠)、artifact 增刪、`requires:` 邊改變、PRECHECK 形狀改變 | `5` |
+| Bundle release | `VERSION` 檔 + 同版本 Git tag `vX.Y.Z` | 此 bundle 的 SemVer 發佈版本,從屬於某個 schema major。每個 bundle release 以名為 `v` 加上 `VERSION` 確切值的 annotated Git tag 標記,指向該 release 的 release commit;此 release discipline 自 bundle `4.0.0` 起實際執行 | `5.0.0`(tag 名稱 `v5.0.0`) |
 
-bundle release `4.x.y` 是 schema major `v4` 的一個 published cut,一如 `3.x.y` 之於 `v3`、`2.x.y` 之於 `v2`、`1.x.y` 之於 `v1`。Adopter 釘到 `1.x.y`、`2.x.y`、`3.x.y` 或 `4.x.y` 的 bundle,即享有 schema graph 在該 major 內的相容保證。
+bundle release `5.x.y` 是 schema major `v5` 的一個 published cut,一如 `4.x.y` 之於 `v4`、`3.x.y` 之於 `v3`、`2.x.y` 之於 `v2`、`1.x.y` 之於 `v1`。Adopter 釘到 `1.x.y`、`2.x.y`、`3.x.y`、`4.x.y` 或 `5.x.y` 的 bundle,即享有 schema graph 在該 major 內的相容保證。
 
 **release commit** 是承載該 release 的 change 完成 archive、最終驗證、所有 release 連動文件都更新之後,發布到 `main` 的最終 commit——不一定是 archive commit。`4.0.0` 之前的 bundle release 都沒有 Git tag,也不會回頭補打,所以 `4.0.0` 之前的 bundle 只能以 commit 指認。
 
-> 下方相容矩陣以 schema major(`v1`、`v2`、`v3`、`v4`)為列鍵,因為 OpenSpec / Superpowers 的相容性由 schema 契約決定,不受 bundle 內部 patch 影響。
+> 下方相容矩陣以 schema major(`v1`、`v2`、`v3`、`v4`、`v5`)為列鍵,因為 OpenSpec / Superpowers 的相容性由 schema 契約決定,不受 bundle 內部 patch 影響。
 
 ### 為什麼 v1 → v2 是 schema major 升版
 
@@ -520,6 +522,22 @@ bundle release `4.x.y` 是 schema major `v4` 的一個 published cut,一如 `3.x
 之所以有 canonical 寫法,是因為 Superpowers 的 `subagent-driven-development`(`v6.0.0` 起)用 `scripts/task-brief` 抽出任務簡報,它辨識得到 `Task <編號>` 標題,辨識不到 v3 的 `## 1.1 — …` 寫法(見下方重新查證紀錄的 S11)。bridge 不改上游,而是接受一種上游辨識得到的寫法。沒有增刪 artifact、沒有改 `requires:` 邊,每一個 PRECHECK 都沒有動。
 
 「維持 `version: 3`」被否決,理由跟上面兩次升版相同:那等於為了遷就這次改動而重新定義「破壞性」。
+
+### 為什麼 v4 → v5 是 schema major 升版
+
+政策裡有一條判準成立,而且它本身就足夠:
+
+1. **原本合法的 artifact 變成不合法。** v5 定義了 retrospective 如何記錄「經使用者明確裁定而刻意略過 `subagent-driven-development`」([schema.yaml](./schema.yaml) 中 retrospective instruction 的略過規則,以及模板 `### Deliberately Skipped Skills` 的填寫說明)。在 v4 之下,這種略過可以用 `scope-judgment rule` 選項回答,並宣稱替代審查等同 `subagent-driven-development` 的審查結構;到了 v5,這種答法不再符合契約。紀錄必須寫出沒取得的保障(執行過程中的獨立審查)、引用裁定與替代審查、第三題選 `one-off — schema boundary case` 並寫明裁定只對該 change 有效,而且同類略過已有前例時,要寫出次數與位置。紀錄不得把略過寫成等同 `subagent-driven-development`,也不得寫成符合執行契約。
+
+其中有一部分只是把原本就成立的規則寫清楚——紀錄本來就不能宣稱沒取得的保障,跨 cycle 重複的略過本來就是 §6 Promote candidate。升版依據的是真正新增的那部分。沒有增刪 artifact、沒有改 `requires:` 邊,每個 PRECHECK 的形狀都不變(apply Step 0 裡一句說明「缺 skill 時使用者能怎麼做」的文字有更正:那條 manual fallback 路徑已於 2026-05-02 從 schema 移除,這句卻仍指向它)。
+
+這裡的「不合法」指的是不符合 schema 的契約,不是「被 verify 的決定性檢查擋下」——沒有任何檢查會讀 retrospective 的內容。曾考慮以「舊答法不會被任何檢查擋下」為由維持 `version: 4`,但被否決:那等於為了遷就這次改動而縮小「破壞性」的定義,與上面每一次升版否決同類選項的理由相同。
+
+### 從 v4 遷移到 v5
+
+除非某份 retrospective 要記錄經使用者裁定而刻意略過的 `subagent-driven-development`,否則沒有東西需要遷移。升級之後才寫的 retrospective,依 [schema.yaml](./schema.yaml) 的 retrospective instruction 記錄這種略過。已封存的 retrospective 是當時的紀錄,不回頭改寫。對於在 `4.x.y` bundle 下開始、目前仍 in-flight 的 change:把 bundle 升級到 `5.0.0`;如果它的 retrospective 還沒寫,寫的時候照 v5 的規則。
+
+**Rollback:** checkout tag `v4.0.0`,把其中的 `superpowers-bridge/` 目錄複製到 `openspec/schemas/`。schema major `v4` 仍是一個 published cut,不會撤回。
 
 ### 從 v3 遷移到 v4
 
@@ -567,16 +585,19 @@ Requirement 標題現在的形式是 `### Requirement: <REQ-ID> <description>`,S
 
 本 schema 撰寫時所對齊的 upstream 基準版本。這是**歷史快照,不是端對端相容性承諾** — CI 無法在 headless 環境跑完整的 prompt-layer workflow,行為相容性依賴 drift 觸發人類檢核。
 
-目前 bundle release: **`4.0.0`**(見 [VERSION](./VERSION))。每個 bundle release 以同版本 Git tag `vX.Y.Z` 標記;此 release discipline 自 bundle `4.0.0` 起實際執行。
+目前 bundle release: **`5.0.0`**(見 [VERSION](./VERSION))。每個 bundle release 以同版本 Git tag `vX.Y.Z` 標記;此 release discipline 自 bundle `4.0.0` 起實際執行。
 
 | superpowers-bridge | OpenSpec CLI | Superpowers plugin | 基準日期 |
 |---|---|---|---|
+| v5 | `1.14.0` | `v5.1.0` | pending |
 | v4 | `1.14.0` | `v5.1.0` | pending |
 | v3 | `1.14.0` | `v5.1.0` | 2026-10-02 |
 | v2 | `1.3.1` | `v5.1.0` | 2026-09-01 |
 | v1 | `1.3.1` | `v5.1.0` | 2026-05-11 |
 
-> 新的 major 排在前面。每個 major 各留一列,v1、v2、v3 那三列保留給仍釘在 `1.x.y`、`2.x.y` 或 `3.x.y` bundle 的採用者。
+> 新的 major 排在前面。每個 major 各留一列,v1、v2、v3、v4 那四列保留給仍釘在 `1.x.y`、`2.x.y`、`3.x.y` 或 `4.x.y` bundle 的採用者。
+>
+> **v5 那列原樣沿用 v4 那列的內容,地位也相同。** 它的 Superpowers 欄位(`v5.1.0`)是同一筆沿用、未重新查證的歷史宣告——不構成相容保證——OpenSpec 欄位 `1.14.0` 沿用自 v4 那列。v5 只改了 instruction 與文件文字(見[為什麼 v4 → v5 是 schema major 升版](#為什麼-v4--v5-是-schema-major-升版)),沒有動到任何一個依賴。它的**基準日期**那格是 `pending`,條件與 v4 那列相同,說明見下。
 >
 > **v4 那列的 Superpowers 欄位(`v5.1.0`)是沿用、未重新查證的歷史宣告——不構成相容保證。** v2 起就沒有對 `v5.1.0` 重跑過完整 cycle;bridge 目前沒有外部採用者,也不打算再投資重新查證 `v5.1.0`。這個值之所以仍留在格子裡、說明寫在表格下方而不寫進格子,是因為每週版本檢查把那一格當版本號讀。已知本 change 的 PoC 實測環境是 Superpowers `v6.4.1`;本 change 的 dogfood 以實際載入的 Superpowers 版本為準並留紀錄,完整驗證完成之前,不得把這一列寫成「已完整驗證」。OpenSpec 欄位 `1.14.0` 沿用自 v3 那列。**基準日期**那格是 `pending`:只有在 maintainer 對**這一列所列的版本**重跑完整 cycle、確認沒退步之後,才填入那天的日期;對其他任何版本跑的結果——包括本 change 在實際載入的 Superpowers 版本上跑的 dogfood——都不構成填日期的依據。
 >
@@ -649,6 +670,20 @@ bridge 對 OpenSpec 的 24 項依賴(逐項列在 [issue #2 相容性 spike 報�
 
 完整方法、逐項證據與沒查的範圍:[issue #2 相容性 spike 報告](https://github.com/azuma520/openspec-schemas/blob/main/docs/superpowers/poc/2026-10-02-issue2-compat-spike/report.md)(在 openspec-schemas repository 裡;**不**隨本 bundle 內含)。
 
+#### executing-plans 審查結構
+
+*僅文件;基準不移動。* bridge 不接受 `superpowers:executing-plans` 當 apply fallback 的理由(`schema.yaml` 的 description 與 apply 第 2 步、[七個 Superpowers 觸點](#七個-superpowers-觸點)下的提示框、設計觸點 #4、[降級策略](#降級策略)的 apply 項,以及維護者的紅旗清單)只寫 apply 需要的能力——執行過程中的獨立審查,每個 task、或每批同類小 task 做完就審,而不是只在最後審——executing-plans 做了什麼,則指向這裡。上游改了 executing-plans,就更新這一段,不改寫那些理由。
+
+executing-plans 做了什麼,依 Superpowers `v6.4.1` 查證([`v6.4.1` 的 `skills/executing-plans/SKILL.md`](https://github.com/obra/superpowers/blob/v6.4.1/skills/executing-plans/SKILL.md)),`v6.4.2` 未變(上方 2026-10-02 的 spike 發現,已安裝的 `v6.4.1` 與 `v6.4.2` 之間只差 `writing-plans`):
+
+| 面向 | 行為 |
+|---|---|
+| 每個 task 的審查 | 沒有——它在同一個 context 裡做完所有 task |
+| 最後的審查 | 最後審整條分支一次:有 subagent 工具時派全新的審查者,沒有時由作者自己審 |
+| TDD | 會載入 `test-driven-development` |
+
+所以在沒有 subagent 工具的平台上——正是 fallback 會發生的情境——executing-plans 從頭到尾沒有獨立審查;有 subagent 工具時,也只在最後有一次。兩者都不是執行過程中的審查。更早的版本不同:`v6.3.0` 時它既沒提 TDD 也沒提 code review(上方 2026-08-26 那列),S13 記錄了它在 `v6.4.1` 的重建。那些帶日期的列維持原樣。
+
 ### 驗證機制
 
 契約分三層 — **基準聲明 + 自動 drift 偵測 + 人類檢核** — 不是自動相容性 enforcement。
@@ -659,9 +694,11 @@ bridge 對 OpenSpec 的 24 項依賴(逐項列在 [issue #2 相容性 spike 報�
 | Drift 通知 | [`version-check.yml`](../.github/workflows/version-check.yml) 每週,把基準 vs 最新 npm / GitHub release 字串比對 | Pinned ≠ latest upstream | 開 / 更新 [labelled drift issue](https://github.com/azuma520/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check),由人類檢核(workflow 維持綠 — drift 是正常狀態,不是錯誤) |
 | 端對端 workflow | **未自動化** | Superpowers skill 內部行為改變(改名、改寫 prose 影響 PRECHECK 語意、傳遞依賴變動);OpenSpec 引擎語意微調 | drift issue 觸發時,人類讀 upstream release notes |
 
-「基準日期」由 maintainer 手動重跑完整 cycle 確認沒退步後才推進。在那之前,日期代表的是人類聲明,不是自動測試通過;v4 那列的 `pending` 代表還沒有人對那一列所列的版本跑過這樣的完整 cycle。**有兩個例外,寫在這裡是為了讓那兩列與這個定義不互相矛盾:** v2 那列的 `2026-09-01` 與 v3 那列的 `2026-10-02` 都**只是 CLI 層級的聲明** —— 各自那一列 `version:` 之下的 CLI 行為(v2 是 validate / schemas / new / status / instructions,對 openspec `1.3.1` 跑;v3 是 2026-09-30 用 `schema validate` 加上 22 個 identity mutation fixtures 跑過 `validate` / `archive` / `show`,對 openspec `1.3.1`,之後 2026-10-02 再把 bridge 用到的 CLI 介面 —— `schema validate` / `schemas` / `new change` / `status` / `instructions` / `validate` / `show` / `archive` —— 對 openspec `1.14.0` 跑過,那些 fixtures 沒有重跑)—— **不是**一次完整的 prompt-layer cycle 重跑。這兩個日期都不代表對 Superpowers 重新查證過:兩列的 Superpowers 欄位都沒有推進,`requirement-scenario-identity` 實際用到的環境(Superpowers `v6.4.1`,僅 apply phase)記錄在上面,是跟已宣告基準分開的觀察,不構成移動這個日期的理由。自 v1 那列的 `2026-05-11` 以來,沒有重跑過完整 cycle。
+「基準日期」由 maintainer 手動重跑完整 cycle 確認沒退步後才推進。在那之前,日期代表的是人類聲明,不是自動測試通過;v4、v5 那兩列的 `pending` 代表還沒有人對那兩列所列的版本跑過這樣的完整 cycle。**有兩個例外,寫在這裡是為了讓那兩列與這個定義不互相矛盾:** v2 那列的 `2026-09-01` 與 v3 那列的 `2026-10-02` 都**只是 CLI 層級的聲明** —— 各自那一列 `version:` 之下的 CLI 行為(v2 是 validate / schemas / new / status / instructions,對 openspec `1.3.1` 跑;v3 是 2026-09-30 用 `schema validate` 加上 22 個 identity mutation fixtures 跑過 `validate` / `archive` / `show`,對 openspec `1.3.1`,之後 2026-10-02 再把 bridge 用到的 CLI 介面 —— `schema validate` / `schemas` / `new change` / `status` / `instructions` / `validate` / `show` / `archive` —— 對 openspec `1.14.0` 跑過,那些 fixtures 沒有重跑)—— **不是**一次完整的 prompt-layer cycle 重跑。這兩個日期都不代表對 Superpowers 重新查證過:兩列的 Superpowers 欄位都沒有推進,`requirement-scenario-identity` 實際用到的環境(Superpowers `v6.4.1`,僅 apply phase)記錄在上面,是跟已宣告基準分開的觀察,不構成移動這個日期的理由。自 v1 那列的 `2026-05-11` 以來,沒有重跑過完整 cycle。
 
 ### Known breaking changes
+
+**v4 → v5**(bundle `4.0.0` → `5.0.0`)。記錄「經使用者裁定而刻意略過 `subagent-driven-development`」的 retrospective,必須寫出沒取得的保障、引用裁定與替代審查、第三題選 `one-off — schema boundary case`(裁定只對該 change 有效;有前例時寫出次數),且不得把略過寫成等同 `subagent-driven-development`;v4 時期「選 `scope-judgment rule`、宣稱替代審查等同其審查結構」的答法不再符合。其他 artifact 不受影響。Migration:[從 v4 遷移到 v5](#從-v4-遷移到-v5)。Rollback:checkout tag `v4.0.0`。
 
 **v3 → v4**(bundle `3.0.0` → `4.0.0`)。`plan.md` 的條目改由正面規則定義,在 legacy 的 `## <編號> — …` 之外接受 canonical 寫法 `## Task <編號> — …`。有三項行為變更可能改變一份 v3 plan 在第 12 項的判定:形如 `Task <編號>` 的行首非條目 `##` 標題(`Task` 一字、一個以上 space 或 tab、再接符合 `\d+(\.\d+)*` 的編號,編號後是空白或行尾)變成條目;行首 backtick fenced code block 內的 `##` 標題不再產生鍵值;`##1.1` 或縮排的 ` ## 1.1` 不再是條目。Migration:[從 v3 遷移到 v4](#從-v3-遷移到-v4)。Rollback:checkout commit `737aa56ecfd3f2fc9c5562fbdd82e8d005ca14a2`(第一個把 `schema.yaml` 改成 `version: 4` 的 commit 的 parent;只有仍能從 `main` 追到時才有效——整條分支併入時不得 squash、不得 rebase);沒有可以釘的 `3.x.y` tag。
 
@@ -699,7 +736,7 @@ apply 要求 `plan` 而非 `tasks`,因為 executor 需要的是每個 task 的�
 
 - **`brainstorm` artifact**:使用者可明確 opt-in 改成手動撰寫(PRECHECK 會 STOP 並通知;手動模式需要使用者明確選擇,不會靜默降級)
 - **`plan` artifact**:不受影響。從 v2 起它不 invoke 任何 skill,也沒有 skill PRECHECK —— agent 直接依 `tasks.md`、`design.md` 與 `specs/` 寫出它,所以沒有東西需要降級
-- **`apply` phase**:本 schema 沒有 manual fallback。Step 0 PRECHECK 缺任何必要 skill 就 STOP,建議改用 OpenSpec 內建的 `spec-driven` schema 跑那個 change。理由見上面「設計觸點 #4」——`executing-plans` 沒有每個 task 的審查,在沒有 subagent 工具的平台上,最後那一次審查也由作者自己做,所以從頭到尾沒有獨立審查,降級的 apply 等於違背 schema 的目的
+- **`apply` phase**:本 schema 沒有 manual fallback。Step 0 PRECHECK 缺任何必要 skill 就 STOP。使用者可以安裝缺少的 skill,或明確選擇改用 OpenSpec 內建的 `spec-driven` schema 繼續那個 change——那是換一套工作流程,不是本 schema 的降級路徑;agent 不會自行切換。理由見上面「設計觸點 #4」——apply 需要執行過程中的獨立審查,本版只有 `subagent-driven-development` 提供;`executing-plans` 不具備(見[重新查證紀錄](#executing-plans-審查結構)),所以降級的 apply 等於違背 schema 的目的
 
 ---
 

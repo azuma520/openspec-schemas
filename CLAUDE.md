@@ -29,7 +29,7 @@ openspec-schemas/                     ← 本 repo
 │       └── retrospectives/           ← 結案複盤
 └── superpowers-bridge/                ← 第一個 bridge,自包式 schema bundle
     ├── README.md / .zh-TW.md         ← 完整 bridge 文件(含 install/upgrade + integration runbook)
-    ├── VERSION                       ← bundle SemVer(4.0.0),與 schema.yaml 的 version: 4 是兩回事
+    ├── VERSION                       ← bundle SemVer(5.0.0),與 schema.yaml 的 version: 5 是兩回事
     ├── schema.yaml                   ← 唯一的行為來源:artifacts DAG + instruction prompts + apply 編排
     └── templates/                    ← artifact 模板(8 個 artifact 各一份)
         ├── brainstorm.md / proposal.md / design.md / spec.md
@@ -184,9 +184,9 @@ Orca 方向的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k �
 
 | 你改了什麼 | 必須同步改什麼 | 不改的後果 |
 |---|---|---|
-| `superpowers-bridge/README.md` 的 Compatibility 表格格式 | `version-check.yml` 的 `Read pinned versions` step | 它用 ``grep -E '^\| v4 \| `'`` 抓那一行(`head -1` 取第一筆),再用 ``awk -F'`'`` 取第 2、4 個 backtick 欄位 —— 表格必須維持「第一欄 `vN`、OpenSpec 版本與 Superpowers 版本各自包在單一 backtick 裡」的形狀。**抓不到那一列時 CI 直接 fail**(該 step `exit 1`);抓得到但欄位位移時(例如格子裡多一個反引號)不會 fail,只會讀錯值、帶進 drift issue。**升 schema major 時新增一列而舊列保留,CI 也不會 fail**:grep 仍默默讀它指定的那一列(沒跟著改就是舊列),每週檢查比對的是舊列的版本號 —— 所以新增列時 grep 的列鍵要一起改,並在本機跑一次那段 grep/awk 確認讀到新列的兩個版本號 |
+| `superpowers-bridge/README.md` 的 Compatibility 表格格式 | `version-check.yml` 的 `Read pinned versions` step | 它用 ``grep -E '^\| v5 \| `'`` 抓那一行(`head -1` 取第一筆),再用 ``awk -F'`'`` 取第 2、4 個 backtick 欄位 —— 表格必須維持「第一欄 `vN`、OpenSpec 版本與 Superpowers 版本各自包在單一 backtick 裡」的形狀。**抓不到那一列時 CI 直接 fail**(該 step `exit 1`);抓得到但欄位位移時(例如格子裡多一個反引號)不會 fail,只會讀錯值、帶進 drift issue。**升 schema major 時新增一列而舊列保留,CI 也不會 fail**:grep 仍默默讀它指定的那一列(沒跟著改就是舊列),每週檢查比對的是舊列的版本號 —— 所以新增列時 grep 的列鍵要一起改,並在本機跑一次那段 grep/awk 確認讀到新列的兩個版本號 |
 | `schema.yaml` 的 verify / retrospective 時序或 PRECHECK | README「六個值得記住的設計觸點」#5 #6 + 繁中版 | 已知限制的文件化失效(這是 PR #970 顧慮 #2 的唯一應對) |
-| `schema.yaml` 的 artifact 增刪 / `requires:` 邊 / 新增規範性檢查(原本合法的 artifact 變不合法) | bridge README 的 Artifact DAG + Lifecycle 段、`templates/` 對應模板、`docs/roadmap.md` | schema major 需從目前的 4 bump,且 README 要新增 migration guide(見 Versioning 段) |
+| `schema.yaml` 的 artifact 增刪 / `requires:` 邊 / 新增規範性檢查(原本合法的 artifact 變不合法) | bridge README 的 Artifact DAG + Lifecycle 段、`templates/` 對應模板、`docs/roadmap.md` | schema major 需從目前的 5 bump,且 README 要新增 migration guide(見 Versioning 段) |
 | 新增 bridge 目錄 | `validate-schemas.yml` 的 `matrix.bridge` + 頂層 `README.md` 的 bridges 表(en + zh-TW) | 新 bridge 完全不進 CI,沒人驗 |
 | bridge README 的 routing / 前門規則 | `templates/adopters/CLAUDE.md.fragment.md` + `.zh-TW.md` | 採用者貼進自己 CLAUDE.md 的規則與 README 說法不一致 |
 | CLI 指令、slash command 名稱 | bridge README 的「CLI cheat sheet」 | 使用者照抄跑不動 |
@@ -195,14 +195,14 @@ Orca 方向的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k �
 
 | 識別碼 | 位置 | 什麼時候動 |
 |---|---|---|
-| schema major | `schema.yaml: version: 4` | 只有 schema graph 契約破壞才 bump——原本合法的 artifact 變不合法(獨立即足夠)、artifact 增刪、`requires:` 改、PRECHECK 形狀改,任一成立即算 |
-| bundle release | `superpowers-bridge/VERSION` + 同版本 annotated git tag `vX.Y.Z`(每個 release 一個,打在 release commit 上;自 4.0.0 起實際執行) | 這包的 SemVer 發版,包含純文字修訂;`4.x.y` 都屬 schema major 4 |
+| schema major | `schema.yaml: version: 5` | 只有 schema graph 契約破壞才 bump——原本合法的 artifact 變不合法(獨立即足夠)、artifact 增刪、`requires:` 改、PRECHECK 形狀改,任一成立即算 |
+| bundle release | `superpowers-bridge/VERSION` + 同版本 annotated git tag `vX.Y.Z`(每個 release 一個,打在 release commit 上;自 4.0.0 起實際執行) | 這包的 SemVer 發版,包含純文字修訂;`5.x.y` 都屬 schema major 5 |
 
 **release commit 的定義**:承載該 release 的 change 完成 archive、最終驗證與所有 release 連動文件更新後,準備發布到 `main` 的最終 commit。不等同 archive commit——archive 之後仍可能有 review 修正或收尾 commit;要標記的是最後完整代表該版發布內容的 tree。push tag 屬受管制的 git 操作,執行當下要取得使用者對該次 push 的明確授權;遠端 tag **剝開後**(`refs/tags/vX.Y.Z^{}`)指向的 commit 與事先記下的 release commit SHA 一致,才算發版完成。`4.0.0` 之前的 bundle release(1.0.0、1.0.1、2.0.0、3.0.0)都沒有 tag,不回頭補打(哪個 commit 才是那一版缺證據)。來源:`openspec/changes/task-prefixed-plan-headings/design.md` D6、`specs/release-versioning/spec.md` REQ-1。
 
 **v3 → v4 rollback SHA 只在仍能從 `main` 追到時成立**:bridge README(en + zh-TW)的 v3 → v4 rollback 寫死 `737aa56ecfd3f2fc9c5562fbdd82e8d005ca14a2`,它是第一個 `version: 4` commit(`0b11be5`)的 parent,要靠承載 v4 的 branch 併入 `main` 才會出現在 `main` 上。所以**整條 branch** 併入 `main` 時**不得 squash、不得 rebase**(用保留原 commit 的合併方式),必須保證這個 SHA 併入後仍能從 `main` 追到——不是只有某一個 commit 本身不能重寫。若歷史仍被改寫,要重新找出 `main` 上第一個把 `superpowers-bridge/schema.yaml` 改成 `version: 4` 的 commit(例:`git log --reverse -S 'version: 4' --format=%H -- superpowers-bridge/schema.yaml` 取第一筆,並看那筆的 diff 確認確實是 3 → 4),取它的 parent、實際 checkout 一次確認 `schema.yaml` 是 `version: 3`,再改寫 repo 內所有寫死這兩個 SHA 的地方(至少兩份 bridge README,以及 `docs/superpowers/poc/2026-09-03-tdd-evidence-mutation-fixtures/README.md` 裡 check-12 重算的 git 來源;以 `git grep` 搜這兩個 SHA 找全)。來源:`openspec/changes/task-prefixed-plan-headings/design.md` D6。
 
-Compatibility 表的列鍵用的是 **schema major(`v4`)**,不是 bundle 版本 —— 改 VERSION 不要順手去動那張表的第一欄(會打爆上面的 CI grep)。
+Compatibility 表的列鍵用的是 **schema major(`v5`)**,不是 bundle 版本 —— 改 VERSION 不要順手去動那張表的第一欄(會打爆上面的 CI grep)。
 
 ## CI / 自動化的既有約定
 
@@ -255,7 +255,8 @@ PR #970 review 提出三個顧慮,本 schema 在 v1 已具體應對。Claude 在
 - ❌ 拿掉某個 PRECHECK 但沒換更強的替代品
 - ❌ 把 verify / retrospective 從 artifact 拉掉但沒在 README「設計觸點」段同步更新限制
 - ❌ 改 schema name 但沒同步改 bridge 內所有文件 + 頂層 README 的 bridge 索引
-- ❌ 在 apply instruction 加 `superpowers:executing-plans` 當 fallback(它沒有每個 task 的審查,只在最後審整條分支一次;沒有 subagent 工具時——正是 fallback 會發生的情境——那次由作者自審,整個過程沒有獨立審查。依據 Superpowers v6.4.1 原文;查過的舊版(v5.1.0、v6.3.0)連最後那次都沒有,所以 8/31 寫的「不派任何獨立審查者」當時成立、v6.4.1 起不成立。**不要**再拿「上游建議用哪個」當理由,上游建議會變。TDD 不是差異點——TDD 由 tasks.md 的 applicability 標註 + 證據契約承載(`loosen-plan` 起),與哪個執行器無關。本 schema 刻意只支援有 subagent 的平台,缺就叫使用者改用內建 `spec-driven`) ⚠️ 這條禁令依正式設計 §5 之後要改寫成「看能力、留證據、可降級」的寫法(沒有 subagent 時允許自審但留降級紀錄),由工作 `task-20260901-claudemd-governance-rewrite` 負責;改寫時不要拿這條紅旗當反對理由。
+- ❌ 在 apply 加入**不具備 apply 所需能力**、又沒有依正式設計 §5 合法降級的執行方式。apply 需要的能力是「執行過程中的獨立審查」(每個 task、或每批同類小 task 做完就審,不是只在最後審);本版只有 `subagent-driven-development` 提供,缺能力時在 Step 0 STOP,使用者可安裝所需 skill 或自行選擇改用內建 `spec-driven`,agent 不得自行切換。`executing-plans` 已對照這項能力查過、不具備,事實與查證版本見 bridge README 重新查證紀錄的「executing-plans review structure」段——這裡不重述版本事實,上游改版時更新那一段即可。理由一律寫能力,不寫「上游建議用哪個」(上游建議會變),也不拿 TDD 當差異點(TDD 由 tasks.md 的 applicability 標註 + 證據契約承載,與執行器無關)。
+- ❌ 把降級紀錄或偏離紀錄當成保障已滿足。經使用者裁定刻意略過 SDD 是例外偏離、不是受支援的執行模式,retrospective 照實記錄失去的保障即可,不得寫成等同 SDD 或符合執行契約(正式設計 §5:Evidence 不能把不存在的 capability 變成存在)。
 - ❌ 把 PRECHECK 失敗改成「靜默降級」(整套設計就是 fail loud;缺 skill 一律 STOP)
 
 ## 相關連結

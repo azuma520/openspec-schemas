@@ -86,7 +86,20 @@ Commit chain (時序):
     - `skill description tightening` — 寫具體要改哪個 skill 的 frontmatter / instruction
     - `CLAUDE.md trigger` — 寫具體要在 adopter CLAUDE.md.fragment 加哪段判讀規則
     - `scope-judgment rule` — 寫具體 cycle 的 scope 應該被怎麼判讀
-    - `one-off — schema boundary case, no prevention possible` — 但需明寫為何 boundary(不接受含糊保留)
+    - `one-off — schema boundary case` — 但需明寫為何 boundary(不接受含糊保留)
+
+> **經使用者明確裁定而刻意略過 `superpowers:subagent-driven-development` 時**(apply 第 2 步的第三種情境),
+> 同樣回答上面三題,不加欄位、不加選項:
+>
+> - **What was skipped**:寫出因此沒取得的保障——執行過程中的獨立審查,不只寫 skill 名。
+> - **Why this cycle**:引用使用者的裁定(記在哪裡)、實際怎麼執行、用了什麼替代的審查或驗證。
+> - **How to prevent recurrence**:選 `one-off — schema boundary case`。邊界理由寫明:裁定只對這個 change 有效、
+>   偏離如何揭露、證據放在哪裡。這一題要防的是未經授權的偏離、未揭露的保障缺口、不實的符合宣稱,
+>   不是經裁定的例外本身。同類略過已有前例時,寫出次數與位置,並依下方規則列為 §6 Promote candidate;
+>   前例的裁定不會授權這一次。
+>
+> 這段紀錄只揭露偏離:不得寫成已取得沒取得的保障、等同 subagent-driven-development、
+> 符合本 schema 的執行契約,或讓實際走的路徑成為受支援的執行模式。
 
 > **與 §6 Promote candidates 的關係**:多個 cycle 同 skill 同 `How to prevent`
 > 答案 → 該模式應 promote 到 §6,直接觸發 schema / skill PR,不可累積成「常態」。
