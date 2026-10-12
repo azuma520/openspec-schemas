@@ -154,7 +154,7 @@ Orca 方向的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k �
 這個 repo 已 `openspec init`,並把 `superpowers-bridge` 裝進 `openspec/schemas/`,用它管理本 repo 後續的 schema 優化工作。
 
 - **唯一來源是根目錄的 `superpowers-bridge/`**。`openspec/schemas/superpowers-bridge/` 是實體副本、已 gitignore。
-  改完 schema **必須重新同步**,否則跑 opsx 時吃到的是舊副本:
+  改了 `superpowers-bridge/` 底下任何檔案(`schema.yaml`、`templates/`、README 皆算)**必須重新同步**,否則跑 opsx 時吃到的是舊副本:
   ```bash
   rm -rf openspec/schemas/superpowers-bridge && cp -R superpowers-bridge openspec/schemas/
   ```
@@ -187,6 +187,7 @@ Orca 方向的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k �
 | `superpowers-bridge/README.md` 的 Compatibility 表格格式 | `version-check.yml` 的 `Read pinned versions` step | 它用 ``grep -E '^\| v5 \| `'`` 抓那一行(`head -1` 取第一筆),再用 ``awk -F'`'`` 取第 2、4 個 backtick 欄位 —— 表格必須維持「第一欄 `vN`、OpenSpec 版本與 Superpowers 版本各自包在單一 backtick 裡」的形狀。**抓不到那一列時 CI 直接 fail**(該 step `exit 1`);抓得到但欄位位移時(例如格子裡多一個反引號)不會 fail,只會讀錯值、帶進 drift issue。**升 schema major 時新增一列而舊列保留,CI 也不會 fail**:grep 仍默默讀它指定的那一列(沒跟著改就是舊列),每週檢查比對的是舊列的版本號 —— 所以新增列時 grep 的列鍵要一起改,並在本機跑一次那段 grep/awk 確認讀到新列的兩個版本號 |
 | `schema.yaml` 的 verify / retrospective 時序或 PRECHECK | README「六個值得記住的設計觸點」#5 #6 + 繁中版 | 已知限制的文件化失效(這是 PR #970 顧慮 #2 的唯一應對) |
 | `schema.yaml` 的 artifact 增刪 / `requires:` 邊 / 新增規範性檢查(原本合法的 artifact 變不合法) | bridge README 的 Artifact DAG + Lifecycle 段、`templates/` 對應模板、`docs/roadmap.md` | schema major 需從目前的 5 bump,且 README 要新增 migration guide(見 Versioning 段) |
+| 升 schema major(`schema.yaml` 的 `version:`) | `VERSION`、bridge README 中英的版本處(Versioning 表、Compatibility 新列 + 列鍵說明、migration guide、Known breaking changes)、`version-check.yml` 的列鍵、**頂層 `README.md` / `README.zh-TW.md` bridges 表的 Status 欄**、`docs/roadmap.md` 中英、本檔「兩個版本號別搞混」與跨檔耦合表裡寫死的目前 major | 頂層索引仍標舊 major、每週檢查讀舊列;v4 → v5 時頂層 Status 欄就是靠人工記起才改到(`openspec/changes/archive/2026-10-08-task-prefixed-plan-headings/retrospective.md` §6 最後一條「升 schema major 的連動清單要包含根目錄 README 的 bridges 狀態欄」)|
 | 新增 bridge 目錄 | `validate-schemas.yml` 的 `matrix.bridge` + 頂層 `README.md` 的 bridges 表(en + zh-TW) | 新 bridge 完全不進 CI,沒人驗 |
 | bridge README 的 routing / 前門規則 | `templates/adopters/CLAUDE.md.fragment.md` + `.zh-TW.md` | 採用者貼進自己 CLAUDE.md 的規則與 README 說法不一致 |
 | CLI 指令、slash command 名稱 | bridge README 的「CLI cheat sheet」 | 使用者照抄跑不動 |
@@ -198,9 +199,9 @@ Orca 方向的討論素材在 repo 根的 `Orca Worktree 模型分析.md`(43k �
 | schema major | `schema.yaml: version: 5` | 只有 schema graph 契約破壞才 bump——原本合法的 artifact 變不合法(獨立即足夠)、artifact 增刪、`requires:` 改、PRECHECK 形狀改,任一成立即算 |
 | bundle release | `superpowers-bridge/VERSION` + 同版本 annotated git tag `vX.Y.Z`(每個 release 一個,打在 release commit 上;自 4.0.0 起實際執行) | 這包的 SemVer 發版,包含純文字修訂;`5.x.y` 都屬 schema major 5 |
 
-**release commit 的定義**:承載該 release 的 change 完成 archive、最終驗證與所有 release 連動文件更新後,準備發布到 `main` 的最終 commit。不等同 archive commit——archive 之後仍可能有 review 修正或收尾 commit;要標記的是最後完整代表該版發布內容的 tree。push tag 屬受管制的 git 操作,執行當下要取得使用者對該次 push 的明確授權;遠端 tag **剝開後**(`refs/tags/vX.Y.Z^{}`)指向的 commit 與事先記下的 release commit SHA 一致,才算發版完成。`4.0.0` 之前的 bundle release(1.0.0、1.0.1、2.0.0、3.0.0)都沒有 tag,不回頭補打(哪個 commit 才是那一版缺證據)。來源:`openspec/changes/task-prefixed-plan-headings/design.md` D6、`specs/release-versioning/spec.md` REQ-1。
+**release commit 的定義**:承載該 release 的 change 完成 archive、最終驗證與所有 release 連動文件更新後,準備發布到 `main` 的最終 commit。不等同 archive commit——archive 之後仍可能有 review 修正或收尾 commit;要標記的是最後完整代表該版發布內容的 tree。push tag 屬受管制的 git 操作,執行當下要取得使用者對該次 push 的明確授權;遠端 tag **剝開後**(`refs/tags/vX.Y.Z^{}`)指向的 commit 與事先記下的 release commit SHA 一致,才算發版完成。`4.0.0` 之前的 bundle release(1.0.0、1.0.1、2.0.0、3.0.0)都沒有 tag,不回頭補打(哪個 commit 才是那一版缺證據)。來源:`openspec/changes/archive/2026-10-08-task-prefixed-plan-headings/design.md` D6、`specs/release-versioning/spec.md` REQ-1。
 
-**v3 → v4 rollback SHA 只在仍能從 `main` 追到時成立**:bridge README(en + zh-TW)的 v3 → v4 rollback 寫死 `737aa56ecfd3f2fc9c5562fbdd82e8d005ca14a2`,它是第一個 `version: 4` commit(`0b11be5`)的 parent,要靠承載 v4 的 branch 併入 `main` 才會出現在 `main` 上。所以**整條 branch** 併入 `main` 時**不得 squash、不得 rebase**(用保留原 commit 的合併方式),必須保證這個 SHA 併入後仍能從 `main` 追到——不是只有某一個 commit 本身不能重寫。若歷史仍被改寫,要重新找出 `main` 上第一個把 `superpowers-bridge/schema.yaml` 改成 `version: 4` 的 commit(例:`git log --reverse -S 'version: 4' --format=%H -- superpowers-bridge/schema.yaml` 取第一筆,並看那筆的 diff 確認確實是 3 → 4),取它的 parent、實際 checkout 一次確認 `schema.yaml` 是 `version: 3`,再改寫 repo 內所有寫死這兩個 SHA 的地方(至少兩份 bridge README,以及 `docs/superpowers/poc/2026-09-03-tdd-evidence-mutation-fixtures/README.md` 裡 check-12 重算的 git 來源;以 `git grep` 搜這兩個 SHA 找全)。來源:`openspec/changes/task-prefixed-plan-headings/design.md` D6。
+**v3 → v4 rollback SHA 只在仍能從 `main` 追到時成立**:bridge README(en + zh-TW)的 v3 → v4 rollback 寫死 `737aa56ecfd3f2fc9c5562fbdd82e8d005ca14a2`,它是第一個 `version: 4` commit(`0b11be5`)的 parent,要靠承載 v4 的 branch 併入 `main` 才會出現在 `main` 上。所以**整條 branch** 併入 `main` 時**不得 squash、不得 rebase**(用保留原 commit 的合併方式),必須保證這個 SHA 併入後仍能從 `main` 追到——不是只有某一個 commit 本身不能重寫。若歷史仍被改寫,要重新找出 `main` 上第一個把 `superpowers-bridge/schema.yaml` 改成 `version: 4` 的 commit(例:`git log --reverse -S 'version: 4' --format=%H -- superpowers-bridge/schema.yaml` 取第一筆,並看那筆的 diff 確認確實是 3 → 4),取它的 parent、實際 checkout 一次確認 `schema.yaml` 是 `version: 3`,再改寫 repo 內所有寫死這兩個 SHA 的地方(至少兩份 bridge README,以及 `docs/superpowers/poc/2026-09-03-tdd-evidence-mutation-fixtures/README.md` 裡 check-12 重算的 git 來源;以 `git grep` 搜這兩個 SHA 找全)。來源:`openspec/changes/archive/2026-10-08-task-prefixed-plan-headings/design.md` D6。
 
 Compatibility 表的列鍵用的是 **schema major(`v5`)**,不是 bundle 版本 —— 改 VERSION 不要順手去動那張表的第一欄(會打爆上面的 CI grep)。
 

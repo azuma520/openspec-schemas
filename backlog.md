@@ -77,10 +77,20 @@ effort（多難）/ impact（多重要）metadata MUST NOT 以 tag 形式存在�
 
 ## 待辦
 
-- [SOP 候選] [case-count: 5] precommit 找不到本 repo 的有效檢查入口,每次由 AI 臨場挑替代檢查、標準不一致
+- [SOP 候選] [case-count: 5] [mature: 2026-10-12] precommit 找不到本 repo 的有效檢查入口,每次由 AI 臨場挑替代檢查、標準不一致
   → handoff 20260914 / 20261001 / 20261005 / 20261007 二 / 20261012（change `executor-governance-wording` apply 後:runner 仍 `⚠️ NO CHECKS RUN`,不記為通過;替代驗證為 schema validate / schemas / change validate / CI 等價暫存專案 / version-check step 原樣實跑。使用者 2026-10-12 裁定:列入下一次工作改善討論,屆時判斷需要哪些提交前保障、現有檢查是否已滿足；本輪不擴張成 precommit 改造,這項缺口對發布的影響依必要檢查政策判斷、不因第五次自動放行）（runner 皆 `⚠️ NO CHECKS RUN`,前四次改跑的替代檢查各不相同;本 repo 實際有效的檢查是 `openspec schema validate` 等,工具不知道去哪找）。待決:怎麼把現有檢查接到 precommit 會自動找的入口,讓以後新增的 lint／測試也走同一條路——不要寫一份會過時的固定清單（使用者 2026-10-07）。加 `package.json` 會改變「本 repo 沒有 package.json」的現況;sd0x 有無其他登記方式【未查】。
 - [構想] [P3] 審查路由自動判斷版:依改動性質選 sd0x 的哪一種審查
 - [構想] [P3] [done: 2026-10-05] 裝 smart-commit 的兩支執行腳本(`/install-scripts --skill smart-commit`)——本 repo 的 .claude/scripts/ 缺 smart-commit-execute.sh 與 smart-commit-inspect.sh,所以 `/smart-commit --execute` 跑不了、只能走 manual 模式由使用者貼指令
   → handoff 20260907 三-F（.claude/scripts/ 是進版控的,裝了會多三個檔進 repo;loosen-plan branch 正要開 PR、當時判定摻工具腳本會讓 PR 變雜,故延後）
 - [優化建議] [case-count: 1] doc gate 的文件分類只看副檔名,分不出正式文件與紀錄類附件
   → 2026-09-11 實測:tree-digest.js 的 doc plane 判準是 /\.(md|mdx)$/、且 git status 走 --untracked-files=all,所以 7 份 session handoff 與 9 份 handoff attachment 全部進 doc plane 的 dirty 清單,與 research 正式文件同級。現況是 gate 一直開著、沒人對 handoff 跑過 codex-review-doc——不是默契例外,是判準本來就沒有這個維度。使用者 09-11 裁定:維持 attachment 定位、現在不改規則,只累積樣本。
+- [優化建議] [case-count: 2] 重用 SDD 不等於繼承它的 commit／權限假設,bridge README 與 schema 都沒寫明
+  → loosen-plan retrospective §6 候選(盤點編號 2.3,只記在 loosen-plan 執行報告 §7「未排期」);10-08 task-prefixed 又臨場處理一次(該份 retrospective R1)。2026-10-12 retrospective 候選盤點後,使用者同意記入累積樣本(change `executor-governance-wording` retrospective §6 處置表)。
+- [優化建議] [case-count: 1] CRLF 讓 diff 大小失真:以 diff 大小下判斷時要加 `--ignore-cr-at-eol`
+  → fix-v2 retrospective §6 候選(盤點編號 3.5);`.gitattributes` 自 09-14 起讓 bridge 檔維持 LF,但 CLAUDE.md 與 `openspec/changes/**` 工作區仍 CRLF,之後的 retrospective 有的加、有的沒加。2026-10-12 使用者同意記入累積樣本。
+- [優化建議] [case-count: 2] plan 寫「recorded」的驗收條件沒寫明記在哪個進版控的檔
+  → task-prefixed retrospective §6 候選(盤點編號 7.1);executor-governance-wording 的 plan.md 又這樣寫(Task 6.2–6.4),本次紀錄落在 verify.md、未造成遺失。2026-10-12 使用者同意記入累積樣本。
+- [優化建議] [case-count: 1] schema retrospective 指令寫「未勾選的候選會帶到下一輪重評」,但從沒發生
+  → 2026-10-12 盤點 7 份 archive retrospective:沒有任何一份回頭重評前一輪候選;archive 後不改寫,勾選框也不會更新(10-06 §6 第 3 條已升為 CLAUDE.md:66 仍未勾)。另開 change 改寫或刪除該句;若改寫成要求,須寫出不照做時誰會發現。出處:change `executor-governance-wording` retrospective §5、§6 B(使用者 2026-10-12 同意)。
+- [優化建議] [case-count: 1] 改到 agent 指令文字的設計決策,specs 沒有對應 requirement
+  → change `executor-governance-wording`:design D3 三種情境與 Step 0 修正寫進 schema、卻沒有任何 REQ,五輪文件審查沒抓到、verify 才抓到(W6,後補 REQ-6)。目前 1 例,先觀察;累積後再判斷要不要在 schema 的 specs 指令加「每個改到指令文字的設計決策對應一條 REQ」。出處:該 change retrospective §6 E(使用者 2026-10-12 同意)。
