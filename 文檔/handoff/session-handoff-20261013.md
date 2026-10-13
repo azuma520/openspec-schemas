@@ -179,3 +179,47 @@ workflow-harness — Handoff template
 - 重開 session，確認實際載入的是 7.0.0；沒有生效就回報使用者。
 - 查研究文件 §4 第 1、2 項，然後開 brainstorming 對齊 change，在 7.0 下 dogfood。
 - 和使用者決定 D4 的 6.4.1 驗證輪要排在什麼時候跑。
+
+## Session 10:03
+
+### 一、本 session 主題
+
+接續 09:52 區塊，仍是同一個 session，這次是正式收工。09:52 之後只做了兩件事：查核「上游給 AI 的安裝指令」，以及記下 OpenSpec 社群目錄的問題。接下來要 push，然後重開 session，讓 7.0 生效。
+
+### 二、完成事項
+
+- **查核上游給 AI 的安裝方式**（使用者問「我們有沒有跟著改」）：
+  - 使用者指的上游是原作者 `JiangWay/openspec-schemas`。那邊最後一次 push 是 2026-06-10。它的 bridge README「Method 1」（貼給 Claude Code 照做的 9 步驟）我已逐行比對：本 fork 只改了 clone 網址（改成 `azuma520`），並在第 8 步多一句 Superpowers 版本說明，沒有落後。
+  - 順帶查了另外兩個上游。OpenSpec 自 2026-08-21（`f1b521d`）起，在 repo 根目錄放了一份給 AI 讀的 `install.md`，README 用「Fetch … and follow it」引用它；本 fork 沒有仿照，使用者沒有要求跟進。Superpowers 的 Claude Code 安裝指令，6.4.1 與 7.0.0 兩版 README 相同；只有 OpenCode 那一節用「Fetch and follow INSTALL.md」。
+- **backlog 新增 `[構想]`**：OpenSpec 官方社群 schema 目錄裡，`superpowers-bridge` 那一列仍指向原作者的舊版。那一版停在 1.0.0 時代，說明裡還寫著依賴 writing-plans。使用者裁定**先不處理**，等本 fork 做得夠成熟再回頭；涉及對外與原作者，動手前要使用者拍板。
+
+### 三、未完事項 / 接力棒
+
+- [#接力] **重開 session 後先確認實際載入的是 7.0.0**，詳見 09:52 區塊三。
+- [#接力] 其餘接力項同 09:52 區塊三，未變動：brainstorming 對齊 change、研究文件 §4 待查第 1、2 項、D4 的 6.4.1 驗證輪時點、`e6eab2eb-…/upstream/` 要不要刪。
+- [#不重議] OpenSpec 社群目錄的連結先不處理（使用者 2026-10-13 裁定，見 backlog `[構想]`）。
+
+### 四、洞見 / 反省
+
+**【紀律接力】**
+
+- 同 09:52 區塊，無新增。
+
+**【當日洞見】**
+
+- 「上游」在這個 repo 至少有三個：原作者 fork 來源、OpenSpec、Superpowers。使用者說「上游」時，要先確認是哪一個。這次我先查了兩個錯的，才問到使用者指的是 bridge 的原作者。如果一開始就問一句，可以省下這兩輪查詢。
+- 09:52 那一段是我手寫的，沒有走 `/end-session`。使用者提醒後，這次才補走正式流程。
+
+**【學習候選】**
+
+- 沒有。
+
+### 五、檔案異動
+
+- 本段：`backlog.md`（新增 `[構想]`）、本 handoff 檔
+- 本 session 至今的 commit：`7809b6a`、`776182d`、`af86281`（明細見 09:52 區塊五）
+
+### 六、下一步建議
+
+- push 之後重開 session，確認 7.0 生效。
+- 依 09:52 區塊六：先查研究文件 §4 第 1、2 項，再開 brainstorming 對齊 change。
