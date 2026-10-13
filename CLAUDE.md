@@ -207,7 +207,7 @@ Compatibility 表的列鍵用的是 **schema major(`v5`)**,不是 bundle 版本 
 
 ## CI / 自動化的既有約定
 
-- `version-check.yml` 每週一 14:00 UTC 跑:比對 npm 上的 `@fission-ai/openspec` 與 obra/superpowers 最新 release,與 README 釘住的 baseline 有差就開/更新一張帶 `upstream-version-check` label 的 issue。**漂移不算失敗**(workflow 保持綠);workflow 裡刻意 `exit 1` 的有兩處(其他 step 意外出錯,例如網路或 npm 失敗,另計):「用最新版驗 schema 失敗」,以及 `Read pinned versions` step 在 bridge README 的 Compatibility 表抓不到列鍵那一列(該 step `exit 1`,見上面跨檔耦合表)。
+- `version-check.yml` 每週一 14:00 UTC 跑:比對 npm 上的 `@fission-ai/openspec` 與 obra/superpowers 最新 release,與 README 釘住的 baseline 有差就開/更新一張帶 `upstream-version-check` label 的 issue。同一張 issue 另有「Release tag」段:檢查遠端有沒有 `v` + `superpowers-bridge/VERSION` 的 tag,沒有(或讀不到 VERSION、`git ls-remote` 失敗)時,即使版本沒漂移也會開/更新 issue 提醒;只查 tag **存不存在**,不查它是否指向 release commit(那仍要照「兩個版本號別搞混」節人工確認)。發版途中(VERSION 已改、tag 還沒 push)碰上週檢會出現這則提醒,屬預期。**漂移不算失敗**(workflow 保持綠);workflow 裡刻意 `exit 1` 的有兩處(其他 step 意外出錯,例如網路或 npm 失敗,另計):「用最新版驗 schema 失敗」,以及 `Read pinned versions` step 在 bridge README 的 Compatibility 表抓不到列鍵那一列(該 step `exit 1`,見上面跨檔耦合表)。
 - `upstream-version-check` label 由 workflow 每次執行時保證存在(README 的 Upstream Drift badge 靠它解析),不要手動刪。
 - 本 repo 是 `JiangWay/openspec-schemas` 的 fork;CI 與每週 drift 檢查在 fork 上跑。bridge README 的 badge、drift issue 連結、安裝 / 升級的 `git clone` URL、adopters fragment 連結,以及 roadmap 的開 issue 連結,都硬寫了 `azuma520/openspec-schemas`(2026-10-01 起);repo 若改名 / 換 owner,這些要一起改。`LICENSE` 的著作權人 `JiangWay` 是原作者紀錄,不跟著改。fork 的 Issues 必須開著(drift issue 開在這裡);排程 workflow 在 fork 上曾從未跑過,2026-10-01 開 Issues 後以 `workflow_dispatch` 手動觸發驗證成功(run 36840373547、建立 issue #2)。
 - 兩支 workflow 都固定 Node 24 + `actions/checkout@v6` / `setup-node@v6` / `github-script@v9`。

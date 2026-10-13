@@ -52,6 +52,29 @@ jobs:
           echo "superpowers=$pinned_superpowers" >> "$GITHUB_OUTPUT"
           echo "Pinned in README: OpenSpec=$pinned_openspec, Superpowers=$pinned_superpowers"
 
+      - name: Check release tag for VERSION
+        # Reminder only: never fails the run. Checks that tag v<VERSION> exists on the
+        # remote, not that it points at the release commit.
+        id: releasetag
+        run: |
+          version=$(tr -d '[:space:]' < superpowers-bridge/VERSION 2>/dev/null || true)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ -z "$version" ]; then
+            echo "::warning::Could not read superpowers-bridge/VERSION"
+            echo "status=unreadable" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          tag="v$version"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if refs=$(git ls-remote --tags origin "refs/tags/$tag"); then
+            if [ -n "$refs" ]; then status=present; else status=missing; fi
+          else
+            echo "::warning::git ls-remote failed; release tag status unknown"
+            status=unknown
+          fi
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          echo "Release tag $tag: $status"
+
       - name: Install OpenSpec CLI (latest)
         run: npm install -g @fission-ai/openspec@${{ steps.openspec.outputs.version }}
 
@@ -89,7 +112,7 @@ jobs:
             }
 
       - name: Open or update drift issue
-        if: steps.openspec.outputs.version != steps.pinned.outputs.openspec || steps.superpowers.outputs.tag != steps.pinned.outputs.superpowers || steps.validate.outcome == 'failure'
+        if: steps.openspec.outputs.version != steps.pinned.outputs.openspec || steps.superpowers.outputs.tag != steps.pinned.outputs.superpowers || steps.validate.outcome == 'failure' || steps.releasetag.outputs.status != 'present'
         uses: actions/github-script@v9
         env:
           OPENSPEC_LATEST: ${{ steps.openspec.outputs.version }}
@@ -97,6 +120,9 @@ jobs:
           SUPERPOWERS_LATEST: ${{ steps.superpowers.outputs.tag }}
           SUPERPOWERS_PINNED: ${{ steps.pinned.outputs.superpowers }}
           VALIDATE_OUTCOME: ${{ steps.validate.outcome }}
+          BUNDLE_VERSION: ${{ steps.releasetag.outputs.version }}
+          RELEASE_TAG: ${{ steps.releasetag.outputs.tag }}
+          RELEASE_TAG_STATUS: ${{ steps.releasetag.outputs.status }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           script: |
@@ -106,6 +132,20 @@ jobs:
             const superpowersPinned = process.env.SUPERPOWERS_PINNED;
             const validateBroken = process.env.VALIDATE_OUTCOME === 'failure';
             const runUrl = process.env.RUN_URL;
+            const bundleVersion = process.env.BUNDLE_VERSION;
+            const releaseTag = process.env.RELEASE_TAG;
+            const releaseTagStatus = process.env.RELEASE_TAG_STATUS;
+
+            let releaseTagLine;
+            if (releaseTagStatus === 'present') {
+              releaseTagLine = `✅ Tag \`${releaseTag}\` exists on the remote for \`superpowers-bridge/VERSION\` = \`${bundleVersion}\` (existence only; not checked against the release commit).`;
+            } else if (releaseTagStatus === 'missing') {
+              releaseTagLine = `⚠️ **No tag \`${releaseTag}\` on the remote** for \`superpowers-bridge/VERSION\` = \`${bundleVersion}\`. Each bundle release is marked by a same-version annotated tag on its release commit (see "Versioning" in the bridge README). Expected only while a release is in progress (VERSION bumped, tag not yet pushed).`;
+            } else if (releaseTagStatus === 'unreadable') {
+              releaseTagLine = '⚠️ **Could not read `superpowers-bridge/VERSION`**, so the release tag was not checked.';
+            } else {
+              releaseTagLine = `⚠️ **Release tag status unknown** (\`git ls-remote\` failed) for \`superpowers-bridge/VERSION\` = \`${bundleVersion}\`. See the workflow run.`;
+            }
 
             const openspecDrift = openspecPinned !== openspecLatest;
             const superpowersDrift = superpowersPinned !== superpowersLatest;
@@ -127,12 +167,18 @@ jobs:
                 ? '❌ **`openspec schema validate superpowers-bridge` FAILED.** Structural breakage — investigate immediately.'
                 : '✅ `openspec schema validate superpowers-bridge` passed.',
               '',
+              '## Release tag',
+              '',
+              releaseTagLine,
+              '',
               '## Action required',
               '',
               '- [ ] Review Superpowers release notes for behavioral changes (skill renames, PRECHECK semantics, transitive deps): https://github.com/obra/superpowers/releases',
               '- [ ] Review OpenSpec changelog: https://github.com/Fission-AI/OpenSpec/releases',
               '- [ ] If safe, bump the Compatibility table in `superpowers-bridge/README.md` and `superpowers-bridge/README.zh-TW.md`. Fill the "Baseline as of" cell of a row only with the date a full cycle was re-run against the versions listed in that row (see "How this is checked" in the bridge README); until then it holds `pending`. Never set it to today by default.',
               '- [ ] If breaking, add an entry under "Known breaking changes" in both READMEs.',
+              ...(releaseTagStatus === 'missing' ? ['- [ ] Resolve the release tag reminder above: once the release is complete, push the annotated tag on its release commit (user-authorised push).'] : []),
+              ...(releaseTagStatus === 'unreadable' || releaseTagStatus === 'unknown' ? ['- [ ] Fix the release tag check above (see the workflow run), then re-run this workflow.'] : []),
               '',
               `_Workflow run: ${runUrl}_`,
             ].join('\n');

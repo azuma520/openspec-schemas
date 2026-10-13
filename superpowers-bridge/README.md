@@ -585,7 +585,7 @@ The annotation grammar and the record shape are defined once, in the `tasks` art
 
 Baseline versions this schema was authored against. This is a **historical snapshot, not an end-to-end compatibility guarantee** — CI cannot run the full prompt-layer workflow in headless mode, so behavioral compatibility relies on human review when drift fires.
 
-Current bundle release: **`5.0.0`** (see [VERSION](./VERSION)). Each bundle release is marked by a same-version Git tag `vX.Y.Z`; this release discipline is practised from bundle `4.0.0`.
+Current bundle release: **`5.0.0`** (see [VERSION](./VERSION)). Each bundle release is marked by a same-version Git tag `vX.Y.Z`; this release discipline is practised from bundle `4.0.0`. The weekly [`version-check.yml`](../.github/workflows/version-check.yml) adds a reminder to its drift issue when the remote has no tag for the current `VERSION` (it checks that the tag exists, not which commit it points at, and never fails the run).
 
 | superpowers-bridge | OpenSpec CLI | Superpowers plugin | Baseline as of |
 |---|---|---|---|

@@ -585,7 +585,7 @@ Requirement 標題現在的形式是 `### Requirement: <REQ-ID> <description>`,S
 
 本 schema 撰寫時所對齊的 upstream 基準版本。這是**歷史快照,不是端對端相容性承諾** — CI 無法在 headless 環境跑完整的 prompt-layer workflow,行為相容性依賴 drift 觸發人類檢核。
 
-目前 bundle release: **`5.0.0`**(見 [VERSION](./VERSION))。每個 bundle release 以同版本 Git tag `vX.Y.Z` 標記;此 release discipline 自 bundle `4.0.0` 起實際執行。
+目前 bundle release: **`5.0.0`**(見 [VERSION](./VERSION))。每個 bundle release 以同版本 Git tag `vX.Y.Z` 標記;此 release discipline 自 bundle `4.0.0` 起實際執行。每週的 [`version-check.yml`](../.github/workflows/version-check.yml) 在遠端找不到目前 `VERSION` 對應的 tag 時,會在 drift issue 加一則提醒(只查 tag 存不存在、不查指向哪個 commit,也不會讓 workflow 失敗)。
 
 | superpowers-bridge | OpenSpec CLI | Superpowers plugin | 基準日期 |
 |---|---|---|---|
